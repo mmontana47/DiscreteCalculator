@@ -31,3 +31,6 @@ out/
 Thumbs.db
 ehthumbs.db
 $RECYCLE.BIN/
+
+#Inne
+*.pdf
