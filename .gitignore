@@ -1,0 +1,33 @@
+*.class
+*.log
+*.jar
+*.war
+*.zip
+*.tar.gz
+
+# Wyjątki dla wrapperów
+!gradle-wrapper.jar
+!maven-wrapper.jar
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+
+# Gradle
+.gradle/
+build/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# System
+.DS_Store
+Thumbs.db
+ehthumbs.db
+$RECYCLE.BIN/
