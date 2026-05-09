@@ -1,0 +1,42 @@
+DiscreteCalculator/
+├── .gitignore                 
+├── pom.xml                       
+├── README.md                      
+└── src/
+    ├── main/
+    │   ├── java/
+    │   │   └── pl/edu/uczelnia/discretecalculator/
+    │   │       │
+    │   │       ├── Main.java               # (View) Punkt wejścia do aplikacji, uruchamia JavaFX
+    │   │       │
+    │   │       ├── controller/             # (Controller i View) KONTROLERY (w większości działka Controller) 
+    │   │       │   ├── MainController.java # Obsługa głównego okna i przycisków
+    │   │       │   └── CanvasManager.java  # Zarządzanie rysowaniem po płótnie
+    │   │       │
+    │   │       ├── model/                  # (Model) MODEL - Logika matematyczna
+    │   │       │   ├── graph/              # Struktury grafowe (Graph, Node, Edge)
+    │   │       │   └── combinatorics/      # Obiekty kombinatoryczne (drzewa, ścieżki)
+    │   │       │
+    │   │       ├── algorithm/              # (Model i Controller) ALGORYTMY (w większości działka Model)
+    │   │       │   ├── GraphAlgorithm.java # Główny interfejs dla algorytmów
+    │   │       │   ├── impl/               # Konkretne implementacje (BFS, Dijkstra)
+    │   │       │   └── reflection/         # Moduł dynamicznego ładowania algorytmów
+    │   │       │
+    │   │       ├── io/                     # (Controller) WEJŚCIE/WYJŚCIE
+    │   │       │   ├── GraphExporter.java  # Zapis do JSON/TXT (Gson)
+    │   │       │   └── GraphImporter.java  # Wczytywanie z JSON/TXT
+    │   │       │
+    │   │       └── exception/              # (Model) Wyjątki
+    │   │           ├── GraphNotConnectedException.java
+    │   │           └── InvalidEdgeException.java
+    │   │
+    │   └── resources/                      # (View) ZASOBY NIEOBIEKTOWE
+    │       ├── fxml/                       # Widoki okienek GUI (np. main_view.fxml)
+    │       ├── css/                        # Pliki stylów wizualnych
+    │       └── icons/                      # Obrazki, ikonki do przycisków
+    │
+    └── test/                               # (Opcjonalnie) TESTY JEDNOSTKOWE (JUnit)
+        └── java/
+            └── pl/edu/uczelnia/discretecalculator/
+                ├── model/                  # Testy tworzenia grafu
+                └── algorithm/              # Testy poprawności BFS/Dijkstry
