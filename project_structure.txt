@@ -5,7 +5,7 @@ DiscreteCalculator/
 └── src/
     ├── main/
     │   ├── java/
-    │   │   └── pl/edu/uczelnia/discretecalculator/
+    │   │   └── pl/edu/uj/discretecalculator/
     │   │       │
     │   │       ├── Main.java               # (View) Punkt wejścia do aplikacji, uruchamia JavaFX
     │   │       │
@@ -37,6 +37,6 @@ DiscreteCalculator/
     │
     └── test/                               # (Opcjonalnie) TESTY JEDNOSTKOWE (JUnit)
         └── java/
-            └── pl/edu/uczelnia/discretecalculator/
+            └── pl/edu/uj/discretecalculator/
                 ├── model/                  # Testy tworzenia grafu
                 └── algorithm/              # Testy poprawności BFS/Dijkstry
