@@ -59,4 +59,44 @@ public class Graph<V,E> {
             }
         }
     }
+    public boolean deleteVertex(Vertex<V> vertex)
+    {
+        if(neighborhoodList.containsKey(vertex))
+        {
+            if(isDirected)
+            {
+                neighborhoodList.remove(vertex);
+                for(Map.Entry<Vertex<V>,List<Vertex<V>>> v: neighborhoodList.entrySet())
+                {
+                    List<Vertex<V>> list=(List<Vertex<V>>)v;
+                    list.remove(vertex);
+                }
+                size--;
+            }
+            else
+            {
+                for(Vertex<V> v: neighborhoodList.get(vertex))
+                {
+                    neighborhoodList.get(v).remove(vertex);
+                }
+                neighborhoodList.remove(vertex);
+                size--;
+            }
+            return true;
+        }
+        else
+            return false;
+    }
+
+    public boolean deleteEdge(Edge<V> edge)
+    {
+        if(isDirected)
+        {
+            return neighborhoodList.get(edge.getSource()).remove(edge.getTarget());
+        }
+        else {
+            neighborhoodList.get(edge.getSource()).remove(edge.getTarget());
+            return neighborhoodList.get(edge.getTarget()).remove(edge.getSource());
+        }
+    }
 }
