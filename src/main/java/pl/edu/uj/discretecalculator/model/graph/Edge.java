@@ -1,0 +1,26 @@
+public class Edge<V> {
+    private final Vertex<V> source;
+    private final Vertex<V> target;
+    private final int id;
+    int colour=0;
+
+    public Edge(Vertex<V> source,Vertex<V> target,int id)
+    {
+        this.source=source;
+        this.target=target;
+        this.id=id;
+    }
+    public Edge(Vertex<V> source,Vertex<V> target,int id,int colour)
+    {
+        this.source=source;
+        this.target=target;
+        this.id=id;
+        this.colour=colour;
+    }
+
+    public Vertex<V> getSource(){return source;}
+    public Vertex<V> getTarget(){return target;}
+    public int getId(){return id;}
+    public int getColour(){return colour;}
+    public void setColour(int c){colour=c;}
+}
