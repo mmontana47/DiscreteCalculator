@@ -1,6 +1,7 @@
 import java.util.*;
 public class Graph<V,E> {
     private final Map<Vertex<V>,List<Vertex<V>>> neighborhoodList=new LinkedHashMap<>();
+    private final List<Vertex<V>> vertices=new ArrayList<>();
     private final E name;
     private int size=0;
     private boolean isDirected=false;
@@ -38,12 +39,14 @@ public class Graph<V,E> {
         {
             List<Vertex<V>> list=new ArrayList<>();
             neighborhoodList.put(edge.getSource(),list);
+            vertices.add(edge.getSource());
             size++;
         }
         if(!neighborhoodList.containsKey(edge.getTarget()))
         {
             List<Vertex<V>> list=new ArrayList<>();
             neighborhoodList.put(edge.getTarget(),list);
+            vertices.add(edge.getTarget());
             size++;
         }
 
@@ -59,17 +62,19 @@ public class Graph<V,E> {
             }
         }
     }
+
     public boolean deleteVertex(Vertex<V> vertex)
     {
+        if(vertices.contains(vertex))
+            vertices.remove(vertex);
         if(neighborhoodList.containsKey(vertex))
         {
             if(isDirected)
             {
                 neighborhoodList.remove(vertex);
-                for(Map.Entry<Vertex<V>,List<Vertex<V>>> v: neighborhoodList.entrySet())
+                for(Vertex<V> v: vertices)
                 {
-                    List<Vertex<V>> list=(List<Vertex<V>>)v;
-                    list.remove(vertex);
+                    neighborhoodList.get(v).remove(vertex);
                 }
                 size--;
             }
@@ -100,3 +105,4 @@ public class Graph<V,E> {
         }
     }
 }
+
