@@ -1,4 +1,4 @@
-import java.lang.classfile.Label;
+package pl.edu.uj.discretecalculator.model.graph;
 
 public class Vertex<V> {
     private  final int id;

@@ -1,3 +1,7 @@
+package pl.edu.uj.discretecalculator.model.graph;
+
+import pl.edu.uj.discretecalculator.model.graph.Vertex;
+
 public class Edge<V> {
     private final Vertex<V> source;
     private final Vertex<V> target;
