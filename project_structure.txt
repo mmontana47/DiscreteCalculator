@@ -9,9 +9,13 @@ DiscreteCalculator/
     │   │       │
     │   │       ├── Main.java               # (View) Punkt wejścia do aplikacji, uruchamia JavaFX
     │   │       │
-    │   │       ├── controller/             # (Controller i View) KONTROLERY (w większości działka Controller) 
-    │   │       │   ├── MainController.java # Obsługa głównego okna i przycisków
+    │   │       ├── controller/             # (Controller) KONTROLERY - obsługa eventów i orkiestracja widoku
+    │   │       │   ├── MainController.java # Obsługa głównego okna, toolbar (Add Vertex/Edge, Delete, Move), trybów i liczników
     │   │       │   └── CanvasManager.java  # Zarządzanie rysowaniem po płótnie
+    │   │       │
+    │   │       ├── view/                   # (View) Wizualne komponenty grafu
+    │   │       │   ├── VertexDrawn.java    # StackPane z kółkiem i etykietą, obsługa kliknięcia/draga przez wstrzykiwane callbacki
+    │   │       │   └── EdgeDrawn.java      # Line z końcami zbindowanymi do pozycji dwóch VertexDrawn
     │   │       │
     │   │       ├── model/                  # (Model) MODEL - Logika matematyczna
     │   │       │   ├── graph/              # Struktury grafowe (Graph, Node, Edge)

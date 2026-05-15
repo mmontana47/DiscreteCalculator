@@ -10,16 +10,11 @@ import javafx.scene.layout.Pane;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
 
-import java.util.*;
+import java.util.Objects;
 
 public class MainController{
-    Integer VertexCount=0;
-    Integer EdgeCount=0;
-
-    List<VertexDrawn> vertices = new ArrayList<>();
-    List<EdgeDrawn> edges = new ArrayList<>();
-
-    VertexDrawn source = null;
+    private CanvasManager canvas;
+    private VertexDrawn source = null;
 
     @FXML private Pane graphPane;
     @FXML private ToggleGroup modeGroup;
@@ -29,6 +24,8 @@ public class MainController{
 
     @FXML
     private void initialize(){
+        canvas = new CanvasManager(graphPane, countsLabel);
+
         modeGroup.selectedToggleProperty().addListener(
                 ((observable, oldValue, newValue) ->
                 {
@@ -61,15 +58,10 @@ public class MainController{
     }
 
     private void onPaneClick(MouseEvent e){
-        double x = e.getX();
-        double y = e.getY();
-
         if(Objects.equals(currentMode(), "Add Vertex")){
-            VertexDrawn vertex = new
-                    VertexDrawn(x,y,VertexCount.toString(), this::onVertexClick, ()->(Objects.equals(currentMode(), "Move")));
-            vertices.add(vertex);
-            graphPane.getChildren().add(vertex);
-            updateCounts(++VertexCount, EdgeCount);
+            canvas.addVertex(e.getX(), e.getY(),
+                    this::onVertexClick,
+                    () -> Objects.equals(currentMode(), "Move"));
         }
         else if(Objects.equals(currentMode(), "Add Edge") && source!=null){
             source.unselect();
@@ -79,66 +71,33 @@ public class MainController{
 
     private void onVertexClick(VertexDrawn vertex){
         switch (currentMode()){
-            case "Add Edge" ->{
+            case "Add Edge" -> {
                 if(source==null){
                     source=vertex;
                     vertex.select();
                 }
-                else if (source == vertex || isEdge(source, vertex)){
+                else if (source == vertex || canvas.edgeExists(source, vertex)){
                     source.unselect();
                     source=null;
                 }
                 else{
-                    EdgeDrawn edge = new EdgeDrawn(source, vertex, this::onEdgeClick);
-                    edges.add(edge);
-                    graphPane.getChildren().addFirst(edge);
+                    canvas.addEdge(source, vertex, this::onEdgeClick);
                     source.unselect();
                     source=null;
-                    updateCounts(VertexCount, ++EdgeCount);
                 }
             }
-            case "Delete" ->{
-                List <EdgeDrawn> toDelete = new ArrayList<>();
-                for(EdgeDrawn e : edges){
-                    if(e.getSource() == vertex || e.getTarget() == vertex) toDelete.add(e);
-                }
-                for(EdgeDrawn e: toDelete) deleteEdge(e);
-                vertices.remove(vertex);
-                graphPane.getChildren().remove(vertex);
-                updateCounts(--VertexCount, EdgeCount);
-            }
-            case null -> {}
-            default-> {}
-        }
-    }
-
-    private void onEdgeClick(EdgeDrawn edge){
-        switch (currentMode()){
-            case "Delete" -> {
-                deleteEdge(edge);
-                updateCounts(VertexCount, EdgeCount);
-            }
+            case "Delete" -> canvas.removeVertex(vertex);
             case null -> {}
             default -> {}
         }
     }
 
-    private void deleteEdge(EdgeDrawn edge){
-        edges.remove(edge);
-        EdgeCount--;
-        graphPane.getChildren().remove(edge);
-    }
-
-    private boolean isEdge(VertexDrawn vertex1, VertexDrawn vertex2) {
-        for(EdgeDrawn e: edges){
-            if(e.getSource() == vertex1 && e.getTarget() == vertex2) return true;
-            if(e.getSource() == vertex2 && e.getTarget() == vertex1) return true;
+    private void onEdgeClick(EdgeDrawn edge){
+        switch (currentMode()){
+            case "Delete" -> canvas.removeEdge(edge);
+            case null -> {}
+            default -> {}
         }
-        return false;
-    }
-
-    private void updateCounts(int vCount, int eCount){
-        countsLabel.setText("V: " + vCount + "\t E: " + eCount);
     }
 
     private String currentMode(){
