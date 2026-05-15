@@ -1,6 +1,5 @@
 package pl.edu.uj.discretecalculator.controller;
 
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
@@ -8,16 +7,19 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import pl.edu.uj.discretecalculator.view.EdgeDrawn;
+import pl.edu.uj.discretecalculator.view.VertexDrawn;
 
-import java.util.Objects;
+import java.util.*;
 
 public class MainController{
-    final int circleRadius = 20;
     Integer VertexCount=0;
     Integer EdgeCount=0;
+
+    List<VertexDrawn> vertices = new ArrayList<>();
+    List<EdgeDrawn> edges = new ArrayList<>();
+
+    VertexDrawn source = null;
 
     @FXML private Pane graphPane;
     @FXML private ToggleGroup modeGroup;
@@ -25,39 +27,15 @@ public class MainController{
     @FXML private Label hintLabel;
     @FXML private Label countsLabel;
 
-    private class VertexDrawn extends StackPane {
-        private double mouseX, mouseY;
-
-        public VertexDrawn(double x, double y, String id){
-            Circle circle = new Circle(x, y, circleRadius, Color.WHITE);
-            circle.setStroke(Color.BLACK);
-            Label label = new Label(id);
-            countsLabel.setText("V: "+(++VertexCount)+  "\t E: " + (EdgeCount));
-            this.getChildren().addAll(circle, label);
-
-            this.setLayoutX(x-circleRadius);
-            this.setLayoutY(y-circleRadius);
-
-            this.setOnMousePressed(event -> {
-                mouseX = event.getSceneX() - this.getLayoutX();
-                mouseY = event.getSceneY() - this.getLayoutY();
-                this.toFront();
-            });
-
-            this.setOnMouseDragged(event -> {
-                this.setLayoutX(event.getSceneX() - mouseX);
-                this.setLayoutY(event.getSceneY() - mouseY);
-
-                this.setOnMouseClicked(Event::consume);
-            });
-        }
-    }
-
     @FXML
     private void initialize(){
         modeGroup.selectedToggleProperty().addListener(
                 ((observable, oldValue, newValue) ->
                 {
+                    if(source!=null){
+                        source.unselect();
+                        source=null;
+                    }
                     if(newValue==null){
                         modeLabel.setText("Mode: -");
                         hintLabel.setText("Select a mode to start");
@@ -87,10 +65,80 @@ public class MainController{
         double y = e.getY();
 
         if(Objects.equals(currentMode(), "Add Vertex")){
-            VertexDrawn vertex = new VertexDrawn(x,y,VertexCount.toString());
+            VertexDrawn vertex = new
+                    VertexDrawn(x,y,VertexCount.toString(), this::onVertexClick, ()->(Objects.equals(currentMode(), "Move")));
+            vertices.add(vertex);
             graphPane.getChildren().add(vertex);
+            updateCounts(++VertexCount, EdgeCount);
         }
-        
+        else if(Objects.equals(currentMode(), "Add Edge") && source!=null){
+            source.unselect();
+            source=null;
+        }
+    }
+
+    private void onVertexClick(VertexDrawn vertex){
+        switch (currentMode()){
+            case "Add Edge" ->{
+                if(source==null){
+                    source=vertex;
+                    vertex.select();
+                }
+                else if (source == vertex || isEdge(source, vertex)){
+                    source.unselect();
+                    source=null;
+                }
+                else{
+                    EdgeDrawn edge = new EdgeDrawn(source, vertex, this::onEdgeClick);
+                    edges.add(edge);
+                    graphPane.getChildren().addFirst(edge);
+                    source.unselect();
+                    source=null;
+                    updateCounts(VertexCount, ++EdgeCount);
+                }
+            }
+            case "Delete" ->{
+                List <EdgeDrawn> toDelete = new ArrayList<>();
+                for(EdgeDrawn e : edges){
+                    if(e.getSource() == vertex || e.getTarget() == vertex) toDelete.add(e);
+                }
+                for(EdgeDrawn e: toDelete) deleteEdge(e);
+                vertices.remove(vertex);
+                graphPane.getChildren().remove(vertex);
+                updateCounts(--VertexCount, EdgeCount);
+            }
+            case null -> {}
+            default-> {}
+        }
+    }
+
+    private void onEdgeClick(EdgeDrawn edge){
+        switch (currentMode()){
+            case "Delete" -> {
+                deleteEdge(edge);
+                updateCounts(VertexCount, EdgeCount);
+            }
+            case null -> {}
+            default -> {}
+        }
+    }
+
+    private void deleteEdge(EdgeDrawn edge){
+        edges.remove(edge);
+        EdgeCount--;
+        graphPane.getChildren().remove(edge);
+    }
+
+    private boolean isEdge(VertexDrawn vertex1, VertexDrawn vertex2) {
+        for(EdgeDrawn e: edges){
+            if(e.getSource() == vertex1 && e.getTarget() == vertex2) return true;
+            if(e.getSource() == vertex2 && e.getTarget() == vertex1) return true;
+        }
+        return false;
+    }
+
+    private void updateCounts(int vCount, int eCount){
+        countsLabel.setText("V: " + vCount + "\t E: " + eCount);
     }
 
     private String currentMode(){
