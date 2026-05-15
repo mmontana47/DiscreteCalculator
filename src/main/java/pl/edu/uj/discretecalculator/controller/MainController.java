@@ -46,6 +46,14 @@ public class MainController{
         );
         graphPane.setOnMouseClicked(this::onPaneClick);
     }
+    @FXML
+    private void newGraph(){
+        if(source!=null){
+            source.unselect();
+            source=null;
+        }
+        canvas.clear();
+    }
 
     private String setHint(String mode){
         return switch (mode){

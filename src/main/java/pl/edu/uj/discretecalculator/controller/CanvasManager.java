@@ -15,8 +15,6 @@ public class CanvasManager {
     private final Label countsLabel;
     private final List<VertexDrawn> vertices = new ArrayList<>();
     private final List<EdgeDrawn> edges = new ArrayList<>();
-    private int vertexCount = 0;
-    private int edgeCount = 0;
 
     public CanvasManager(Pane graphPane, Label countsLabel) {
         this.graphPane = graphPane;
@@ -25,10 +23,9 @@ public class CanvasManager {
     }
 
     public VertexDrawn addVertex(double x, double y, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
-        VertexDrawn vertex = new VertexDrawn(x, y, String.valueOf(vertexCount), onClick, canDrag);
+        VertexDrawn vertex = new VertexDrawn(x, y, String.valueOf(vertices.size()), onClick, canDrag);
         vertices.add(vertex);
         graphPane.getChildren().add(vertex);
-        vertexCount++;
         updateCounts();
         return vertex;
     }
@@ -37,7 +34,6 @@ public class CanvasManager {
         EdgeDrawn edge = new EdgeDrawn(source, target, onClick);
         edges.add(edge);
         graphPane.getChildren().addFirst(edge);
-        edgeCount++;
         updateCounts();
         return edge;
     }
@@ -50,7 +46,6 @@ public class CanvasManager {
         for (EdgeDrawn e : toDelete) removeEdgeInternal(e);
         vertices.remove(vertex);
         graphPane.getChildren().remove(vertex);
-        vertexCount--;
         updateCounts();
     }
 
@@ -62,7 +57,6 @@ public class CanvasManager {
     private void removeEdgeInternal(EdgeDrawn edge) {
         edges.remove(edge);
         graphPane.getChildren().remove(edge);
-        edgeCount--;
     }
 
     public boolean edgeExists(VertexDrawn a, VertexDrawn b) {
@@ -74,6 +68,13 @@ public class CanvasManager {
     }
 
     private void updateCounts() {
-        countsLabel.setText("V: " + vertexCount + "\t E: " + edgeCount);
+        countsLabel.setText("V: " + vertices.size() + "\t E: " + edges.size());
+    }
+
+    public void clear(){
+        graphPane.getChildren().clear();
+        vertices.clear();
+        edges.clear();
+        updateCounts();
     }
 }
