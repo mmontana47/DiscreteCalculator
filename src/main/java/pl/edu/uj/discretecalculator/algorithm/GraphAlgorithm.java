@@ -1,1 +1,0 @@
-//interfejs algo
