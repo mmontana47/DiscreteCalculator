@@ -1,3 +1,4 @@
+package pl.edu.uj.discretecalculator.model.graph;
 import java.util.*;
 public class Graph<V,E> {
     private final Map<Vertex<V>,List<Vertex<V>>> neighborhoodList=new LinkedHashMap<>();
