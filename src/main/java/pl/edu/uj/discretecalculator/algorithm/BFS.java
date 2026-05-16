@@ -1,3 +1,8 @@
+package pl.edu.uj.discretecalculator.algorithm;
+import pl.edu.uj.discretecalculator.model.graph.Graph;
+import pl.edu.uj.discretecalculator.model.graph.Vertex;
+import pl.edu.uj.discretecalculator.model.graph.Edge;
+
 import java.util.*;
 //BFS implementation
 public class BFS<V,E> implements AlgorithmicInterface<V,E> {
