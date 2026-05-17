@@ -1,9 +1,15 @@
 package pl.edu.uj.discretecalculator.controller;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
@@ -12,14 +18,13 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
 import pl.edu.uj.discretecalculator.view.builder.BuilderContext;
 import pl.edu.uj.discretecalculator.view.builder.GraphBuilders;
 import pl.edu.uj.discretecalculator.view.command.*;
-
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -51,8 +56,10 @@ public class MainController {
                         hintLabel.setText("Select a mode to start");
                     } else {
                         ToggleButton btn = (ToggleButton) newValue;
-                        modeLabel.setText("Mode: " + btn.getText());
-                        hintLabel.setText(setHint(btn.getText()));
+                        Mode m = Mode.fromLabel(btn.getText());
+                        if(m==null) return;
+                        modeLabel.setText("Mode: " + m.label());
+                        hintLabel.setText(m.hint());
                     }
                 }
         );
@@ -99,11 +106,9 @@ public class MainController {
     }
     @FXML private void onBuildBipartite() {
         clearSelection();
-        OptionalInt n = promptForInt("Bipartite", "Build bipartite K_{n, m}", "n");
-        if (n.isEmpty()) return;
-        OptionalInt m = promptForInt("Bipartite", "Build bipartite K_{n, m}", "m");
-        if (m.isEmpty()) return;
-        runCommand(GraphBuilders.bipartite(buildContext(),  n.getAsInt(), m.getAsInt()));
+        Optional<int[]> n_m = promptForBipartite();
+        if(n_m.isEmpty()) return;
+        runCommand(GraphBuilders.bipartite(buildContext(),  n_m.get()[0], n_m.get()[1]));
     }
     @FXML private void onBuildTree() {
         clearSelection();
@@ -116,7 +121,7 @@ public class MainController {
         return new BuilderContext(
                 canvas,
                 this::onVertexClick,
-                () -> Objects.equals(currentMode(), "Move"),
+                () -> (currentMode() == Mode.MOVE),
                 this::onEdgeClick);
     }
 
@@ -124,7 +129,9 @@ public class MainController {
         TextInputDialog dlg = new TextInputDialog();
         dlg.setTitle(title);
         dlg.setHeaderText(header);
+        dlg.setGraphic(null);
         dlg.setContentText(var +" =");
+        Platform.runLater(() -> dlg.getEditor().requestFocus());
         Optional<String> r = dlg.showAndWait();
         if (r.isEmpty()) return OptionalInt.empty();
         try {
@@ -133,6 +140,47 @@ public class MainController {
         } catch (NumberFormatException ex) {
             return OptionalInt.empty();
         }
+    }
+
+    private Optional<int[]> promptForBipartite() {
+        Dialog<int[]> dlg = new Dialog<>();
+        dlg.setTitle("Bipartite");
+        dlg.setHeaderText("Build complete bipartite K_{n,m}");
+
+        ButtonType okType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        dlg.getDialogPane().getButtonTypes().addAll(okType, ButtonType.CANCEL);
+
+        TextField nField = new TextField();
+        TextField mField = new TextField();
+        nField.setPromptText("e.g. 3");
+        mField.setPromptText("e.g. 4");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.add(new Label("n ="), 0, 0);
+        grid.add(nField, 1, 0);
+        grid.add(new Label("m ="), 0, 1);
+        grid.add(mField, 1, 1);
+        dlg.getDialogPane().setContent(grid);
+
+        Button okBtn = (Button) dlg.getDialogPane().lookupButton(okType);
+        okBtn.disableProperty().bind(Bindings.createBooleanBinding(
+                () -> !isPositiveInt(nField.getText() ) || !isPositiveInt(mField.getText()),
+                nField.textProperty(), mField.textProperty()
+        ));
+
+        Platform.runLater(nField::requestFocus);
+
+        dlg.setResultConverter(btn -> {
+            if (btn != okType) return null;
+            return new int[]{
+                    Integer.parseInt(nField.getText().trim()),
+                    Integer.parseInt(mField.getText().trim())
+            };
+        });
+
+        return dlg.showAndWait();
     }
 
     private void runCommand(Command cmd) {
@@ -152,29 +200,19 @@ public class MainController {
         }
     }
 
-    private String setHint(String mode) {
-        return switch (mode) {
-            case "Add Vertex" -> "Click to add a vertex";
-            case "Add Edge" -> "Click two vertices to add an edge";
-            case "Delete" -> "Click a vertex or an edge to delete it";
-            case "Move" -> "Click and drag a vertex to change its position";
-            default -> "";
-        };
-    }
-
     private void onPaneClick(MouseEvent e) {
-        if (Objects.equals(currentMode(), "Add Vertex")) {
+        if (currentMode()== Mode.ADD_VERTEX) {
             runCommand(new AddVertexCommand(canvas, e.getX(), e.getY(),
                     this::onVertexClick,
-                    () -> Objects.equals(currentMode(), "Move")));
-        } else if (Objects.equals(currentMode(), "Add Edge") && source != null) {
+                    () -> (currentMode() == Mode.MOVE)));
+        } else if ((currentMode() == Mode.ADD_EDGE) && source != null) {
             clearSelection();
         }
     }
 
     private void onVertexClick(VertexDrawn vertex) {
         switch (currentMode()) {
-            case "Add Edge" -> {
+            case ADD_EDGE -> {
                 if (source == null) {
                     source = vertex;
                     vertex.select();
@@ -185,7 +223,7 @@ public class MainController {
                     clearSelection();
                 }
             }
-            case "Delete" -> runCommand(new RemoveVertexCommand(canvas, vertex));
+            case DELETE -> runCommand(new RemoveVertexCommand(canvas, vertex));
             case null -> {}
             default -> {}
         }
@@ -193,15 +231,22 @@ public class MainController {
 
     private void onEdgeClick(EdgeDrawn edge) {
         switch (currentMode()) {
-            case "Delete" -> runCommand(new RemoveEdgeCommand(canvas, edge));
+            case Mode.DELETE -> runCommand(new RemoveEdgeCommand(canvas, edge));
             case null -> {}
             default -> {}
         }
     }
 
-    private String currentMode() {
+    private Mode currentMode() {
         Toggle tog = modeGroup.getSelectedToggle();
         if (tog == null) return null;
-        return ((ToggleButton) tog).getText();
+        return Mode.fromLabel(((ToggleButton) tog).getText());
+    }
+
+    private static boolean isPositiveInt(String s){
+        try {
+            return Integer.parseInt(s.trim())>0;
+        }
+        catch (NumberFormatException ex) {return false;}
     }
 }
