@@ -24,14 +24,28 @@
                 <Menu mnemonicParsing="false" text="File">
                   <items>
                         <MenuItem mnemonicParsing="false" text="New" onAction="#newGraph" />
-                    <MenuItem mnemonicParsing="false" text="Open" />
-                        <MenuItem mnemonicParsing="false" text="Save" />
-                        <MenuItem mnemonicParsing="false" text="Exit" />
+                    <MenuItem mnemonicParsing="false" text="Open" disable="true" />
+                        <MenuItem mnemonicParsing="false" text="Save" disable="true"/>
+                        <MenuItem mnemonicParsing="false" text="Exit" onAction="#onExit"/>
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Edit">
+                  <items>
+                    <MenuItem fx:id="undoItem" mnemonicParsing="false" text="Undo" onAction="#onUndo"/>
+                    <MenuItem fx:id="redoItem" mnemonicParsing="false" text="Redo" onAction="#onRedo"/>
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Build">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Cycle C_n"           onAction="#onBuildCycle"/>
+                    <MenuItem mnemonicParsing="false" text="Complete K_n"        onAction="#onBuildComplete"/>
+                    <MenuItem mnemonicParsing="false" text="Complete bipartite K_{n,m}" onAction="#onBuildBipartite"/>
+                    <MenuItem mnemonicParsing="false" text="Random tree Tn"     onAction="#onBuildTree"/>
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="About" />
+                    <MenuItem mnemonicParsing="false" text="About" disable="true"/>
                   </items>
                 </Menu>
               </menus>

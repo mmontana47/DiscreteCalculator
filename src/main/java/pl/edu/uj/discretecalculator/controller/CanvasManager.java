@@ -15,6 +15,7 @@ public class CanvasManager {
     private final Label countsLabel;
     private final List<VertexDrawn> vertices = new ArrayList<>();
     private final List<EdgeDrawn> edges = new ArrayList<>();
+    private int nextVertexId = 0;
 
     public CanvasManager(Pane graphPane, Label countsLabel) {
         this.graphPane = graphPane;
@@ -22,41 +23,50 @@ public class CanvasManager {
         updateCounts();
     }
 
-    public VertexDrawn addVertex(double x, double y, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
-        VertexDrawn vertex = new VertexDrawn(x, y, String.valueOf(vertices.size()), onClick, canDrag);
-        vertices.add(vertex);
-        graphPane.getChildren().add(vertex);
-        updateCounts();
+    public Pane getGraphPane() { return graphPane; }
+
+    public VertexDrawn createVertex(double x, double y, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
+        VertexDrawn vertex = new VertexDrawn(x, y, String.valueOf(nextVertexId++), onClick, canDrag);
+        attachVertex(vertex);
         return vertex;
     }
 
-    public EdgeDrawn addEdge(VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
+    public EdgeDrawn createEdge(VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
         EdgeDrawn edge = new EdgeDrawn(source, target, onClick);
-        edges.add(edge);
-        graphPane.getChildren().addFirst(edge);
-        updateCounts();
+        attachEdge(edge);
         return edge;
     }
 
-    public void removeVertex(VertexDrawn vertex) {
-        List<EdgeDrawn> toDelete = new ArrayList<>();
+    public void attachVertex(VertexDrawn v) {
+        vertices.add(v);
+        graphPane.getChildren().add(v);
+        updateCounts();
+    }
+
+    public void detachVertex(VertexDrawn v) {
+        vertices.remove(v);
+        graphPane.getChildren().remove(v);
+        updateCounts();
+    }
+
+    public void attachEdge(EdgeDrawn e) {
+        edges.add(e);
+        graphPane.getChildren().addFirst(e);
+        updateCounts();
+    }
+
+    public void detachEdge(EdgeDrawn e) {
+        edges.remove(e);
+        graphPane.getChildren().remove(e);
+        updateCounts();
+    }
+
+    public List<EdgeDrawn> incidentEdges(VertexDrawn v) {
+        List<EdgeDrawn> result = new ArrayList<>();
         for (EdgeDrawn e : edges) {
-            if (e.getSource() == vertex || e.getTarget() == vertex) toDelete.add(e);
+            if (e.getSource() == v || e.getTarget() == v) result.add(e);
         }
-        for (EdgeDrawn e : toDelete) removeEdgeInternal(e);
-        vertices.remove(vertex);
-        graphPane.getChildren().remove(vertex);
-        updateCounts();
-    }
-
-    public void removeEdge(EdgeDrawn edge) {
-        removeEdgeInternal(edge);
-        updateCounts();
-    }
-
-    private void removeEdgeInternal(EdgeDrawn edge) {
-        edges.remove(edge);
-        graphPane.getChildren().remove(edge);
+        return result;
     }
 
     public boolean edgeExists(VertexDrawn a, VertexDrawn b) {
@@ -67,14 +77,15 @@ public class CanvasManager {
         return false;
     }
 
-    private void updateCounts() {
-        countsLabel.setText("V: " + vertices.size() + "\t E: " + edges.size());
-    }
-
-    public void clear(){
+    public void clear() {
         graphPane.getChildren().clear();
         vertices.clear();
         edges.clear();
+        nextVertexId = 0;
         updateCounts();
+    }
+
+    private void updateCounts() {
+        countsLabel.setText("V: " + vertices.size() + "\t E: " + edges.size());
     }
 }
