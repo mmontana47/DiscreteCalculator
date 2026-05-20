@@ -29,6 +29,7 @@ public class Graph<V,E> {
         {
             List<Vertex<V>> neighbors=new ArrayList<>();
             neighborhoodList.put(vertex,neighbors);
+            vertices.add(vertex);
             size++;
             return true;
         }
@@ -112,6 +113,55 @@ public class Graph<V,E> {
 
     public List<Vertex<V>> getNeighbors(Vertex<V> vertex) {
         return neighborhoodList.getOrDefault(vertex, new ArrayList<>());
+    }
+    @Override
+    public boolean equals(Object o)
+    {
+        if(o==this)return true;
+        if(o == null || getClass() != o.getClass())return false;
+        Graph<?,?> graph=(Graph<?, ?>) o;
+        if (size != graph.size ||
+                isDirected != graph.isDirected ||
+                colouredVertices != graph.colouredVertices ||
+                colouredEdges != graph.colouredEdges ||
+                !Objects.equals(name, graph.name)) {
+            return false;
+        }
+        if (!neighborhoodList.keySet().equals(graph.neighborhoodList.keySet())) {
+            return false;
+        }
+        for (Map.Entry<Vertex<V>, List<Vertex<V>>> entry : neighborhoodList.entrySet()) {
+            Vertex<V> currentVertex = entry.getKey();
+            List<Vertex<V>> thisNeighbors = entry.getValue();
+            List<?> otherNeighbors = graph.neighborhoodList.get(currentVertex);
+            if (otherNeighbors == null || thisNeighbors.size() != otherNeighbors.size()) {
+                return false;
+            }
+            if (!new HashSet<>(thisNeighbors).equals(new HashSet<>(otherNeighbors))) {
+                return false;
+            }
+        }
+        return true;
+    }
+    //czary mary od chata , wydaje mi się że ma sens ale idk
+    //do konca jak te funkje hashujace działają
+    //jest w ten sposób bo equals nie jest wrażliwe na kolejność wierzchołkow
+    //wiec chcemy zeby hashcode tez nie byl
+    @Override
+    public int hashCode()
+    {
+        int result = Objects.hash(name, size, isDirected, colouredVertices, colouredEdges);
+        int edgesHash = 0;
+        for (Map.Entry<Vertex<V>, List<Vertex<V>>> entry : neighborhoodList.entrySet()) {
+            int keyHash = entry.getKey() != null ? entry.getKey().hashCode() : 0;
+            int neighborsHash = 0;
+            for (Vertex<V> neighbor : entry.getValue()) {
+                neighborsHash += (neighbor != null ? neighbor.hashCode() : 0);
+            }
+            edgesHash += (keyHash ^ neighborsHash);
+        }
+
+        return 31 * result + edgesHash;
     }
 }
 
