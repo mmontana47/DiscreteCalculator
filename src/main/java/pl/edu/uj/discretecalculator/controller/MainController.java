@@ -3,6 +3,7 @@ package pl.edu.uj.discretecalculator.controller;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -20,11 +21,17 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.stage.FileChooser;
+import com.google.gson.JsonSyntaxException;
+import pl.edu.uj.discretecalculator.io.GraphExporter;
+import pl.edu.uj.discretecalculator.io.GraphImporter;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
 import pl.edu.uj.discretecalculator.view.builder.BuilderContext;
 import pl.edu.uj.discretecalculator.view.builder.GraphBuilders;
 import pl.edu.uj.discretecalculator.view.command.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -76,6 +83,46 @@ public class MainController {
     @FXML
     private void onExit() {
         Platform.exit();
+    }
+
+    @FXML
+    private void onOpen() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Open graph");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON", "*.json"));
+
+        File file = chooser.showOpenDialog(graphPane.getScene().getWindow());
+        if (file == null) return;
+
+        clearSelection();
+        try {
+            GraphImporter.importFrom(file, buildContext());
+            history.clear();
+            refreshUndoRedoState();
+        } catch (IOException | JsonSyntaxException ex) {
+            Alert a = new Alert(Alert.AlertType.ERROR, "Open failed: " + ex.getMessage(), ButtonType.OK);
+            a.setHeaderText(null);
+            a.showAndWait();
+        }
+    }
+
+    @FXML
+    private void onSave() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save graph");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON", "*.json"));
+        chooser.setInitialFileName("graph.json");
+
+        File file = chooser.showSaveDialog(graphPane.getScene().getWindow());
+        if (file == null) return;
+
+        try {
+            GraphExporter.export(canvas, file);
+        } catch (IOException ex) {
+            Alert a = new Alert(Alert.AlertType.ERROR, "Save failed: " + ex.getMessage(), ButtonType.OK);
+            a.setHeaderText(null);
+            a.showAndWait();
+        }
     }
 
     @FXML

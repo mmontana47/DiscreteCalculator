@@ -14,8 +14,10 @@ public class VertexDrawn extends StackPane {
     private double mouseX, mouseY;
     private boolean wasDragged=false;
     private final Circle circle;
+    private final String id;
 
     public VertexDrawn(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag){
+        this.id = id;
         this.circle = new Circle(x, y, circleRadius, Color.WHITE);
         circle.setStroke(Color.BLACK);
         Label label = new Label(id);
@@ -48,6 +50,8 @@ public class VertexDrawn extends StackPane {
             event.consume();
         });
     }
+
+    public String getVertexId() { return id; }
 
     public void select(){
         circle.setStroke(Color.YELLOW);

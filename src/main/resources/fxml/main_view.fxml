@@ -24,8 +24,8 @@
                 <Menu mnemonicParsing="false" text="File">
                   <items>
                         <MenuItem mnemonicParsing="false" text="New" onAction="#newGraph" />
-                    <MenuItem mnemonicParsing="false" text="Open" disable="true" />
-                        <MenuItem mnemonicParsing="false" text="Save" disable="true"/>
+                    <MenuItem mnemonicParsing="false" text="Open" onAction="#onOpen" />
+                        <MenuItem mnemonicParsing="false" text="Save" onAction="#onSave"/>
                         <MenuItem mnemonicParsing="false" text="Exit" onAction="#onExit"/>
                   </items>
                 </Menu>

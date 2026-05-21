@@ -6,6 +6,7 @@ import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -25,11 +26,22 @@ public class CanvasManager {
 
     public Pane getGraphPane() { return graphPane; }
 
+    public List<VertexDrawn> getVertices() { return Collections.unmodifiableList(vertices); }
+    public List<EdgeDrawn> getEdges() { return Collections.unmodifiableList(edges); }
+
     public VertexDrawn createVertex(double x, double y, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
         VertexDrawn vertex = new VertexDrawn(x, y, String.valueOf(nextVertexId++), onClick, canDrag);
         attachVertex(vertex);
         return vertex;
     }
+
+    public VertexDrawn createVertex(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
+        VertexDrawn vertex = new VertexDrawn(x, y, id, onClick, canDrag);
+        attachVertex(vertex);
+        return vertex;
+    }
+
+    public void setNextVertexId(int n) { nextVertexId = n; }
 
     public EdgeDrawn createEdge(VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
         EdgeDrawn edge = new EdgeDrawn(source, target, onClick);
