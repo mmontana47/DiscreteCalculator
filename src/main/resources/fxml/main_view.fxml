@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
@@ -41,6 +42,17 @@
                     <MenuItem mnemonicParsing="false" text="Complete K_n"        onAction="#onBuildComplete"/>
                     <MenuItem mnemonicParsing="false" text="Complete bipartite K_{n,m}" onAction="#onBuildBipartite"/>
                     <MenuItem mnemonicParsing="false" text="Random tree Tn"     onAction="#onBuildTree"/>
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="View">
+                  <items>
+                    <fx:define>
+                        <ToggleGroup fx:id="themeGroup"/>
+                    </fx:define>
+                    <RadioMenuItem fx:id="lightThemeItem" mnemonicParsing="false" text="Light"
+                                   toggleGroup="$themeGroup" selected="true" onAction="#onSelectLightTheme"/>
+                    <RadioMenuItem fx:id="darkThemeItem"  mnemonicParsing="false" text="Dark"
+                                   toggleGroup="$themeGroup" onAction="#onSelectDarkTheme"/>
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">

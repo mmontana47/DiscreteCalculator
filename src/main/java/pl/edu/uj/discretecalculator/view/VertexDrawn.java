@@ -1,9 +1,7 @@
 package pl.edu.uj.discretecalculator.view;
 
-import javafx.event.Event;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 import java.util.function.BooleanSupplier;
@@ -11,6 +9,8 @@ import java.util.function.Consumer;
 
 public class VertexDrawn extends StackPane {
     public static final int circleRadius=20;
+    private static final String SELECTED_CLASS = "selected";
+
     private double mouseX, mouseY;
     private boolean wasDragged=false;
     private final Circle circle;
@@ -18,10 +18,13 @@ public class VertexDrawn extends StackPane {
 
     public VertexDrawn(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag){
         this.id = id;
-        this.circle = new Circle(x, y, circleRadius, Color.WHITE);
-        circle.setStroke(Color.BLACK);
-        Label label = new Label(id);
+        this.circle = new Circle(x, y, circleRadius);
+        circle.getStyleClass().add("vertex-circle");
 
+        Label label = new Label(id);
+        label.getStyleClass().add("vertex-label");
+
+        this.getStyleClass().add("vertex");
         this.getChildren().addAll(circle, label);
         this.setLayoutX(x-circleRadius);
         this.setLayoutY(y-circleRadius);
@@ -54,13 +57,13 @@ public class VertexDrawn extends StackPane {
     public String getVertexId() { return id; }
 
     public void select(){
-        circle.setStroke(Color.YELLOW);
-        circle.setStrokeWidth(3);
+        if (!getStyleClass().contains(SELECTED_CLASS)) {
+            getStyleClass().add(SELECTED_CLASS);
+        }
     }
 
     public void unselect(){
-        circle.setStroke(Color.BLACK);
-        circle.setStrokeWidth(1);
+        getStyleClass().remove(SELECTED_CLASS);
     }
 
 }

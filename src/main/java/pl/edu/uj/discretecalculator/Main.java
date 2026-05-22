@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
+import pl.edu.uj.discretecalculator.view.Theme;
 
 import java.util.Objects;
 
@@ -14,8 +15,10 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(
                 Objects.requireNonNull(getClass().getResource("/fxml/main_view.fxml")));
+        Scene scene = new Scene(root);
+        Theme.LIGHT.applyTo(scene);
         primaryStage.setTitle("DiscreteCalculator");
-        primaryStage.setScene(new Scene(root));
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 

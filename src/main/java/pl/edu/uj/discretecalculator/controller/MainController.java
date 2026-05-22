@@ -25,7 +25,9 @@ import javafx.stage.FileChooser;
 import com.google.gson.JsonSyntaxException;
 import pl.edu.uj.discretecalculator.io.GraphExporter;
 import pl.edu.uj.discretecalculator.io.GraphImporter;
+import javafx.scene.control.RadioMenuItem;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
+import pl.edu.uj.discretecalculator.view.Theme;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
 import pl.edu.uj.discretecalculator.view.builder.BuilderContext;
 import pl.edu.uj.discretecalculator.view.builder.GraphBuilders;
@@ -47,6 +49,8 @@ public class MainController {
     @FXML private Label countsLabel;
     @FXML private MenuItem undoItem;
     @FXML private MenuItem redoItem;
+    @FXML private RadioMenuItem lightThemeItem;
+    @FXML private RadioMenuItem darkThemeItem;
 
     @FXML
     private void initialize() {
@@ -71,6 +75,17 @@ public class MainController {
                 }
         );
         graphPane.setOnMouseClicked(this::onPaneClick);
+    }
+
+    @FXML private void onSelectLightTheme() { applyTheme(Theme.LIGHT); }
+    @FXML private void onSelectDarkTheme()  { applyTheme(Theme.DARK);  }
+
+    private void applyTheme(Theme theme) {
+        var scene = graphPane.getScene();
+        if (scene == null) return;
+        theme.applyTo(scene);
+        if (theme == Theme.LIGHT) lightThemeItem.setSelected(true);
+        else darkThemeItem.setSelected(true);
     }
 
     @FXML

@@ -17,7 +17,7 @@ public class EdgeDrawn extends Line {
         endXProperty().bind(target.layoutXProperty().add(VertexDrawn.circleRadius));
         endYProperty().bind(target.layoutYProperty().add(VertexDrawn.circleRadius));
 
-        setStrokeWidth(2);
+        getStyleClass().add("edge");
 
         this.setOnMouseClicked(event -> {
             onClick.accept(this);
