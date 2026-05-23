@@ -14,14 +14,15 @@ public class VertexDrawn extends StackPane {
     private double mouseX, mouseY;
     private boolean wasDragged=false;
     private final Circle circle;
-    private final String id;
+    private final Label label;
+    private String id;
 
     public VertexDrawn(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag){
         this.id = id;
         this.circle = new Circle(x, y, circleRadius);
         circle.getStyleClass().add("vertex-circle");
 
-        Label label = new Label(id);
+        this.label = new Label(id);
         label.getStyleClass().add("vertex-label");
 
         this.getStyleClass().add("vertex");
@@ -55,6 +56,11 @@ public class VertexDrawn extends StackPane {
     }
 
     public String getVertexId() { return id; }
+
+    public void setVertexId(String newId) {
+        this.id = newId;
+        this.label.setText(newId);
+    }
 
     public void select(){
         if (!getStyleClass().contains(SELECTED_CLASS)) {

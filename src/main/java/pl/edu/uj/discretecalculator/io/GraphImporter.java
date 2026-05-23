@@ -52,11 +52,7 @@ public final class GraphImporter {
             if(s == null || t == null) continue;
             canvas.createEdge(s,t,ctx.onEdgeClick());
         }
-        int mx=-1;
-        for (String id : idToVertex.keySet()) {
-            mx = Math.max(mx, Integer.parseInt(id));
-            canvas.setNextVertexId(mx+1);
-        }
+        canvas.renumber();
     }
 
 }
