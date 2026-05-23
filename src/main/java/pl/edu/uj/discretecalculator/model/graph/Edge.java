@@ -10,12 +10,16 @@ public class Edge<V> {
 
     public Edge(Vertex<V> source,Vertex<V> target,int id)
     {
+        if(source==null||target==null)
+            throw new IllegalArgumentException("Edge needs source and target.");
         this.source=source;
         this.target=target;
         this.id=id;
     }
     public Edge(Vertex<V> source,Vertex<V> target,int id,int colour)
     {
+        if(source==null||target==null)
+            throw new IllegalArgumentException("Edge needs source and target.");
         this.source=source;
         this.target=target;
         this.id=id;

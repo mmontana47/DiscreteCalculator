@@ -1,5 +1,6 @@
 package pl.edu.uj.discretecalculator.model.graph;
 import java.util.*;
+import pl.edu.uj.discretecalculator.exception.*;
 public class Graph<V,E> {
     private final Map<Vertex<V>,List<Vertex<V>>> neighborhoodList=new LinkedHashMap<>();
     private final List<Vertex<V>> vertices=new ArrayList<>();
@@ -23,8 +24,10 @@ public class Graph<V,E> {
 
     public boolean addVertex(Vertex<V> vertex)
     {
+        if(vertex==null)
+            throw new IllegalArgumentException("Vertex cannot be null");
         if(neighborhoodList.containsKey(vertex))
-            return false;
+            throw new VertexAlreadyExistsException("Vertex "+vertex.getId()+" is already in the graph.");
         else
         {
             List<Vertex<V>> neighbors=new ArrayList<>();
@@ -37,6 +40,10 @@ public class Graph<V,E> {
 
     public void addEdge(Edge<V> edge)
     {
+        if(edge==null)
+            throw new IllegalArgumentException("Edge cannot be null.");
+        if(edge.getSource().getId()==edge.getTarget().getId())
+            throw new WrongEdgeTypeException("Edge from vertex to itself is not allowed.");
         if(!neighborhoodList.containsKey(edge.getSource()))
         {
             List<Vertex<V>> list=new ArrayList<>();
@@ -51,7 +58,8 @@ public class Graph<V,E> {
             vertices.add(edge.getTarget());
             size++;
         }
-
+        if(neighborhoodList.get(edge.getSource()).contains(edge.getTarget()))
+            throw new EdgeAlreadyExistsException("Edge from "+edge.getSource().getId()+" to "+edge.getTarget()+" already exists.");
         if(!neighborhoodList.get(edge.getSource()).contains(edge.getTarget()))
         {
             neighborhoodList.get(edge.getSource()).add(edge.getTarget());
@@ -111,6 +119,8 @@ public class Graph<V,E> {
         return vertices;
     }
 
+    public E getName(){return name;}
+
     public List<Vertex<V>> getNeighbors(Vertex<V> vertex) {
         return neighborhoodList.getOrDefault(vertex, new ArrayList<>());
     }
@@ -143,10 +153,7 @@ public class Graph<V,E> {
         }
         return true;
     }
-    //czary mary od chata , wydaje mi się że ma sens ale idk
-    //do konca jak te funkje hashujace działają
-    //jest w ten sposób bo equals nie jest wrażliwe na kolejność wierzchołkow
-    //wiec chcemy zeby hashcode tez nie byl
+
     @Override
     public int hashCode()
     {

@@ -1,4 +1,5 @@
 package pl.edu.uj.discretecalculator.algorithm;
+import pl.edu.uj.discretecalculator.exception.GraphNotConnectedException;
 import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.model.graph.Vertex;
 import pl.edu.uj.discretecalculator.model.graph.Edge;
@@ -16,6 +17,8 @@ public class DFS<V,E> implements AlgorithmicInterface<V,E>{
     {
         Set<Vertex<V>> visited=new HashSet<>();
         dfs(graph,first,visited,order);
+        if(visited.size()!=graph.getVertices().size())
+            throw new GraphNotConnectedException("Graph "+graph.getName()+" is not connected.");
     }
 
     private void dfs(Graph<V,E> graph,Vertex<V> node,Set<Vertex<V>> visited,Deque<Vertex<V>> order)
