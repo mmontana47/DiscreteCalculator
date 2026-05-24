@@ -1,42 +1,85 @@
 package pl.edu.uj.discretecalculator.algorithm;
+import pl.edu.uj.discretecalculator.model.graph.Edge;
 import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.model.graph.Vertex;
-import pl.edu.uj.discretecalculator.model.graph.Edge;
-import pl.edu.uj.discretecalculator.exception.*;
 
 import java.util.*;
 //BFS implementation
-public class BFS<V,E> implements AlgorithmicInterface<V,E> {
+public class BFS<V> implements AlgorithmicInterface<V, BFSResult<V>> {
 
+    private final Vertex<V> first;
+
+    public BFS(Vertex<V> first) {
+        this.first = first;
+    }
     @Override
     public  String algorithmName()
     {
         return "Breadth-First Search (BFS)";
     }
     @Override
-    public void start(Graph<V,E> graph,Vertex<V> first)
+    public BFSResult<V> start(Graph<V> graph)
     {
+        List<Vertex<V>> visitOrder = new ArrayList<>();
         Set<Vertex<V>> visited=new HashSet<>();
-        Queue<Pair<V>>queue=new LinkedList<>();
+        Queue<Vertex<V>>queue=new LinkedList<>();
+        Set<Edge<V>> treeEdges = new HashSet<>();
+        Set<Edge<V>> nonTreeEdges = new HashSet<>();
+
+        /*
         Pair<V> start=new Pair<>(first,first);
+        */
+        //zastąpione mapą - będzie lepsze z perspektywy
+        //implementacji najkrótszych ścieżek w grafie nieważonym
+        Map<Vertex<V>, Vertex<V>> parentMap = new HashMap<>();
+
         visited.add(first);
-        queue.add(start);
+        queue.add(first);
+        parentMap.put(first, null);
 
-        while (!queue.isEmpty())
-        {
-            Vertex<V>current=queue.poll().getSecond();
+        bfs(graph, first, visited, queue, parentMap, visitOrder, treeEdges, nonTreeEdges);
 
-            for(Vertex<V> neighbor:graph.getNeighbors(current))
-            {
-                if(!visited.contains(neighbor))
+        for (Vertex<V> vertex : graph.getVertices()) {
+            if (!visited.contains(vertex)) {
+                parentMap.put(vertex, null); // nowy korzeń dla kolejnej spojnej skladowej
+                bfs(graph, vertex, visited, queue, parentMap, visitOrder, treeEdges, nonTreeEdges);
+            }
+        }
+
+        return new BFSResult<>(first, parentMap, visitOrder, treeEdges, nonTreeEdges);
+    }
+
+    private void bfs(Graph<V> graph,
+                          Vertex<V> startNode,
+                          Set<Vertex<V>> visited,
+                          Queue<Vertex<V>> queue,
+                          Map<Vertex<V>, Vertex<V>> parentMap,
+                          List<Vertex<V>> visitOrder,
+                          Set<Edge<V>> treeEdges,
+                          Set<Edge<V>> nonTreeEdges) {
+
+        visited.add(startNode);
+        queue.add(startNode);
+
+        while (!queue.isEmpty()) {
+            Vertex<V> current = queue.poll();
+            visitOrder.add(current);
+
+            for (Edge<V> edge : graph.getIncidentEdges(current)) {
+                Vertex<V> neighbor = edge.getSource().equals(current) ? edge.getTarget() : edge.getSource();
+
+                if (!visited.contains(neighbor))
                 {
-                    Pair<V> next=new Pair<>(current,neighbor);
                     visited.add(neighbor);
-                    queue.add(next);
+                    parentMap.put(neighbor, current);
+                    treeEdges.add(edge);
+                    queue.add(neighbor);
+                }
+                else if (!treeEdges.contains(edge))
+                {
+                    nonTreeEdges.add(edge);
                 }
             }
         }
-        if(visited.size()!=graph.getVertices().size())
-            throw new GraphNotConnectedException("Graph "+graph.getName()+" is not connected.");
     }
 }
