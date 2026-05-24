@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
@@ -24,8 +25,8 @@
                 <Menu mnemonicParsing="false" text="File">
                   <items>
                         <MenuItem mnemonicParsing="false" text="New" onAction="#newGraph" />
-                    <MenuItem mnemonicParsing="false" text="Open" disable="true" />
-                        <MenuItem mnemonicParsing="false" text="Save" disable="true"/>
+                    <MenuItem mnemonicParsing="false" text="Open" onAction="#onOpen" />
+                        <MenuItem mnemonicParsing="false" text="Save" onAction="#onSave"/>
                         <MenuItem mnemonicParsing="false" text="Exit" onAction="#onExit"/>
                   </items>
                 </Menu>
@@ -43,6 +44,17 @@
                     <MenuItem mnemonicParsing="false" text="Random tree Tn"     onAction="#onBuildTree"/>
                   </items>
                 </Menu>
+                <Menu mnemonicParsing="false" text="View">
+                  <items>
+                    <fx:define>
+                        <ToggleGroup fx:id="themeGroup"/>
+                    </fx:define>
+                    <RadioMenuItem fx:id="lightThemeItem" mnemonicParsing="false" text="Light"
+                                   toggleGroup="$themeGroup" selected="true" onAction="#onSelectLightTheme"/>
+                    <RadioMenuItem fx:id="darkThemeItem"  mnemonicParsing="false" text="Dark"
+                                   toggleGroup="$themeGroup" onAction="#onSelectDarkTheme"/>
+                  </items>
+                </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                   <items>
                     <MenuItem mnemonicParsing="false" text="About" disable="true"/>
@@ -55,14 +67,12 @@
                   <fx:define>
                       <ToggleGroup fx:id = "modeGroup"/>
                   </fx:define>
-                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Add Vertex" toggleGroup="$modeGroup">
-                  </ToggleButton>
-                    <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Add Edge" toggleGroup="$modeGroup">
-                          </ToggleButton>
-                          <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Delete" toggleGroup="$modeGroup">
-                          </ToggleButton>
-                        <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Move" toggleGroup="$modeGroup">
-                        </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Add Vertex" toggleGroup="$modeGroup"> </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Add Edge" toggleGroup="$modeGroup"> </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Delete" toggleGroup="$modeGroup"> </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Move" toggleGroup="$modeGroup"> </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Run BFS" toggleGroup="$modeGroup" > </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Run DFS" toggleGroup="$modeGroup" > </ToggleButton>
               </items>
                <padding>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

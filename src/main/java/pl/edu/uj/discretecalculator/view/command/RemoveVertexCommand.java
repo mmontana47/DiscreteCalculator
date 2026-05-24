@@ -10,26 +10,30 @@ public class RemoveVertexCommand implements Command {
     private final CanvasManager canvas;
     private final VertexDrawn vertex;
     private final List<EdgeDrawn> incidentEdges;
+    private final int removedIndex;
 
     public RemoveVertexCommand(CanvasManager canvas, VertexDrawn vertex) {
         this.canvas = canvas;
         this.vertex = vertex;
         this.incidentEdges = canvas.incidentEdges(vertex);
+        this.removedIndex = canvas.getVertices().indexOf(vertex);
     }
 
     @Override
     public void execute() {
-        for (EdgeDrawn incident : incidentEdges) {
+        for(EdgeDrawn incident : incidentEdges) {
             canvas.detachEdge(incident);
         }
         canvas.detachVertex(vertex);
+        canvas.renumber();
     }
 
     @Override
     public void undo() {
-        canvas.attachVertex(vertex);
+        canvas.attachVertexAt(removedIndex, vertex);
         for (EdgeDrawn incident : incidentEdges) {
             canvas.attachEdge(incident);
         }
+        canvas.renumber();
     }
 }

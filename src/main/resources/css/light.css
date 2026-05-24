@@ -1,0 +1,108 @@
+/* === Light theme === */
+
+.root {
+    -fx-base: #f4f5f7;
+    -fx-background: #ffffff;
+    -fx-control-inner-background: #ffffff;
+    -fx-accent: #2f6fed;
+    -fx-focus-color: -fx-accent;
+    -fx-faint-focus-color: transparent;
+    -fx-text-base-color: #1c1e22;
+
+    -app-bg:           #ffffff;
+    -app-surface:      #f4f5f7;
+    -app-border:       #d9dde2;
+    -app-text:         #1c1e22;
+    -app-text-muted:   #5a6270;
+    -app-accent:       #2f6fed;
+    -app-accent-soft:  #dbe5fb;
+
+    -graph-vertex-fill:    #ffffff;
+    -graph-vertex-stroke:  #1c1e22;
+    -graph-vertex-text:    #1c1e22;
+    -graph-vertex-selected:#f4b400;
+    -graph-edge-stroke:    #1c1e22;
+}
+
+/* --- Menus / toolbar / status bar --- */
+.menu-bar {
+    -fx-background-color: -app-surface;
+    -fx-border-color: transparent transparent -app-border transparent;
+}
+
+.tool-bar {
+    -fx-background-color: -app-bg;
+    -fx-border-color: transparent transparent -app-border transparent;
+}
+
+.tool-bar .toggle-button {
+    -fx-background-radius: 6;
+    -fx-background-color: -app-surface;
+    -fx-text-fill: -app-text;
+    -fx-border-color: -app-border;
+    -fx-border-radius: 6;
+}
+
+.tool-bar .toggle-button:hover {
+    -fx-background-color: -app-accent-soft;
+}
+
+.tool-bar .toggle-button:selected {
+    -fx-background-color: -app-accent;
+    -fx-text-fill: white;
+    -fx-border-color: -app-accent;
+}
+
+.status-bar {
+    -fx-background-color: -app-surface;
+    -fx-border-color: -app-border transparent transparent transparent;
+}
+
+.status-bar .label {
+    -fx-text-fill: -app-text-muted;
+    -fx-font-size: 11.5px;
+}
+
+/* --- Canvas --- */
+#graphPane {
+    -fx-background-color: -app-bg;
+}
+
+/* --- Vertex / edge --- */
+.vertex .vertex-circle {
+    -fx-fill: -graph-vertex-fill;
+    -fx-stroke: -graph-vertex-stroke;
+    -fx-stroke-width: 1.5;
+}
+
+.vertex .vertex-label {
+    -fx-text-fill: -graph-vertex-text;
+    -fx-font-weight: bold;
+}
+
+.vertex.selected .vertex-circle {
+    -fx-stroke: -graph-vertex-selected;
+    -fx-stroke-width: 3;
+}
+
+.edge {
+    -fx-stroke: -graph-edge-stroke;
+    -fx-stroke-width: 2;
+}
+
+.edge:hover {
+    -fx-stroke: -app-accent;
+}
+
+/* --- Dialogs --- */
+.dialog-pane {
+    -fx-background-color: -app-bg;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: -app-surface;
+}
+
+.dialog-pane .button {
+    -fx-background-radius: 6;
+}

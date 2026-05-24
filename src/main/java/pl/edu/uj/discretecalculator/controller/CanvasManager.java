@@ -6,6 +6,7 @@ import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -15,7 +16,6 @@ public class CanvasManager {
     private final Label countsLabel;
     private final List<VertexDrawn> vertices = new ArrayList<>();
     private final List<EdgeDrawn> edges = new ArrayList<>();
-    private int nextVertexId = 0;
 
     public CanvasManager(Pane graphPane, Label countsLabel) {
         this.graphPane = graphPane;
@@ -25,8 +25,17 @@ public class CanvasManager {
 
     public Pane getGraphPane() { return graphPane; }
 
+    public List<VertexDrawn> getVertices() { return Collections.unmodifiableList(vertices); }
+    public List<EdgeDrawn> getEdges() { return Collections.unmodifiableList(edges); }
+
     public VertexDrawn createVertex(double x, double y, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
-        VertexDrawn vertex = new VertexDrawn(x, y, String.valueOf(nextVertexId++), onClick, canDrag);
+        VertexDrawn vertex = new VertexDrawn(x, y, String.valueOf(vertices.size()), onClick, canDrag);
+        attachVertex(vertex);
+        return vertex;
+    }
+
+    public VertexDrawn createVertex(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
+        VertexDrawn vertex = new VertexDrawn(x, y, id, onClick, canDrag);
         attachVertex(vertex);
         return vertex;
     }
@@ -43,10 +52,22 @@ public class CanvasManager {
         updateCounts();
     }
 
+    public void attachVertexAt(int index, VertexDrawn v) {
+        vertices.add(index, v);
+        graphPane.getChildren().add(v);
+        updateCounts();
+    }
+
     public void detachVertex(VertexDrawn v) {
         vertices.remove(v);
         graphPane.getChildren().remove(v);
         updateCounts();
+    }
+
+    public void renumber() {
+        for (int i = 0; i < vertices.size(); i++) {
+            vertices.get(i).setVertexId(String.valueOf(i));
+        }
     }
 
     public void attachEdge(EdgeDrawn e) {
@@ -81,7 +102,6 @@ public class CanvasManager {
         graphPane.getChildren().clear();
         vertices.clear();
         edges.clear();
-        nextVertexId = 0;
         updateCounts();
     }
 

@@ -3,6 +3,7 @@ package pl.edu.uj.discretecalculator.controller;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -20,13 +21,33 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.stage.FileChooser;
+import com.google.gson.JsonSyntaxException;
+import pl.edu.uj.discretecalculator.io.GraphExporter;
+import pl.edu.uj.discretecalculator.io.GraphImporter;
+import javafx.scene.control.RadioMenuItem;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
+import pl.edu.uj.discretecalculator.view.Theme;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
 import pl.edu.uj.discretecalculator.view.builder.BuilderContext;
 import pl.edu.uj.discretecalculator.view.builder.GraphBuilders;
 import pl.edu.uj.discretecalculator.view.command.*;
-import java.util.Optional;
-import java.util.OptionalInt;
+import java.io.File;
+import java.io.IOException;
+
+import java.util.*;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
+import javafx.scene.paint.Color;
+import pl.edu.uj.discretecalculator.algorithm.BFS;
+import pl.edu.uj.discretecalculator.algorithm.BFSResult;
+import pl.edu.uj.discretecalculator.algorithm.DFS;
+import pl.edu.uj.discretecalculator.algorithm.DFSResult;
+import pl.edu.uj.discretecalculator.model.graph.Edge;
+import pl.edu.uj.discretecalculator.model.graph.Graph;
+import pl.edu.uj.discretecalculator.model.graph.Vertex;
 
 public class MainController {
     private CanvasManager canvas;
@@ -40,6 +61,8 @@ public class MainController {
     @FXML private Label countsLabel;
     @FXML private MenuItem undoItem;
     @FXML private MenuItem redoItem;
+    @FXML private RadioMenuItem lightThemeItem;
+    @FXML private RadioMenuItem darkThemeItem;
 
     @FXML
     private void initialize() {
@@ -66,6 +89,17 @@ public class MainController {
         graphPane.setOnMouseClicked(this::onPaneClick);
     }
 
+    @FXML private void onSelectLightTheme() { applyTheme(Theme.LIGHT); }
+    @FXML private void onSelectDarkTheme()  { applyTheme(Theme.DARK);  }
+
+    private void applyTheme(Theme theme) {
+        var scene = graphPane.getScene();
+        if (scene == null) return;
+        theme.applyTo(scene);
+        if (theme == Theme.LIGHT) lightThemeItem.setSelected(true);
+        else darkThemeItem.setSelected(true);
+    }
+
     @FXML
     private void newGraph() {
         clearSelection();
@@ -76,6 +110,46 @@ public class MainController {
     @FXML
     private void onExit() {
         Platform.exit();
+    }
+
+    @FXML
+    private void onOpen() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Open graph");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON", "*.json"));
+
+        File file = chooser.showOpenDialog(graphPane.getScene().getWindow());
+        if (file == null) return;
+
+        clearSelection();
+        try {
+            GraphImporter.importFrom(file, buildContext());
+            history.clear();
+            refreshUndoRedoState();
+        } catch (IOException | JsonSyntaxException ex) {
+            Alert a = new Alert(Alert.AlertType.ERROR, "Open failed: " + ex.getMessage(), ButtonType.OK);
+            a.setHeaderText(null);
+            a.showAndWait();
+        }
+    }
+
+    @FXML
+    private void onSave() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save graph");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON", "*.json"));
+        chooser.setInitialFileName("graph.json");
+
+        File file = chooser.showSaveDialog(graphPane.getScene().getWindow());
+        if (file == null) return;
+
+        try {
+            GraphExporter.export(canvas, file);
+        } catch (IOException ex) {
+            Alert a = new Alert(Alert.AlertType.ERROR, "Save failed: " + ex.getMessage(), ButtonType.OK);
+            a.setHeaderText(null);
+            a.showAndWait();
+        }
     }
 
     @FXML
@@ -224,6 +298,8 @@ public class MainController {
                 }
             }
             case DELETE -> runCommand(new RemoveVertexCommand(canvas, vertex));
+            case RUN_BFS -> runAndAnimateAlgorithm(vertex, "BFS");
+            case RUN_DFS -> runAndAnimateAlgorithm(vertex, "DFS");
             case null -> {}
             default -> {}
         }
@@ -248,5 +324,128 @@ public class MainController {
             return Integer.parseInt(s.trim())>0;
         }
         catch (NumberFormatException ex) {return false;}
+    }
+
+    //####################################################
+    //##################### KONTROLER ####################
+    //####################################################
+    private Graph<String> buildMathematicalGraph() {
+        Graph<String> mathGraph = new Graph<>("CanvasGraph");
+        Map<String, Vertex<String>> dictionary = new HashMap<>();
+
+        for (VertexDrawn vd : canvas.getVertices()) {
+            String vId = vd.getVertexId();
+            Vertex<String> v = new Vertex<>(Integer.parseInt(vd.getVertexId()), vd.getVertexId());
+            mathGraph.addVertex(v);
+            dictionary.put(vd.getVertexId(), v);
+        }
+
+        int edgeId = 0;
+        for (EdgeDrawn ed : canvas.getEdges()) {
+            Vertex<String> source = dictionary.get(ed.getSource().getVertexId());
+            Vertex<String> target = dictionary.get(ed.getTarget().getVertexId());
+            Edge<String> edge = new Edge<>(source, target, edgeId++);
+            mathGraph.addEdge(edge);
+        }
+        return mathGraph;
+    }
+
+    // resetowanie płótna przed animacją
+    private void resetCanvasStyles() {
+        for (VertexDrawn v : canvas.getVertices()) v.resetStyle();
+        for (EdgeDrawn e : canvas.getEdges()) e.resetStyle();
+    }
+
+    // logika animacji
+    private void runAndAnimateAlgorithm(VertexDrawn startVisualNode, String algorithmType) {
+        Graph<String> graph = buildMathematicalGraph();
+
+        // znajdujemy startowy węzeł
+        Vertex<String> startNode = null;
+        for (Vertex<String> v : graph.getVertices()) {
+            if (v.getValue().equals(startVisualNode.getVertexId())) { startNode = v; break; }
+        }
+        if (startNode == null) return;
+
+        resetCanvasStyles();
+
+        // zmienne wynikowe
+        List<Vertex<String>> visitOrder = new ArrayList<>();
+        Map<Vertex<String>, Vertex<String>> parentMap = new HashMap<>();
+        Set<Edge<String>> cycles;
+        Color highlightColor;
+
+        // miejsce na typ algorytmu
+        if (algorithmType.equals("BFS")) {
+            BFSResult<String> result = new BFS<>(startNode).start(graph);
+            visitOrder = result.getVisitOrder();
+            parentMap = result.getParentMap();
+            cycles = result.getNonTreeEdges();
+            highlightColor = Color.web("#2ECC71");
+        } else if (algorithmType.equals("DFS")) {
+            DFSResult<String> result = new DFS<>(startNode).start(graph);
+            visitOrder = result.getVisitOrder();
+            parentMap = result.getParentMap();
+            cycles = result.getNonTreeEdges();
+            highlightColor = Color.web("#3498DB");
+        }
+        else {
+            highlightColor = Color.BLACK;
+            cycles = new HashSet<>();
+        }
+
+        //ANIMACJA
+        Timeline timeline = new Timeline();
+        double delaySeconds = 0.5;
+
+        // malowanie wezłów
+        for (int i = 0; i < visitOrder.size(); i++) {
+            String nodeId = visitOrder.get(i).getValue();
+            Vertex<String> currentNode = visitOrder.get(i);
+
+            Vertex<String> parentNode = parentMap.get(currentNode);
+            String parentId = (parentNode != null) ? parentNode.getValue() : null;
+
+            KeyFrame kf = new KeyFrame(Duration.seconds(i * delaySeconds), event -> {
+                for (VertexDrawn vd : canvas.getVertices()) {
+                    if (vd.getVertexId().equals(nodeId)) {
+                        vd.highlightForAlgorithm(highlightColor);
+                        break;
+                    }
+                }
+                if (parentId != null) {
+                    for (EdgeDrawn ed : canvas.getEdges()) {
+                        String source = ed.getSource().getVertexId();
+                        String target = ed.getTarget().getVertexId();
+
+                        if ((source.equals(nodeId) && target.equals(parentId)) ||
+                                (source.equals(parentId) && target.equals(nodeId))) {
+
+                            ed.highlightAsTreeEdge();
+                            break;
+                        }
+                    }
+                }
+            });
+            timeline.getKeyFrames().add(kf);
+        }
+
+        // krawędzie spoza drzewa na czerwono
+        KeyFrame cyclesFrame = new KeyFrame(Duration.seconds(visitOrder.size() * delaySeconds), event -> {
+            for (Edge<String> badEdge : cycles) {
+                String sourceId = badEdge.getSource().getValue();
+                String targetId = badEdge.getTarget().getValue();
+
+                for (EdgeDrawn ed : canvas.getEdges()) {
+                    if ((ed.getSource().getVertexId().equals(sourceId) && ed.getTarget().getVertexId().equals(targetId)) ||
+                            (ed.getSource().getVertexId().equals(targetId) && ed.getTarget().getVertexId().equals(sourceId))) {
+                        ed.highlightAsCycle();
+                    }
+                }
+            }
+        });
+        timeline.getKeyFrames().add(cyclesFrame);
+
+        timeline.play();
     }
 }
