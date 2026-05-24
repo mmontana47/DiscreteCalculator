@@ -1,31 +1,27 @@
 package pl.edu.uj.discretecalculator.view;
 
+import javafx.event.Event;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 public class VertexDrawn extends StackPane {
+    private final String id;
     public static final int circleRadius=20;
-    private static final String SELECTED_CLASS = "selected";
-
     private double mouseX, mouseY;
     private boolean wasDragged=false;
     private final Circle circle;
-    private final Label label;
-    private String id;
 
     public VertexDrawn(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag){
         this.id = id;
-        this.circle = new Circle(x, y, circleRadius);
-        circle.getStyleClass().add("vertex-circle");
+        this.circle = new Circle(x, y, circleRadius, Color.WHITE);
+        circle.setStroke(Color.BLACK);
+        Label label = new Label(id);
 
-        this.label = new Label(id);
-        label.getStyleClass().add("vertex-label");
-
-        this.getStyleClass().add("vertex");
         this.getChildren().addAll(circle, label);
         this.setLayoutX(x-circleRadius);
         this.setLayoutY(y-circleRadius);
@@ -57,19 +53,24 @@ public class VertexDrawn extends StackPane {
 
     public String getVertexId() { return id; }
 
-    public void setVertexId(String newId) {
-        this.id = newId;
-        this.label.setText(newId);
+    public void highlightForAlgorithm(Color color) {
+        circle.setFill(color);
     }
 
     public void select(){
-        if (!getStyleClass().contains(SELECTED_CLASS)) {
-            getStyleClass().add(SELECTED_CLASS);
-        }
+        circle.setStroke(Color.YELLOW);
+        circle.setStrokeWidth(3);
     }
 
     public void unselect(){
-        getStyleClass().remove(SELECTED_CLASS);
+        circle.setStroke(Color.BLACK);
+        circle.setStrokeWidth(1);
+    }
+
+    public void resetStyle() {
+        circle.setFill(Color.WHITE);
+        circle.setStroke(Color.BLACK);
+        circle.setStrokeWidth(1);
     }
 
 }
