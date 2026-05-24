@@ -24,8 +24,10 @@ import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import com.google.gson.JsonSyntaxException;
 import pl.edu.uj.discretecalculator.io.GraphExporter;
+import pl.edu.uj.discretecalculator.io.GraphExporterTXT;
 import pl.edu.uj.discretecalculator.io.GraphImporter;
 import javafx.scene.control.RadioMenuItem;
+import pl.edu.uj.discretecalculator.io.GraphImporterTXT;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.Theme;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
@@ -112,45 +114,7 @@ public class MainController {
         Platform.exit();
     }
 
-    @FXML
-    private void onOpen() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Open graph");
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON", "*.json"));
 
-        File file = chooser.showOpenDialog(graphPane.getScene().getWindow());
-        if (file == null) return;
-
-        clearSelection();
-        try {
-            GraphImporter.importFrom(file, buildContext());
-            history.clear();
-            refreshUndoRedoState();
-        } catch (IOException | JsonSyntaxException ex) {
-            Alert a = new Alert(Alert.AlertType.ERROR, "Open failed: " + ex.getMessage(), ButtonType.OK);
-            a.setHeaderText(null);
-            a.showAndWait();
-        }
-    }
-
-    @FXML
-    private void onSave() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Save graph");
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON", "*.json"));
-        chooser.setInitialFileName("graph.json");
-
-        File file = chooser.showSaveDialog(graphPane.getScene().getWindow());
-        if (file == null) return;
-
-        try {
-            GraphExporter.export(canvas, file);
-        } catch (IOException ex) {
-            Alert a = new Alert(Alert.AlertType.ERROR, "Save failed: " + ex.getMessage(), ButtonType.OK);
-            a.setHeaderText(null);
-            a.showAndWait();
-        }
-    }
 
     @FXML
     private void onUndo() {
@@ -324,6 +288,69 @@ public class MainController {
             return Integer.parseInt(s.trim())>0;
         }
         catch (NumberFormatException ex) {return false;}
+    }
+
+    //####################################################
+    //#################### IMPORT ########################
+    //####################################################
+
+    @FXML
+    private void onOpen() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Open graph");
+
+        chooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("All Supported Formats", "*.json", "*.txt"),
+                new FileChooser.ExtensionFilter("Text (OI Format)", "*.txt"),
+                new FileChooser.ExtensionFilter("JSON Graph", "*.json")
+        );
+
+        File file = chooser.showOpenDialog(graphPane.getScene().getWindow());
+        if (file == null) return;
+
+        clearSelection();
+        try {
+            if (file.getName().toLowerCase().endsWith(".txt")) {
+                GraphImporterTXT.importFromTxt(file, buildContext());
+            } else {
+                GraphImporter.importFrom(file, buildContext());
+            }
+
+            history.clear();
+            refreshUndoRedoState();
+        } catch (Exception ex) {
+            Alert a = new Alert(Alert.AlertType.ERROR, "Open failed: " + ex.getMessage(), ButtonType.OK);
+            a.setHeaderText("Import exception");
+            a.showAndWait();
+        }
+    }
+
+    @FXML
+    private void onSave() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save graph");
+
+        chooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Text (OI Format)", "*.txt"),
+                new FileChooser.ExtensionFilter("JSON Graph", "*.json")
+        );
+
+        chooser.setInitialFileName("graph.txt");
+
+        File file = chooser.showSaveDialog(graphPane.getScene().getWindow());
+        if (file == null) return;
+
+        try {
+            if (file.getName().toLowerCase().endsWith(".txt")) {
+                GraphExporterTXT.exportToTxt(canvas, file);
+            } else {
+                GraphExporter.export(canvas, file);
+            }
+        } catch (IOException ex) {
+            Alert a = new Alert(Alert.AlertType.ERROR, "Save failed: " + ex.getMessage(), ButtonType.OK);
+            a.setHeaderText("Export exception");
+            a.showAndWait();
+        }
     }
 
     //####################################################
