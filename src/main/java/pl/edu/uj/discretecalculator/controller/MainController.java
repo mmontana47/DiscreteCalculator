@@ -54,6 +54,7 @@ public class MainController {
     private CanvasManager canvas;
     private final CommandHistory history = new CommandHistory();
     private VertexDrawn source = null;
+    private Timeline activeAnimation = null;
 
     @FXML private Pane graphPane;
     @FXML private ToggleGroup modeGroup;
@@ -97,6 +98,7 @@ public class MainController {
 
     @FXML
     private void onResetView() {
+        if (activeAnimation != null) return;
         clearSelection();
         resetCanvasStyles();
     }
@@ -125,6 +127,7 @@ public class MainController {
 
     @FXML
     private void onUndo() {
+        if (activeAnimation != null) return;
         clearSelection();
         history.undo();
         refreshUndoRedoState();
@@ -132,6 +135,7 @@ public class MainController {
 
     @FXML
     private void onRedo() {
+        if (activeAnimation != null) return;
         clearSelection();
         history.redo();
         refreshUndoRedoState();
@@ -246,6 +250,14 @@ public class MainController {
     }
 
     private void onPaneClick(MouseEvent e) {
+        //panic button
+        if (activeAnimation != null) {
+            activeAnimation.stop();
+            activeAnimation = null;
+            resetCanvasStyles();
+            clearSelection();
+            return;
+        }
         if (currentMode()== Mode.ADD_VERTEX) {
             runCommand(new AddVertexCommand(canvas, e.getX(), e.getY(),
                     this::onVertexClick,
@@ -256,6 +268,7 @@ public class MainController {
     }
 
     private void onVertexClick(VertexDrawn vertex) {
+        if (activeAnimation != null) return;
         switch (currentMode()) {
             case ADD_EDGE -> {
                 if (source == null) {
@@ -277,6 +290,7 @@ public class MainController {
     }
 
     private void onEdgeClick(EdgeDrawn edge) {
+        if (activeAnimation != null) return;
         switch (currentMode()) {
             case Mode.DELETE -> runCommand(new RemoveEdgeCommand(canvas, edge));
             case null -> {}
@@ -441,7 +455,7 @@ public class MainController {
         }
 
         //ANIMACJA
-        Timeline timeline = new Timeline();
+        activeAnimation = new Timeline();
         double delaySeconds = 0.5;
 
         // malowanie wezłów
@@ -473,7 +487,7 @@ public class MainController {
                     }
                 }
             });
-            timeline.getKeyFrames().add(kf);
+            activeAnimation.getKeyFrames().add(kf);
         }
 
         // krawędzie spoza drzewa na czerwono
@@ -490,8 +504,12 @@ public class MainController {
                 }
             }
         });
-        timeline.getKeyFrames().add(cyclesFrame);
+        activeAnimation.getKeyFrames().add(cyclesFrame);
 
-        timeline.play();
+        activeAnimation.setOnFinished(event -> {
+            activeAnimation = null;
+        });
+
+        activeAnimation.play();
     }
 }
