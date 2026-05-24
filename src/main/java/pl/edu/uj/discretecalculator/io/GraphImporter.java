@@ -43,7 +43,7 @@ public final class GraphImporter {
         Map<String, VertexDrawn> idToVertex = new HashMap<>();
         for(GraphDocument.VertexDto vertex : doc.graph.vertices){
             GraphDocument.Position p = doc.layout.get(vertex.id);
-            idToVertex.put(vertex.id, canvas.createVertex(p.x, p.y, ctx.onVertexClick(), ctx.canDrag()));
+            idToVertex.put(vertex.id, canvas.createVertex(p.x, p.y, vertex.id, ctx.onVertexClick(), ctx.canDrag()));
         }
 
         for(GraphDocument.EdgeDto edge : doc.graph.edges){
@@ -52,6 +52,7 @@ public final class GraphImporter {
             if(s == null || t == null) continue;
             canvas.createEdge(s,t,ctx.onEdgeClick());
         }
+        canvas.renumber();
     }
 
 }
