@@ -103,7 +103,7 @@
 
 .vertex:selected .vertex-circle {
     -fx-fill: -graph-vertex-selected;
-    -fx-stroke-width: 3;
+    -fx-stroke-width: 1;
 }
 
 

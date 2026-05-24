@@ -23,7 +23,12 @@ public class EdgeDrawn extends Line {
 
         getStyleClass().add("edge");
 
-        this.setOnMouseClicked(event -> onClick.accept(this));
+        this.setOnMouseClicked(event -> {
+            event.consume();
+            if (onClick != null) {
+                onClick.accept(this);
+            }
+        });
     }
 
     public VertexDrawn getSource() { return source; }

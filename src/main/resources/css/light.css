@@ -99,8 +99,8 @@
 
 .vertex:selected .vertex-circle {
     -fx-fill: -graph-vertex-selected;
-    -fx-stroke: -graph-vertex-selected;
-    -fx-stroke-width: 3;
+    -fx-stroke: black;
+    -fx-stroke-width: 1;
 }
 
 .vertex:bfs-visited .vertex-circle {
