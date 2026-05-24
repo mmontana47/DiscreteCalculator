@@ -16,6 +16,7 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.Region?>
 
+<?import javafx.scene.control.Button?>
 <BorderPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.uj.discretecalculator.controller.MainController">
    <top>
       <VBox BorderPane.alignment="CENTER">
@@ -67,12 +68,14 @@
                   <fx:define>
                       <ToggleGroup fx:id = "modeGroup"/>
                   </fx:define>
-                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Add Vertex" toggleGroup="$modeGroup"> </ToggleButton>
-                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Add Edge" toggleGroup="$modeGroup"> </ToggleButton>
-                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Delete" toggleGroup="$modeGroup"> </ToggleButton>
-                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Move" toggleGroup="$modeGroup"> </ToggleButton>
-                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Run BFS" toggleGroup="$modeGroup" > </ToggleButton>
-                  <ToggleButton prefHeight="26.0" prefWidth="100.0" text="Run DFS" toggleGroup="$modeGroup" > </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Add Vertex" toggleGroup="$modeGroup"> </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Add Edge" toggleGroup="$modeGroup"> </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Delete" toggleGroup="$modeGroup"> </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Move" toggleGroup="$modeGroup"> </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Run BFS" toggleGroup="$modeGroup" > </ToggleButton>
+                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Run DFS" toggleGroup="$modeGroup" > </ToggleButton>
+                  <Button prefHeight="26.0" prefWidth="90.0" text="Open Graph" style="-fx-background-color: #87CEFA" onAction="#onOpen" />
+                  <Button prefHeight="26.0" prefWidth="90.0" text="Save Graph" style="-fx-background-color: #87CEFA" onAction="#onSave" />
               </items>
                <padding>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
