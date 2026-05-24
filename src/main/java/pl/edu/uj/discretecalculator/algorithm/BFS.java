@@ -2,6 +2,7 @@ package pl.edu.uj.discretecalculator.algorithm;
 import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.model.graph.Vertex;
 import pl.edu.uj.discretecalculator.model.graph.Edge;
+import pl.edu.uj.discretecalculator.exception.*;
 
 import java.util.*;
 //BFS implementation
@@ -35,5 +36,7 @@ public class BFS<V,E> implements AlgorithmicInterface<V,E> {
                 }
             }
         }
+        if(visited.size()!=graph.getVertices().size())
+            throw new GraphNotConnectedException("Graph "+graph.getName()+" is not connected.");
     }
 }

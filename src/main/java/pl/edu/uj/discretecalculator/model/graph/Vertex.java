@@ -1,5 +1,7 @@
 package pl.edu.uj.discretecalculator.model.graph;
 
+import java.util.Objects;
+
 public class Vertex<V> {
     private  final int id;
     private V value;
@@ -34,4 +36,17 @@ public class Vertex<V> {
     public int getColour(){return colour;}
     public void setValue(V v){value=v;}
     public void setColour(int c){colour=c;}
+    @Override
+    public  boolean equals(Object o)
+    {
+        if(this==o)return true;
+        if(o==null||getClass()!=o.getClass())return false;
+        Vertex<?> vertex=(Vertex<?>)o;
+        return id == vertex.id && colour == vertex.colour && Objects.equals(value, vertex.value);
+    }
+    @Override
+    public int hashCode()
+    {
+        return  Objects.hash(id,value,colour);
+    }
 }
