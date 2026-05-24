@@ -35,8 +35,6 @@ public class GraphExporterTXT {
                 writer.write(u + " " + v);
                 writer.newLine();
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }

@@ -1,9 +1,8 @@
 package pl.edu.uj.discretecalculator.view;
 
-import javafx.event.Event;
+import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 import java.util.function.BooleanSupplier;
@@ -15,12 +14,20 @@ public class VertexDrawn extends StackPane {
     private double mouseX, mouseY;
     private boolean wasDragged=false;
     private final Circle circle;
+    private final Label label;
+
+    private static final PseudoClass SELECTED     = PseudoClass.getPseudoClass("selected");
+    private static final PseudoClass BFS_VISITED  = PseudoClass.getPseudoClass("bfs-visited");
+    private static final PseudoClass DFS_VISITED  = PseudoClass.getPseudoClass("dfs-visited");
 
     public VertexDrawn(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag){
         this.id = id;
-        this.circle = new Circle(x, y, circleRadius, Color.WHITE);
-        circle.setStroke(Color.BLACK);
-        Label label = new Label(id);
+        this.circle = new Circle(x, y, circleRadius);
+        this.label = new Label(id);
+
+        this.getStyleClass().add("vertex");
+        this.circle.getStyleClass().add("vertex-circle");
+        this.label.getStyleClass().add("vertex-label");
 
         this.getChildren().addAll(circle, label);
         this.setLayoutX(x-circleRadius);
@@ -52,26 +59,27 @@ public class VertexDrawn extends StackPane {
     }
 
     public String getVertexId() { return id; }
-    public void setVertexId(String id) {this.id = id;}
-
-    public void highlightForAlgorithm(Color color) {
-        circle.setFill(color);
+    public void setVertexId(String id) {
+        this.id = id;
+        this.label.setText(id);
     }
 
-    public void select(){
-        circle.setStroke(Color.YELLOW);
-        circle.setStrokeWidth(3);
+    public void markVisited(String algorithmType) {
+        pseudoClassStateChanged(BFS_VISITED, "BFS".equals(algorithmType));
+        pseudoClassStateChanged(DFS_VISITED, "DFS".equals(algorithmType));
     }
 
-    public void unselect(){
-        circle.setStroke(Color.BLACK);
-        circle.setStrokeWidth(1);
+    public void select() {
+        pseudoClassStateChanged(SELECTED, true);
+    }
+
+    public void unselect() {
+        pseudoClassStateChanged(SELECTED, false);
     }
 
     public void resetStyle() {
-        circle.setFill(Color.WHITE);
-        circle.setStroke(Color.BLACK);
-        circle.setStrokeWidth(1);
+        pseudoClassStateChanged(BFS_VISITED, false);
+        pseudoClassStateChanged(DFS_VISITED, false);
+        pseudoClassStateChanged(SELECTED, false);
     }
-
 }

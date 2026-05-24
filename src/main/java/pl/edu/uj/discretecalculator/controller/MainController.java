@@ -42,7 +42,6 @@ import java.util.*;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import javafx.scene.paint.Color;
 import pl.edu.uj.discretecalculator.algorithm.BFS;
 import pl.edu.uj.discretecalculator.algorithm.BFSResult;
 import pl.edu.uj.discretecalculator.algorithm.DFS;
@@ -65,12 +64,14 @@ public class MainController {
     @FXML private MenuItem redoItem;
     @FXML private RadioMenuItem lightThemeItem;
     @FXML private RadioMenuItem darkThemeItem;
+    @FXML private MenuItem resetViewItem;
 
     @FXML
     private void initialize() {
         canvas = new CanvasManager(graphPane, countsLabel);
         undoItem.setAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN));
         redoItem.setAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.SHORTCUT_DOWN));
+        resetViewItem.setAccelerator(new KeyCodeCombination(KeyCode.ESCAPE));
         refreshUndoRedoState();
 
         modeGroup.selectedToggleProperty().addListener(
@@ -93,6 +94,12 @@ public class MainController {
 
     @FXML private void onSelectLightTheme() { applyTheme(Theme.LIGHT); }
     @FXML private void onSelectDarkTheme()  { applyTheme(Theme.DARK);  }
+
+    @FXML
+    private void onResetView() {
+        clearSelection();
+        resetCanvasStyles();
+    }
 
     private void applyTheme(Theme theme) {
         var scene = graphPane.getScene();
@@ -299,22 +306,21 @@ public class MainController {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Open graph");
 
-        chooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("All Supported Formats", "*.json", "*.txt"),
-                new FileChooser.ExtensionFilter("Text (OI Format)", "*.txt"),
-                new FileChooser.ExtensionFilter("JSON Graph", "*.json")
-        );
+        FileChooser.ExtensionFilter allFilter  = new FileChooser.ExtensionFilter("All Supported Formats", "*.json", "*.txt");
+        FileChooser.ExtensionFilter jsonFilter = new FileChooser.ExtensionFilter("JSON Graph", "*.json");
+        FileChooser.ExtensionFilter txtFilter  = new FileChooser.ExtensionFilter("Text (OI Format)", "*.txt");
+        chooser.getExtensionFilters().addAll(allFilter, jsonFilter, txtFilter);
+        chooser.setSelectedExtensionFilter(allFilter);
 
         File file = chooser.showOpenDialog(graphPane.getScene().getWindow());
         if (file == null) return;
 
+        boolean isTxt = decideIsTxt(file, chooser.getSelectedExtensionFilter());
+
         clearSelection();
         try {
-            if (file.getName().toLowerCase().endsWith(".txt")) {
-                GraphImporterTXT.importFromTxt(file, buildContext());
-            } else {
-                GraphImporter.importFrom(file, buildContext());
-            }
+            if (isTxt) GraphImporterTXT.importFromTxt(file, buildContext());
+            else       GraphImporter.importFrom(file, buildContext());
 
             history.clear();
             refreshUndoRedoState();
@@ -330,27 +336,44 @@ public class MainController {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Save graph");
 
-        chooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Text (OI Format)", "*.txt"),
-                new FileChooser.ExtensionFilter("JSON Graph", "*.json")
-        );
-
+        FileChooser.ExtensionFilter txtFilter  = new FileChooser.ExtensionFilter("Text (OI Format)", "*.txt");
+        FileChooser.ExtensionFilter jsonFilter = new FileChooser.ExtensionFilter("JSON Graph", "*.json");
+        chooser.getExtensionFilters().addAll(txtFilter, jsonFilter);
+        chooser.setSelectedExtensionFilter(txtFilter);
         chooser.setInitialFileName("graph.txt");
 
         File file = chooser.showSaveDialog(graphPane.getScene().getWindow());
         if (file == null) return;
 
+        boolean isTxt = decideIsTxt(file, chooser.getSelectedExtensionFilter());
+
+        String ext = isTxt ? ".txt" : ".json";
+        if (!file.getName().toLowerCase().endsWith(ext)) {
+            file = new File(file.getParentFile(), file.getName() + ext);
+        }
+
         try {
-            if (file.getName().toLowerCase().endsWith(".txt")) {
-                GraphExporterTXT.exportToTxt(canvas, file);
-            } else {
-                GraphExporter.export(canvas, file);
-            }
+            if (isTxt) GraphExporterTXT.exportToTxt(canvas, file);
+            else       GraphExporter.export(canvas, file);
         } catch (IOException ex) {
             Alert a = new Alert(Alert.AlertType.ERROR, "Save failed: " + ex.getMessage(), ButtonType.OK);
             a.setHeaderText("Export exception");
             a.showAndWait();
         }
+    }
+
+    // Filename takes priority (it's what the user typed); fall back to the selected filter.
+    private static boolean decideIsTxt(File file, FileChooser.ExtensionFilter selected) {
+        String name = file.getName().toLowerCase();
+        if (name.endsWith(".txt"))  return true;
+        if (name.endsWith(".json")) return false;
+        if (selected != null) {
+            for (String ext : selected.getExtensions()) {
+                if (ext.equalsIgnoreCase("*.txt"))  return true;
+                if (ext.equalsIgnoreCase("*.json")) return false;
+            }
+        }
+        return false;
     }
 
     //####################################################
@@ -400,7 +423,6 @@ public class MainController {
         List<Vertex<String>> visitOrder = new ArrayList<>();
         Map<Vertex<String>, Vertex<String>> parentMap = new HashMap<>();
         Set<Edge<String>> cycles;
-        Color highlightColor;
 
         // miejsce na typ algorytmu
         if (algorithmType.equals("BFS")) {
@@ -408,16 +430,13 @@ public class MainController {
             visitOrder = result.getVisitOrder();
             parentMap = result.getParentMap();
             cycles = result.getNonTreeEdges();
-            highlightColor = Color.web("#2ECC71");
         } else if (algorithmType.equals("DFS")) {
             DFSResult<String> result = new DFS<>(startNode).start(graph);
             visitOrder = result.getVisitOrder();
             parentMap = result.getParentMap();
             cycles = result.getNonTreeEdges();
-            highlightColor = Color.web("#3498DB");
         }
         else {
-            highlightColor = Color.BLACK;
             cycles = new HashSet<>();
         }
 
@@ -436,7 +455,7 @@ public class MainController {
             KeyFrame kf = new KeyFrame(Duration.seconds(i * delaySeconds), event -> {
                 for (VertexDrawn vd : canvas.getVertices()) {
                     if (vd.getVertexId().equals(nodeId)) {
-                        vd.highlightForAlgorithm(highlightColor);
+                        vd.markVisited(algorithmType);
                         break;
                     }
                 }

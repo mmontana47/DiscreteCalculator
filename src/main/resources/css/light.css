@@ -21,7 +21,12 @@
     -graph-vertex-stroke:  #1c1e22;
     -graph-vertex-text:    #1c1e22;
     -graph-vertex-selected:#f4b400;
-    -graph-edge-stroke:    #1c1e22;
+    -graph-vertex-bfs:     #2ECC71;
+    -graph-vertex-dfs:     #3498DB;
+
+    -graph-edge-stroke:    #6e7681;
+    -graph-edge-tree:      #1c1e22;
+    -graph-edge-cycle:     #b0b6bf;
 }
 
 /* --- Menus / toolbar / status bar --- */
@@ -53,6 +58,18 @@
     -fx-border-color: -app-accent;
 }
 
+.tool-bar .button {
+    -fx-background-radius: 6;
+    -fx-background-color: -app-surface;
+    -fx-text-fill: -app-text;
+    -fx-border-color: -app-border;
+    -fx-border-radius: 6;
+}
+
+.tool-bar .button:hover {
+    -fx-background-color: -app-accent-soft;
+}
+
 .status-bar {
     -fx-background-color: -app-surface;
     -fx-border-color: -app-border transparent transparent transparent;
@@ -68,7 +85,7 @@
     -fx-background-color: -app-bg;
 }
 
-/* --- Vertex / edge --- */
+/* --- Vertex --- */
 .vertex .vertex-circle {
     -fx-fill: -graph-vertex-fill;
     -fx-stroke: -graph-vertex-stroke;
@@ -80,11 +97,20 @@
     -fx-font-weight: bold;
 }
 
-.vertex.selected .vertex-circle {
+.vertex:selected .vertex-circle {
     -fx-stroke: -graph-vertex-selected;
     -fx-stroke-width: 3;
 }
 
+.vertex:bfs-visited .vertex-circle {
+    -fx-fill: -graph-vertex-bfs;
+}
+
+.vertex:dfs-visited .vertex-circle {
+    -fx-fill: -graph-vertex-dfs;
+}
+
+/* --- Edge --- */
 .edge {
     -fx-stroke: -graph-edge-stroke;
     -fx-stroke-width: 2;
@@ -92,6 +118,16 @@
 
 .edge:hover {
     -fx-stroke: -app-accent;
+}
+
+.edge:tree-edge {
+    -fx-stroke: -graph-edge-tree;
+    -fx-stroke-width: 3;
+}
+
+.edge:cycle-edge {
+    -fx-stroke: -graph-edge-cycle;
+    -fx-stroke-dash-array: 10 10;
 }
 
 /* --- Dialogs --- */

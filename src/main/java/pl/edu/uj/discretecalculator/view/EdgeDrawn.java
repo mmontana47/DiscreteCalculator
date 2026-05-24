@@ -1,47 +1,46 @@
 package pl.edu.uj.discretecalculator.view;
 
+import javafx.css.PseudoClass;
 import javafx.scene.shape.Line;
 
-import javafx.scene.paint.Color;
 import java.util.function.Consumer;
 
 public class EdgeDrawn extends Line {
     private final VertexDrawn source;
     private final VertexDrawn target;
 
+    private static final PseudoClass TREE_EDGE  = PseudoClass.getPseudoClass("tree-edge");
+    private static final PseudoClass CYCLE_EDGE = PseudoClass.getPseudoClass("cycle-edge");
+
     public EdgeDrawn(VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
-        this.source=source;
-        this.target=target;
-        this.setStroke(Color.GRAY);
+        this.source = source;
+        this.target = target;
 
         startXProperty().bind(source.layoutXProperty().add(VertexDrawn.circleRadius));
         startYProperty().bind(source.layoutYProperty().add(VertexDrawn.circleRadius));
         endXProperty().bind(target.layoutXProperty().add(VertexDrawn.circleRadius));
         endYProperty().bind(target.layoutYProperty().add(VertexDrawn.circleRadius));
 
-        //getStyleClass().add("edge")// na razie zakomentowałem - psuje mi animację
+        getStyleClass().add("edge");
 
-        this.setOnMouseClicked(event -> {
-            onClick.accept(this);
-        });
+        this.setOnMouseClicked(event -> onClick.accept(this));
     }
 
-    public VertexDrawn getSource() { return source;}
-    public VertexDrawn getTarget() { return target;}
+    public VertexDrawn getSource() { return source; }
+    public VertexDrawn getTarget() { return target; }
 
     public void highlightAsTreeEdge() {
-        this.setStroke(Color.BLACK);
-        this.setStrokeWidth(3);
+        pseudoClassStateChanged(TREE_EDGE, true);
+        pseudoClassStateChanged(CYCLE_EDGE, false);
     }
 
     public void highlightAsCycle() {
-        this.setStroke(Color.LIGHTGRAY);
-        this.getStrokeDashArray().setAll(10d, 10d);
+        pseudoClassStateChanged(CYCLE_EDGE, true);
+        pseudoClassStateChanged(TREE_EDGE, false);
     }
 
     public void resetStyle() {
-        this.setStroke(Color.GRAY);
-        this.getStrokeDashArray().clear();
-        this.setStrokeWidth(1);
+        pseudoClassStateChanged(TREE_EDGE, false);
+        pseudoClassStateChanged(CYCLE_EDGE, false);
     }
 }
