@@ -20,7 +20,7 @@
     -graph-vertex-fill:    #2b2f36;
     -graph-vertex-stroke:  #e6e8eb;
     -graph-vertex-text:    #e6e8eb;
-    -graph-vertex-selected:#ffcb3d;
+    -graph-vertex-selected:#696969;
     -graph-vertex-bfs:     #27AE60;
     -graph-vertex-dfs:     #2980B9;
 
@@ -102,9 +102,10 @@
 }
 
 .vertex:selected .vertex-circle {
-    -fx-stroke: -graph-vertex-selected;
+    -fx-fill: -graph-vertex-selected;
     -fx-stroke-width: 3;
 }
+
 
 .vertex:bfs-visited .vertex-circle {
     -fx-fill: -graph-vertex-bfs;
