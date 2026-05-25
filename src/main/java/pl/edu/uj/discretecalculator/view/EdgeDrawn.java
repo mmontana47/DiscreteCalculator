@@ -16,10 +16,11 @@ public class EdgeDrawn extends Line {
         this.source = source;
         this.target = target;
 
-        startXProperty().bind(source.layoutXProperty().add(VertexDrawn.circleRadius));
-        startYProperty().bind(source.layoutYProperty().add(VertexDrawn.circleRadius));
-        endXProperty().bind(target.layoutXProperty().add(VertexDrawn.circleRadius));
-        endYProperty().bind(target.layoutYProperty().add(VertexDrawn.circleRadius));
+        startXProperty().bind(source.layoutXProperty().add(StyleSettings.get().vertexRadiusProperty()));
+        startYProperty().bind(source.layoutYProperty().add(StyleSettings.get().vertexRadiusProperty()));
+        endXProperty().bind(target.layoutXProperty().add(StyleSettings.get().vertexRadiusProperty()));
+        endYProperty().bind(target.layoutYProperty().add(StyleSettings.get().vertexRadiusProperty()));
+        strokeWidthProperty().bind(StyleSettings.get().edgeWidthProperty());
 
         getStyleClass().add("edge");
 

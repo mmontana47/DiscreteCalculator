@@ -1,5 +1,6 @@
 package pl.edu.uj.discretecalculator.view;
 
+import javafx.beans.property.DoubleProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
@@ -10,19 +11,21 @@ import java.util.function.Consumer;
 
 public class VertexDrawn extends StackPane {
     private String id;
-    public static final int circleRadius=20;
+    public static final DoubleProperty circleRadius = StyleSettings.get().vertexRadiusProperty();
     private double mouseX, mouseY;
     private boolean wasDragged=false;
     private final Circle circle;
     private final Label label;
 
-    private static final PseudoClass SELECTED     = PseudoClass.getPseudoClass("selected");
-    private static final PseudoClass BFS_VISITED  = PseudoClass.getPseudoClass("bfs-visited");
-    private static final PseudoClass DFS_VISITED  = PseudoClass.getPseudoClass("dfs-visited");
+    private static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
+    private static final PseudoClass BFS_VISITED = PseudoClass.getPseudoClass("bfs-visited");
+    private static final PseudoClass DFS_VISITED = PseudoClass.getPseudoClass("dfs-visited");
 
     public VertexDrawn(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag){
         this.id = id;
-        this.circle = new Circle(x, y, circleRadius);
+        this.circle = new Circle(x, y, circleRadius.get());
+        circle.radiusProperty().bind(circleRadius);
+
         this.label = new Label(id);
 
         this.getStyleClass().add("vertex");
@@ -30,8 +33,8 @@ public class VertexDrawn extends StackPane {
         this.label.getStyleClass().add("vertex-label");
 
         this.getChildren().addAll(circle, label);
-        this.setLayoutX(x-circleRadius);
-        this.setLayoutY(y-circleRadius);
+        this.setLayoutX(x-StyleSettings.get().getVertexRadius());
+        this.setLayoutY(y-StyleSettings.get().getVertexRadius());
 
         this.setOnMousePressed(event -> {
             wasDragged=false;

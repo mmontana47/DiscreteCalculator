@@ -2,23 +2,10 @@ package pl.edu.uj.discretecalculator.controller;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
@@ -26,11 +13,8 @@ import com.google.gson.JsonSyntaxException;
 import pl.edu.uj.discretecalculator.io.GraphExporter;
 import pl.edu.uj.discretecalculator.io.GraphExporterTXT;
 import pl.edu.uj.discretecalculator.io.GraphImporter;
-import javafx.scene.control.RadioMenuItem;
 import pl.edu.uj.discretecalculator.io.GraphImporterTXT;
-import pl.edu.uj.discretecalculator.view.EdgeDrawn;
-import pl.edu.uj.discretecalculator.view.Theme;
-import pl.edu.uj.discretecalculator.view.VertexDrawn;
+import pl.edu.uj.discretecalculator.view.*;
 import pl.edu.uj.discretecalculator.view.builder.BuilderContext;
 import pl.edu.uj.discretecalculator.view.builder.GraphBuilders;
 import pl.edu.uj.discretecalculator.view.command.*;
@@ -55,6 +39,11 @@ public class MainController {
     private final CommandHistory history = new CommandHistory();
     private VertexDrawn source = null;
     private Timeline activeAnimation = null;
+    private ViewZoom viewZoom;
+    private double lastMouseX, lastMouseY;
+    private boolean panDragged = false;
+    private static final double panLimit = 5.0;
+    private double lastPanX, lastPanY;
 
     @FXML private Pane graphPane;
     @FXML private ToggleGroup modeGroup;
@@ -66,14 +55,22 @@ public class MainController {
     @FXML private RadioMenuItem lightThemeItem;
     @FXML private RadioMenuItem darkThemeItem;
     @FXML private MenuItem resetViewItem;
+    @FXML private Slider vertexSizeSlider;
+    @FXML private Slider edgeWidthSlider;
+    @FXML private Button btnZoomIn;
+    @FXML private Button btnZoomOut;
+    @FXML private Button btnResetZoom;
+
 
     @FXML
     private void initialize() {
         canvas = new CanvasManager(graphPane, countsLabel);
         undoItem.setAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN));
         redoItem.setAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.SHORTCUT_DOWN));
+
         resetViewItem.setAccelerator(new KeyCodeCombination(KeyCode.ESCAPE));
         refreshUndoRedoState();
+        viewZoom = new ViewZoom(graphPane, canvas);
 
         modeGroup.selectedToggleProperty().addListener(
                 (observable, oldValue, newValue) -> {
@@ -91,6 +88,55 @@ public class MainController {
                 }
         );
         graphPane.setOnMouseClicked(this::onPaneClick);
+        graphPane.setOnMousePressed(e -> {
+            lastMouseX = e.getX();
+            lastMouseY = e.getY();
+            lastPanX = e.getX();
+            lastPanY = e.getY();
+            panDragged = false;
+        });
+        graphPane.setOnMouseDragged(e -> {
+            if(Math.hypot(lastPanX - e.getX(), lastPanY - e.getY()) < panLimit) return;
+            viewZoom.pan(e.getX() - lastMouseX, e.getY() - lastMouseY);
+            lastMouseX = e.getX();
+            lastMouseY = e.getY();
+            panDragged = true;
+        });
+        graphPane.setOnScroll(e -> {
+            double scrollDelta = e.getDeltaY();
+            if(scrollDelta == 0) return;
+            double factor = (scrollDelta > 0) ? ViewZoom.ZOOM_STEP : (1.0) / ViewZoom.ZOOM_STEP;
+            viewZoom.zoomBy(factor, e.getX(), e.getY());
+        });
+
+        graphPane.sceneProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                newValue.getAccelerators().put(
+                        new KeyCodeCombination(KeyCode.EQUALS, KeyCombination.SHORTCUT_DOWN),
+                        () -> viewZoom.zoomIn(graphPane.getWidth() / 2, graphPane.getHeight() / 2));
+                newValue.getAccelerators().put(
+                        new KeyCodeCombination(KeyCode.MINUS, KeyCombination.SHORTCUT_DOWN),
+                        () -> viewZoom.zoomOut(graphPane.getWidth() / 2, graphPane.getHeight() / 2));
+            }
+        });
+
+        graphPane.sceneProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                KeyCodeCombination CtrlMinus = new KeyCodeCombination(KeyCode.MINUS, KeyCombination.SHORTCUT_DOWN);
+                Mnemonic mn = new Mnemonic(btnZoomOut, CtrlMinus);
+                newValue.addMnemonic(mn);
+            }
+        });
+
+        vertexSizeSlider.setMin(StyleSettings.MIN_VERTEX_RADIUS);
+        vertexSizeSlider.setMax(StyleSettings.MAX_VERTEX_RADIUS);
+        vertexSizeSlider.setValue(StyleSettings.get().getVertexRadius());
+        Bindings.bindBidirectional(vertexSizeSlider.valueProperty(), StyleSettings.get().vertexRadiusProperty());
+
+        edgeWidthSlider.setMin(StyleSettings.MIN_EDGE_WIDTH);
+        edgeWidthSlider.setMax(StyleSettings.MAX_EDGE_WIDTH);
+        edgeWidthSlider.setValue(StyleSettings.get().getEdgeWidth());
+        Bindings.bindBidirectional(edgeWidthSlider.valueProperty(), StyleSettings.get().edgeWidthProperty());
     }
 
     @FXML private void onSelectLightTheme() { applyTheme(Theme.LIGHT); }
@@ -165,6 +211,23 @@ public class MainController {
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.randomTree(buildContext(),  n.getAsInt()));
     }
+
+    //graph vizual properties
+    @FXML
+    public void OnZoomIn(ActionEvent actionEvent) {
+        viewZoom.zoomIn(graphPane.getWidth()/2, graphPane.getHeight()/2);
+    }
+
+    @FXML
+    public void OnZoomOut(ActionEvent actionEvent) {
+        viewZoom.zoomOut(graphPane.getWidth()/2, graphPane.getHeight()/2);
+    }
+
+    @FXML
+    public void OnResetZoom(ActionEvent actionEvent) {
+        viewZoom.reset();
+    }
+
 
     private BuilderContext buildContext() {
         return new BuilderContext(
@@ -251,6 +314,10 @@ public class MainController {
 
     private void onPaneClick(MouseEvent e) {
         //panic button
+        if (panDragged) {
+            panDragged = false;
+            return;
+        }
         if (activeAnimation != null) {
             activeAnimation.stop();
             activeAnimation = null;
@@ -265,6 +332,7 @@ public class MainController {
         } else if ((currentMode() == Mode.ADD_EDGE) && source != null) {
             clearSelection();
         }
+
     }
 
     private void onVertexClick(VertexDrawn vertex) {
@@ -512,4 +580,5 @@ public class MainController {
 
         activeAnimation.play();
     }
+
 }

@@ -17,6 +17,7 @@
 <?import javafx.scene.layout.Region?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Slider?>
 <BorderPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.uj.discretecalculator.controller.MainController">
    <top>
       <VBox BorderPane.alignment="CENTER">
@@ -104,6 +105,45 @@
             </children>
         </HBox>
     </bottom>
+    <right>
+        <VBox prefWidth="140.0" spacing="10.0" style="-fx-background-color: #f4f4f4; -fx-border-color: #cccccc; -fx-border-width: 0 0 0 1;" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="10.0" left="8.0" right="8.0" top="10.0" />
+            </padding>
+            <children>
 
+                <Label style="-fx-font-weight: bold; -fx-font-size: 11px;" text="Properties" />
 
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-size: 11px;" text="Vertices:" />
+                        <Slider fx:id="vertexSizeSlider" min="5.0" max="40.0" value="15.0" showTickMarks="true" />
+                    </children>
+                </VBox>
+
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-size: 11px;" text="Edges:" />
+                        <Slider fx:id="edgeWidthSlider" min="1.0" max="10.0" value="2.0" showTickMarks="true" />
+                    </children>
+                </VBox>
+
+                <Pane prefHeight="1.0" style="-fx-background-color: #cccccc;" />
+
+                <VBox spacing="5.0">
+                    <children>
+                        <Label style="-fx-font-size: 11px;" text="Zoom:" />
+                        <HBox spacing="4.0" alignment="CENTER">
+                            <children>
+                                <Button fx:id="btnZoomIn" mnemonicParsing="false" onAction="#OnZoomIn" prefWidth="35.0" style="-fx-font-weight: bold;" text="+" />
+                                <Button fx:id="btnZoomOut" mnemonicParsing="false" onAction="#OnZoomOut" prefWidth="35.0" style="-fx-font-weight: bold;" text="-" />
+                                <Button fx:id="btnResetZoom" mnemonicParsing="false" onAction="#OnResetZoom" prefWidth="35.0" style="-fx-font-size: 10px;" text="R" />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+
+            </children>
+        </VBox>
+    </right>
 </BorderPane>

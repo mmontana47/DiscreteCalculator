@@ -36,7 +36,7 @@ public class GraphImporterTXT {
             if (paneH <= 0) paneH = 500;
             double centerX = paneW / 2;
             double centerY = paneH / 2;
-            double radius = Math.max(80, Math.min(centerX, centerY) - VertexDrawn.circleRadius - 20);
+            double radius = Math.max(80, Math.min(centerX, centerY) - VertexDrawn.circleRadius.get() - 20);
 
             for (int i = 0; i < n; i++) {
                 double angle = 2 * Math.PI * i / n;
