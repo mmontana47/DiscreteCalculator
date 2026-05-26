@@ -13,31 +13,40 @@ public class VertexDrawn extends StackPane {
     private String id;
     public static final DoubleProperty circleRadius = StyleSettings.get().vertexRadiusProperty();
     private double mouseX, mouseY;
-    private boolean wasDragged=false;
+    private boolean wasDragged = false;
     private final Circle circle;
     private final Label label;
+    private final Label distanceLabel;
 
     private static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
     private static final PseudoClass BFS_VISITED = PseudoClass.getPseudoClass("bfs-visited");
     private static final PseudoClass DFS_VISITED = PseudoClass.getPseudoClass("dfs-visited");
 
-    public VertexDrawn(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag){
+    public VertexDrawn(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
         this.id = id;
         this.circle = new Circle(x, y, circleRadius.get());
         circle.radiusProperty().bind(circleRadius);
 
         this.label = new Label(id);
 
+
+        this.distanceLabel = new Label();
+
+        this.distanceLabel.translateYProperty().bind(circleRadius.add(15));
+
         this.getStyleClass().add("vertex");
         this.circle.getStyleClass().add("vertex-circle");
         this.label.getStyleClass().add("vertex-label");
+        //this.distanceLabel.getStyleClass().add("distance-label"); //DODAC!
 
-        this.getChildren().addAll(circle, label);
-        this.setLayoutX(x-StyleSettings.get().getVertexRadius());
-        this.setLayoutY(y-StyleSettings.get().getVertexRadius());
+
+        this.getChildren().addAll(circle, label, distanceLabel);
+
+        this.setLayoutX(x - StyleSettings.get().getVertexRadius());
+        this.setLayoutY(y - StyleSettings.get().getVertexRadius());
 
         this.setOnMousePressed(event -> {
-            wasDragged=false;
+            wasDragged = false;
             if(!canDrag.getAsBoolean()) return;
             mouseX = event.getSceneX() - this.getLayoutX();
             mouseY = event.getSceneY() - this.getLayoutY();
@@ -67,6 +76,30 @@ public class VertexDrawn extends StackPane {
         this.label.setText(id);
     }
 
+
+    //################# ALGORITHM PLAYER ####################
+    public void setFillColor(String hexColor) {
+        if (hexColor == null || hexColor.isEmpty()) {
+            circle.setStyle("");
+        } else {
+            circle.setStyle("-fx-fill: " + hexColor + ";");
+        }
+    }
+
+    public void setBottomLabelText(String text) {
+        distanceLabel.setText(text == null ? "" : text);
+    }
+
+    public void setX(double x) {
+        this.setLayoutX(x - StyleSettings.get().getVertexRadius());
+    }
+
+    public void setY(double y) {
+        this.setLayoutY(y - StyleSettings.get().getVertexRadius());
+    }
+
+
+
     public void markVisited(String algorithmType) {
         pseudoClassStateChanged(BFS_VISITED, "BFS".equals(algorithmType));
         pseudoClassStateChanged(DFS_VISITED, "DFS".equals(algorithmType));
@@ -84,5 +117,7 @@ public class VertexDrawn extends StackPane {
         pseudoClassStateChanged(BFS_VISITED, false);
         pseudoClassStateChanged(DFS_VISITED, false);
         pseudoClassStateChanged(SELECTED, false);
+        setFillColor(null);
+        setBottomLabelText(null);
     }
 }
