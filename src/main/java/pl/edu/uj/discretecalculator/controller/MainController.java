@@ -2,14 +2,12 @@ package pl.edu.uj.discretecalculator.controller;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
-import com.google.gson.JsonSyntaxException;
 import pl.edu.uj.discretecalculator.io.GraphExporter;
 import pl.edu.uj.discretecalculator.io.GraphExporterTXT;
 import pl.edu.uj.discretecalculator.io.GraphImporter;
@@ -22,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -33,6 +32,7 @@ import pl.edu.uj.discretecalculator.algorithm.DFSResult;
 import pl.edu.uj.discretecalculator.model.graph.Edge;
 import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.model.graph.Vertex;
+import pl.edu.uj.discretecalculator.view.layout.ForceDirectedLayout;
 
 public class MainController {
     private CanvasManager canvas;
@@ -44,6 +44,10 @@ public class MainController {
     private boolean panDragged = false;
     private static final double panLimit = 5.0;
     private double lastPanX, lastPanY;
+
+    //layout
+    private Timeline timeline = new Timeline();
+    private double temperature;
 
     @FXML private Pane graphPane;
     @FXML private ToggleGroup modeGroup;
@@ -60,6 +64,7 @@ public class MainController {
     @FXML private Button btnZoomIn;
     @FXML private Button btnZoomOut;
     @FXML private Button btnResetZoom;
+    @FXML public MenuItem autoLayout;
 
 
     @FXML
@@ -120,14 +125,6 @@ public class MainController {
             }
         });
 
-        graphPane.sceneProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                KeyCodeCombination CtrlMinus = new KeyCodeCombination(KeyCode.MINUS, KeyCombination.SHORTCUT_DOWN);
-                Mnemonic mn = new Mnemonic(btnZoomOut, CtrlMinus);
-                newValue.addMnemonic(mn);
-            }
-        });
-
         vertexSizeSlider.setMin(StyleSettings.MIN_VERTEX_RADIUS);
         vertexSizeSlider.setMax(StyleSettings.MAX_VERTEX_RADIUS);
         vertexSizeSlider.setValue(StyleSettings.get().getVertexRadius());
@@ -142,13 +139,6 @@ public class MainController {
     @FXML private void onSelectLightTheme() { applyTheme(Theme.LIGHT); }
     @FXML private void onSelectDarkTheme()  { applyTheme(Theme.DARK);  }
 
-    @FXML
-    private void onResetView() {
-        if (activeAnimation != null) return;
-        clearSelection();
-        resetCanvasStyles();
-    }
-
     private void applyTheme(Theme theme) {
         var scene = graphPane.getScene();
         if (scene == null) return;
@@ -156,6 +146,38 @@ public class MainController {
         if (theme == Theme.LIGHT) lightThemeItem.setSelected(true);
         else darkThemeItem.setSelected(true);
     }
+
+
+    @FXML
+    private void onResetView() {
+        if (activeAnimation != null) return;
+        clearSelection();
+        resetCanvasStyles();
+    }
+
+    @FXML
+    private void onAutoLayout() {
+        if(timeline!=null) timeline.stop();
+        ForceDirectedLayout layout = new ForceDirectedLayout(canvas);
+        double t0 = canvas.getGraphPane().getWidth()/15;
+        int iterations = 300;
+        AtomicInteger i= new AtomicInteger();
+        temperature = t0;
+        layout.turbulence();
+        timeline = new Timeline();
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(15), e -> {
+            i.getAndIncrement();
+           layout.iteration(temperature);
+           temperature=t0*(1- (double) i.get() /iterations);
+           if(i.get() >= iterations) {
+               timeline.stop();
+           }
+        });
+        timeline.getKeyFrames().add(keyFrame);
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
+
 
     @FXML
     private void newGraph() {
@@ -214,17 +236,17 @@ public class MainController {
 
     //graph vizual properties
     @FXML
-    public void OnZoomIn(ActionEvent actionEvent) {
+    public void OnZoomIn() {
         viewZoom.zoomIn(graphPane.getWidth()/2, graphPane.getHeight()/2);
     }
 
     @FXML
-    public void OnZoomOut(ActionEvent actionEvent) {
+    public void OnZoomOut() {
         viewZoom.zoomOut(graphPane.getWidth()/2, graphPane.getHeight()/2);
     }
 
     @FXML
-    public void OnResetZoom(ActionEvent actionEvent) {
+    public void OnResetZoom() {
         viewZoom.reset();
     }
 
@@ -444,7 +466,6 @@ public class MainController {
         }
     }
 
-    // Filename takes priority (it's what the user typed); fall back to the selected filter.
     private static boolean decideIsTxt(File file, FileChooser.ExtensionFilter selected) {
         String name = file.getName().toLowerCase();
         if (name.endsWith(".txt"))  return true;

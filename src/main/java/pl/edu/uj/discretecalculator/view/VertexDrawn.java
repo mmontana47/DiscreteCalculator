@@ -2,6 +2,7 @@ package pl.edu.uj.discretecalculator.view;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.css.PseudoClass;
+import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
@@ -16,6 +17,7 @@ public class VertexDrawn extends StackPane {
     private boolean wasDragged=false;
     private final Circle circle;
     private final Label label;
+    private Point2D displacement;
 
     private static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
     private static final PseudoClass BFS_VISITED = PseudoClass.getPseudoClass("bfs-visited");
@@ -24,6 +26,7 @@ public class VertexDrawn extends StackPane {
     public VertexDrawn(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag){
         this.id = id;
         this.circle = new Circle(x, y, circleRadius.get());
+        this.displacement = Point2D.ZERO;
         circle.radiusProperty().bind(circleRadius);
 
         this.label = new Label(id);
@@ -71,6 +74,14 @@ public class VertexDrawn extends StackPane {
         pseudoClassStateChanged(BFS_VISITED, "BFS".equals(algorithmType));
         pseudoClassStateChanged(DFS_VISITED, "DFS".equals(algorithmType));
     }
+
+    public void addDisplacement(Point2D point) {this.displacement = this.displacement.add(point);}
+
+    public void removeDisplacement(Point2D point) {this.displacement = this.displacement.subtract(point);}
+
+    public void resetDisplacement() {this.displacement = Point2D.ZERO;}
+
+    public Point2D getDisplacement() {return displacement;}
 
     public void select() {
         pseudoClassStateChanged(SELECTED, true);
