@@ -56,7 +56,15 @@ public class Graph<V> {
     }
 
     public List<Vertex<V>> getVertices() {
-        return new ArrayList<>(adjacencyList.keySet());
+                return new ArrayList<>(adjacencyList.keySet());
+            }
+
+    public Set<Edge<V>> getEdges() {
+        Set<Edge<V>> allEdges = new HashSet<>();
+        for (List<Edge<V>> edges : adjacencyList.values()) {
+            allEdges.addAll(edges);
+        }
+        return allEdges;
     }
 
     public List<Edge<V>> getIncidentEdges(Vertex<V> vertex) {
