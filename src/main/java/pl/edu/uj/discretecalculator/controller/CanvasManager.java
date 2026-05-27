@@ -23,6 +23,24 @@ public class CanvasManager {
         updateCounts();
     }
 
+    public VertexDrawn getVertexById(String id) {
+        for (VertexDrawn v : vertices) {
+            if (v.getVertexId().equals(id)) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    public EdgeDrawn getEdgeById(String id) {
+        for (EdgeDrawn e : edges) {
+            if (e.getEdgeId().equals(id))
+                return e;
+        }
+
+        return null;
+    }
+
     public Pane getGraphPane() { return graphPane; }
 
     public List<VertexDrawn> getVertices() { return Collections.unmodifiableList(vertices); }
@@ -40,8 +58,8 @@ public class CanvasManager {
         return vertex;
     }
 
-    public EdgeDrawn createEdge(VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
-        EdgeDrawn edge = new EdgeDrawn(source, target, onClick);
+    public EdgeDrawn createEdge(String id, VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
+        EdgeDrawn edge = new EdgeDrawn(id, source, target, onClick);
         attachEdge(edge);
         return edge;
     }
@@ -107,5 +125,14 @@ public class CanvasManager {
 
     private void updateCounts() {
         countsLabel.setText("V: " + vertices.size() + "\t E: " + edges.size());
+    }
+
+    public void resetAllStyles() {
+        for (VertexDrawn v : vertices) {
+            v.resetStyle();
+        }
+        for (EdgeDrawn e : edges) {
+            e.resetStyle();
+        }
     }
 }
