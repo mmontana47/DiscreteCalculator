@@ -1,9 +1,7 @@
 package pl.edu.uj.discretecalculator.view.layout;
 
 import javafx.geometry.Point2D;
-import javafx.scene.layout.Pane;
 import pl.edu.uj.discretecalculator.controller.CanvasManager;
-import pl.edu.uj.discretecalculator.io.GraphDocument;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.StyleSettings;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
@@ -12,24 +10,48 @@ import java.util.Random;
 
 public class ForceDirectedLayout {
     private final CanvasManager canvas;
-    private final double IDEAL_LENGTH;
+    private double IDEAL_LENGTH;
+    private double K_GRAVITY;
     private static final double EPS = 0.01;
+    private static final double DAMPING = 0.5;
     private final Random rng = new Random();
-    private final double K_GRAVITY;
+
+    private double liveTemperature = 0.0;
+    public static final double MIN_TEMP = 0.9;
+    public static final double KICK_TEMP = 35.0;
+    public static final double COOL_FACTOR = 0.97;
 
     public ForceDirectedLayout(CanvasManager canvas) {
         this.canvas = canvas;
-        int n = Math.max(2, canvas.getVertices().size());
+        recomputeParams();
+    }
+
+    public void recomputeParams() {
+        int n = Math.max(8, canvas.getVertices().size());
         int m = canvas.getEdges().size();
         double maxEdges = n * (n - 1) / 2.0;
         double density = Math.clamp(m / maxEdges, 0.0, 1.0);
-        double kScale  = 0.4 + 1.4 * Math.pow(density, 1.5);
-        K_GRAVITY      = -0.2 * (1.0 - density);
+        double kScale  = 0.4 + 1.8 * Math.pow(density, 0.9);
+        K_GRAVITY = -0.1 - 0.8 * (1.0 - density);
         double AREA = canvas.getGraphPane().getWidth() * canvas.getGraphPane().getHeight();
-        IDEAL_LENGTH = kScale * Math.sqrt(AREA / n);
+        double maxIdeal = Math.min(canvas.getGraphPane().getWidth(), canvas.getGraphPane().getHeight()) / 4.0;
+        IDEAL_LENGTH = kScale * Math.min(maxIdeal, Math.sqrt(AREA / n));
     }
-    private double force_Edges(double d){ return d*d/IDEAL_LENGTH;}
-    private double force_Vertices(double d){ return IDEAL_LENGTH*IDEAL_LENGTH/d;}
+
+    public void tick() {
+        recomputeParams();
+        liveTemperature = Math.max(MIN_TEMP, liveTemperature*COOL_FACTOR);
+        iteration(liveTemperature);
+    }
+
+    public void kick() {
+        recomputeParams();
+        liveTemperature = Math.max(liveTemperature, KICK_TEMP);
+    }
+    private double force_Edges(double d){ return 0.5*d*d/IDEAL_LENGTH;}
+    private double force_Vertices(double d){
+        return d < 3*IDEAL_LENGTH ? IDEAL_LENGTH*IDEAL_LENGTH/d : 0;
+    }
 
     private Point2D calcForce(VertexDrawn v, VertexDrawn u){
         Point2D delta = new Point2D(v.getLayoutX() - u.getLayoutX(), v.getLayoutY() - u.getLayoutY());
@@ -69,7 +91,8 @@ public class ForceDirectedLayout {
         }
 
         for(VertexDrawn v : canvas.getVertices()){
-            final double DAMPING = 0.5;
+            if (v.isPinned()) continue;   // user trzyma wierzchołek myszą — nie ruszaj
+
             double magnitude = v.getDisplacement().magnitude();
             Point2D normalize = v.getDisplacement().normalize();
             double step = Math.min(magnitude, temperature) * DAMPING;
@@ -80,7 +103,6 @@ public class ForceDirectedLayout {
             v.setLayoutX(Math.clamp(v.getLayoutX(), 0, canvas.getGraphPane().getWidth()-2*r));
             v.setLayoutY(Math.clamp(v.getLayoutY(), 0, canvas.getGraphPane().getHeight()-2*r));
         }
-
     }
 
     public void turbulence(){

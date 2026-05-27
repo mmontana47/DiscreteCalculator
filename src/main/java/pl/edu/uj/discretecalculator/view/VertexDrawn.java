@@ -15,6 +15,7 @@ public class VertexDrawn extends StackPane {
     public static final DoubleProperty circleRadius = StyleSettings.get().vertexRadiusProperty();
     private double mouseX, mouseY;
     private boolean wasDragged=false;
+    private boolean pinned = false;
     private final Circle circle;
     private final Label label;
     private Point2D displacement;
@@ -44,9 +45,14 @@ public class VertexDrawn extends StackPane {
             if(!canDrag.getAsBoolean()) return;
             mouseX = event.getSceneX() - this.getLayoutX();
             mouseY = event.getSceneY() - this.getLayoutY();
+            pinned = true;
 
             this.toFront();
             event.consume();
+        });
+
+        this.setOnMouseReleased(event -> {
+            pinned = false;
         });
 
         this.setOnMouseClicked(event -> {
@@ -82,6 +88,8 @@ public class VertexDrawn extends StackPane {
     public void resetDisplacement() {this.displacement = Point2D.ZERO;}
 
     public Point2D getDisplacement() {return displacement;}
+
+    public boolean isPinned() {return pinned;}
 
     public void select() {
         pseudoClassStateChanged(SELECTED, true);

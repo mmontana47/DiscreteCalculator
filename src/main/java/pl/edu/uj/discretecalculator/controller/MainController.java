@@ -49,6 +49,10 @@ public class MainController {
     private Timeline timeline = new Timeline();
     private double temperature;
 
+    //live layout
+    private Timeline liveTimeline;
+    private ForceDirectedLayout liveEngine;
+
     @FXML private Pane graphPane;
     @FXML private ToggleGroup modeGroup;
     @FXML private Label modeLabel;
@@ -65,6 +69,7 @@ public class MainController {
     @FXML private Button btnZoomOut;
     @FXML private Button btnResetZoom;
     @FXML public MenuItem autoLayout;
+    @FXML private CheckMenuItem liveLayout;
 
 
     @FXML
@@ -155,9 +160,36 @@ public class MainController {
         resetCanvasStyles();
     }
 
+    //Auto Layout
+    @FXML
+    private void onToggleLiveLayout() {
+        if (liveLayout.isSelected()) {
+            if (timeline != null) timeline.stop();
+
+            liveEngine = new ForceDirectedLayout(canvas);
+            liveEngine.kick();
+            liveTimeline = new Timeline(new KeyFrame(Duration.millis(25), e -> liveEngine.tick()));
+            liveTimeline.setCycleCount(Timeline.INDEFINITE);
+            liveTimeline.play();
+        } else {
+            if (liveTimeline != null) liveTimeline.stop();
+            liveEngine = null;
+        }
+    }
+
+
+    private void kickLiveLayout() {
+        if (liveEngine != null && liveLayout.isSelected()) {
+            liveEngine.kick();
+        }
+    }
+
     @FXML
     private void onAutoLayout() {
         if(timeline!=null) timeline.stop();
+        if(liveTimeline!=null) liveTimeline.stop();
+        if(liveLayout.isSelected()) {liveLayout.setSelected(false);}
+
         ForceDirectedLayout layout = new ForceDirectedLayout(canvas);
         double t0 = canvas.getGraphPane().getWidth()/15;
         int iterations = 300;
@@ -199,6 +231,7 @@ public class MainController {
         clearSelection();
         history.undo();
         refreshUndoRedoState();
+        kickLiveLayout();
     }
 
     @FXML
@@ -207,6 +240,7 @@ public class MainController {
         clearSelection();
         history.redo();
         refreshUndoRedoState();
+        kickLiveLayout();
     }
 
     @FXML private void onBuildCycle() {
@@ -214,24 +248,28 @@ public class MainController {
         OptionalInt n = promptForInt("Cycle", "Build cycle C_n", "n" );
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.cycle(buildContext(),  n.getAsInt()));
+        kickLiveLayout();
     }
     @FXML private void onBuildComplete() {
         clearSelection();
         OptionalInt n = promptForInt("Clique", "Build clique K_n", "n");
         if(n.isEmpty()) return;
         runCommand(GraphBuilders.clique(buildContext(),  n.getAsInt()));
+        kickLiveLayout();
     }
     @FXML private void onBuildBipartite() {
         clearSelection();
         Optional<int[]> n_m = promptForBipartite();
         if(n_m.isEmpty()) return;
         runCommand(GraphBuilders.bipartite(buildContext(),  n_m.get()[0], n_m.get()[1]));
+        kickLiveLayout();
     }
     @FXML private void onBuildTree() {
         clearSelection();
         OptionalInt n = promptForInt("Tree", "Build random tree on n vertices", "n");
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.randomTree(buildContext(),  n.getAsInt()));
+        kickLiveLayout();
     }
 
     //graph vizual properties
@@ -351,6 +389,7 @@ public class MainController {
             runCommand(new AddVertexCommand(canvas, e.getX(), e.getY(),
                     this::onVertexClick,
                     () -> (currentMode() == Mode.MOVE)));
+            kickLiveLayout();
         } else if ((currentMode() == Mode.ADD_EDGE) && source != null) {
             clearSelection();
         }
@@ -369,9 +408,13 @@ public class MainController {
                 } else {
                     runCommand(new AddEdgeCommand(canvas, source, vertex, this::onEdgeClick));
                     clearSelection();
+                    kickLiveLayout();
                 }
             }
-            case DELETE -> runCommand(new RemoveVertexCommand(canvas, vertex));
+            case DELETE -> {
+                runCommand(new RemoveVertexCommand(canvas, vertex));
+                kickLiveLayout();
+            }
             case RUN_BFS -> runAndAnimateAlgorithm(vertex, "BFS");
             case RUN_DFS -> runAndAnimateAlgorithm(vertex, "DFS");
             case null -> {}
@@ -382,7 +425,10 @@ public class MainController {
     private void onEdgeClick(EdgeDrawn edge) {
         if (activeAnimation != null) return;
         switch (currentMode()) {
-            case Mode.DELETE -> runCommand(new RemoveEdgeCommand(canvas, edge));
+            case Mode.DELETE -> {
+                runCommand(new RemoveEdgeCommand(canvas, edge));
+                kickLiveLayout();
+            }
             case null -> {}
             default -> {}
         }
@@ -424,10 +470,11 @@ public class MainController {
         clearSelection();
         try {
             if (isTxt) GraphImporterTXT.importFromTxt(file, buildContext());
-            else       GraphImporter.importFrom(file, buildContext());
+            else GraphImporter.importFrom(file, buildContext());
 
             history.clear();
             refreshUndoRedoState();
+            kickLiveLayout();
         } catch (Exception ex) {
             Alert a = new Alert(Alert.AlertType.ERROR, "Open failed: " + ex.getMessage(), ButtonType.OK);
             a.setHeaderText("Import exception");
