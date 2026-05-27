@@ -5,7 +5,7 @@ import pl.edu.uj.discretecalculator.exception.TopologicalSortException;
 import pl.edu.uj.discretecalculator.model.graph.*;
 
 public class TopologicalSort<V> implements AlgorithmicInterface<V,List<Vertex<V>>>{
-    ArrayList<Vertex<V>>toposort;
+    TopoSortResult<V> toposort;
     DirectedGraph<V> modifiable_graph;
     @Override
     public String algorithmName(){
@@ -15,7 +15,7 @@ public class TopologicalSort<V> implements AlgorithmicInterface<V,List<Vertex<V>
     @Override
     public List<Vertex<V>> start(Graph<V> graph)
     {
-        toposort=new ArrayList<>();
+        toposort=new TopoSortResult<>();
         modifiable_graph=new DirectedGraph<>("temporary");
         for(Vertex<V> v:graph.getVertices())
         {
@@ -30,9 +30,9 @@ public class TopologicalSort<V> implements AlgorithmicInterface<V,List<Vertex<V>
             }
         }
         topoSort(modifiable_graph);
-        if(toposort.size()!=graph.getVertices().size())
+        if(toposort.getResult().size()!=graph.getVertices().size())
             throw new TopologicalSortException("Graph contains cycle");
-        return toposort;
+        return toposort.getResult();
     }
 
     private void topoSort(DirectedGraph<V> modifiable_graph)
@@ -43,7 +43,7 @@ public class TopologicalSort<V> implements AlgorithmicInterface<V,List<Vertex<V>
             if(modifiable_graph.getNeighbors(v).isEmpty())
             {
                 modifiable_graph.deleteVertex(v);
-                toposort.add(v);
+                toposort.getResult().add(v);
                 contains_degree_zero=true;
             }
         }
