@@ -21,7 +21,7 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V,DijkstraAlgo
     @Override
     public DijkstraAlgorithmResult<V> start(Graph<V> g)
     {
-        if (!(g instanceof WeightedGraph)) {
+        if (!(g instanceof WeightedGraph<?>)) {
             throw new IllegalArgumentException("Algorytm Dijkstry wymaga grafu ważonego (WeightedGraph).");
         }
         DijkstraAlgorithmResult<V> result=new DijkstraAlgorithmResult<>();
@@ -56,12 +56,14 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V,DijkstraAlgo
             {
                 WeightedEdge<V> edge=(WeightedEdge<V>) e;
                 Vertex<V> next_vertex;
-                if(edge.getTarget().equals(current_vertex))
-                {
-                    next_vertex=edge.getSource();
-                }else
-                {
+                if(edge instanceof WeightedDirectedEdge<?>)
                     next_vertex=edge.getTarget();
+                else {
+                    if (edge.getTarget().equals(current_vertex)) {
+                        next_vertex = edge.getSource();
+                    } else {
+                        next_vertex = edge.getTarget();
+                    }
                 }
                 if(result.getVisited().contains(next_vertex))
                     continue;

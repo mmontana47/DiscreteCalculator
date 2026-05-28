@@ -57,6 +57,19 @@ public class BellmanFordAlgorithm<V> implements AlgorithmicInterface<V,BellmanFo
                         result.getParents().put(u,v);
                     }
                 }
+                if(!(edge instanceof WeightedDirectedEdge<?>))
+                {
+                    if(result.getDistance().get(u)!=Double.POSITIVE_INFINITY)
+                    {
+                        double newDist=result.getDistance().get(u)+dist;
+                        if(newDist<result.getDistance().get(v))
+                        {
+                            result.getDistance().put(v,newDist);
+                            result.getDistanceChange().get(v).add(newDist);
+                            result.getParents().put(v,u);
+                        }
+                    }
+                }
             }
         }
         //sprawdzenie cykli o ujemnej wadze
@@ -69,6 +82,13 @@ public class BellmanFordAlgorithm<V> implements AlgorithmicInterface<V,BellmanFo
             if(result.getDistance().get(v)!=Double.POSITIVE_INFINITY&&result.getDistance().get(v)+weight<result.getDistance().get(u))
             {
                 throw new BellmanFordAlgorithmException("Graph contains negative-weight cycle attainable from start.");
+            }
+            if(!(edge instanceof WeightedDirectedEdge<?>))
+            {
+                if(result.getDistance().get(u)!=Double.POSITIVE_INFINITY&&result.getDistance().get(u)+weight<result.getDistance().get(v))
+                {
+                    throw new BellmanFordAlgorithmException("Graph contains negative-weight cycle attainable from start.");
+                }
             }
         }
         if(result.getDistance().get(end)!=Double.POSITIVE_INFINITY)
