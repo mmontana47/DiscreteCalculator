@@ -527,9 +527,7 @@ public class MainController {
     // Silnik odtwarzacza animacji
     private AlgorithmPlayer player;
 
-    /**
-     * Buduje czysty graf matematyczny (Model) na podstawie obiektów narysowanych na płótnie.
-     */
+
     private Graph<String> buildMathematicalGraph() {
         Graph<String> mathGraph = new Graph<>("CanvasGraph");
         Map<String, Vertex<String>> dictionary = new HashMap<>();
