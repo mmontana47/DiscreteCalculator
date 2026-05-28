@@ -58,6 +58,12 @@ public class CanvasManager {
         return vertex;
     }
 
+    public EdgeDrawn createEdge(VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
+        EdgeDrawn edge = new EdgeDrawn(String.valueOf(edges.size()), source, target, onClick);
+        attachEdge(edge);
+        return edge;
+    }
+
     public EdgeDrawn createEdge(String id, VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
         EdgeDrawn edge = new EdgeDrawn(id, source, target, onClick);
         attachEdge(edge);
