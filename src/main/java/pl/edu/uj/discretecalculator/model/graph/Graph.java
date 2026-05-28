@@ -7,21 +7,13 @@ public class Graph<V> {
     private final Map<Vertex<V>, List<Edge<V>>> adjacencyList = new LinkedHashMap<>();
 
     private final String name;
-    private boolean isDirected = false;
-    private boolean colouredVertices = false;
-    private boolean colouredEdges = false;
+
 
     public Graph(String name) {
         this.name = name;
     }
 
-    public Graph(String name, boolean isDirected, boolean colouredVertices, boolean colouredEdges) {
-        this.name = name;
-        this.isDirected = isDirected;
-        this.colouredVertices = colouredVertices;
-        this.colouredEdges = colouredEdges;
-    }
-
+    public String getName(){return name;}
     public boolean addVertex(Vertex<V> vertex) {
         if (adjacencyList.containsKey(vertex)) {
             return false;
@@ -36,9 +28,9 @@ public class Graph<V> {
 
         adjacencyList.get(edge.getSource()).add(edge);
 
-        if (!isDirected) {
-            adjacencyList.get(edge.getTarget()).add(edge);
-        }
+
+        adjacencyList.get(edge.getTarget()).add(edge);
+
     }
 
     public boolean deleteVertex(Vertex<V> vertex) {
@@ -57,14 +49,22 @@ public class Graph<V> {
         if (adjacencyList.containsKey(edge.getSource())) {
             removed = adjacencyList.get(edge.getSource()).remove(edge);
         }
-        if (!isDirected && adjacencyList.containsKey(edge.getTarget())) {
+        if ( adjacencyList.containsKey(edge.getTarget())) {
             removed = adjacencyList.get(edge.getTarget()).remove(edge) || removed;
         }
         return removed;
     }
 
     public List<Vertex<V>> getVertices() {
-        return new ArrayList<>(adjacencyList.keySet());
+                return new ArrayList<>(adjacencyList.keySet());
+            }
+
+    public Set<Edge<V>> getEdges() {
+        Set<Edge<V>> allEdges = new HashSet<>();
+        for (List<Edge<V>> edges : adjacencyList.values()) {
+            allEdges.addAll(edges);
+        }
+        return allEdges;
     }
 
     public List<Edge<V>> getIncidentEdges(Vertex<V> vertex) {
@@ -80,6 +80,10 @@ public class Graph<V> {
         return neighbors;
     }
 
+    public Map<Vertex<V>, List<Edge<V>>> getAdjacencyList() {
+        return adjacencyList;
+    }
+
     public int getSize() {
         return adjacencyList.size();
     }
@@ -90,9 +94,6 @@ public class Graph<V> {
         if (o == null || getClass() != o.getClass()) return false;
         Graph<?> graph = (Graph<?>) o;
         if (this.getSize() != graph.getSize() ||
-                isDirected != graph.isDirected ||
-                colouredVertices != graph.colouredVertices ||
-                colouredEdges != graph.colouredEdges ||
                 !Objects.equals(name, graph.name)) {
             return false;
         }
@@ -115,7 +116,7 @@ public class Graph<V> {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(name, this.getSize(), isDirected, colouredVertices, colouredEdges);
+        int result = Objects.hash(name, this.getSize());
         int edgesHash = 0;
         for (Map.Entry<Vertex<V>, List<Edge<V>>> entry : adjacencyList.entrySet()) {
             int keyHash = entry.getKey() != null ? entry.getKey().hashCode() : 0;
