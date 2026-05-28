@@ -2,7 +2,7 @@ package pl.edu.uj.discretecalculator.model.graph;
 
 import pl.edu.uj.discretecalculator.exception.WrongEdgeTypeException;
 
-public class WeightedDirectedGraph<V> extends Graph<V> {
+public class WeightedDirectedGraph<V> extends WeightedGraph<V> {
 
     public WeightedDirectedGraph(String name) {
         super(name);

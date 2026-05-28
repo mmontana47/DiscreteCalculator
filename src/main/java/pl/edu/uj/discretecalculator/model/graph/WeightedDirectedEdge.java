@@ -2,7 +2,7 @@ package pl.edu.uj.discretecalculator.model.graph;
 
 import java.util.Objects;
 
-public class WeightedDirectedEdge<V> extends Edge<V> {
+public class WeightedDirectedEdge<V> extends WeightedEdge<V> {
     private double weight = 1.0;
 
     public WeightedDirectedEdge(Vertex<V> source, Vertex<V> target, int id) {
@@ -14,13 +14,7 @@ public class WeightedDirectedEdge<V> extends Edge<V> {
         this.weight = weight;
     }
 
-    public double getWeight() {
-        return weight;
-    }
 
-    public void setWeight(double weight) {
-        this.weight = weight;
-    }
 
     @Override
     public boolean equals(Object o) {
