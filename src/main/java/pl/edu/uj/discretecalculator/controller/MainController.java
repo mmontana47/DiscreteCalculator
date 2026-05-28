@@ -58,27 +58,23 @@ public class MainController {
     @FXML private Label modeLabel;
     @FXML private Label hintLabel;
     @FXML private Label countsLabel;
-    @FXML private MenuItem undoItem;
-    @FXML private MenuItem redoItem;
-    @FXML private RadioMenuItem lightThemeItem;
-    @FXML private RadioMenuItem darkThemeItem;
-    @FXML private MenuItem resetViewItem;
+    @FXML private Button undoItem;
+    @FXML private Button redoItem;
+    @FXML private ToggleButton lightThemeItem;
+    @FXML private ToggleButton darkThemeItem;
+    @FXML private Button resetViewItem;
     @FXML private Slider vertexSizeSlider;
     @FXML private Slider edgeWidthSlider;
     @FXML private Button btnZoomIn;
     @FXML private Button btnZoomOut;
     @FXML private Button btnResetZoom;
-    @FXML public MenuItem autoLayout;
-    @FXML private CheckMenuItem liveLayout;
+    @FXML public Button autoLayout;
+    @FXML private ToggleButton liveLayout;
 
 
     @FXML
     private void initialize() {
         canvas = new CanvasManager(graphPane, countsLabel);
-        undoItem.setAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN));
-        redoItem.setAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.SHORTCUT_DOWN));
-
-        resetViewItem.setAccelerator(new KeyCodeCombination(KeyCode.ESCAPE));
         refreshUndoRedoState();
         viewZoom = new ViewZoom(graphPane, canvas);
 
@@ -127,6 +123,15 @@ public class MainController {
                 newValue.getAccelerators().put(
                         new KeyCodeCombination(KeyCode.MINUS, KeyCombination.SHORTCUT_DOWN),
                         () -> viewZoom.zoomOut(graphPane.getWidth() / 2, graphPane.getHeight() / 2));
+                newValue.getAccelerators().put(
+                        new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN),
+                        this::onUndo);
+                newValue.getAccelerators().put(
+                        new KeyCodeCombination(KeyCode.Y, KeyCombination.SHORTCUT_DOWN),
+                        this::onRedo);
+                newValue.getAccelerators().put(
+                        new KeyCodeCombination(KeyCode.ESCAPE),
+                        this::onResetView);
             }
         });
 
@@ -192,12 +197,12 @@ public class MainController {
 
         ForceDirectedLayout layout = new ForceDirectedLayout(canvas);
         double t0 = canvas.getGraphPane().getWidth()/15;
-        int iterations = 300;
+        int iterations = 120;
         AtomicInteger i= new AtomicInteger();
         temperature = t0;
         layout.turbulence();
         timeline = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(15), e -> {
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(25), e -> {
             i.getAndIncrement();
            layout.iteration(temperature);
            temperature=t0*(1- (double) i.get() /iterations);

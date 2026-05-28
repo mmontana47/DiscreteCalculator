@@ -4,12 +4,12 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 
 public final class StyleSettings {
-    public static final double MIN_VERTEX_RADIUS = 8.0;
-    public static final double MAX_VERTEX_RADIUS = 50.0;
+    public static final double MIN_VERTEX_RADIUS = 10.0;
+    public static final double MAX_VERTEX_RADIUS = 30.0;
     public static final double DEFAULT_VERTEX_RADIUS = 20.0;
 
     public static final double MIN_EDGE_WIDTH = 0.5;
-    public static final double MAX_EDGE_WIDTH = 8.0;
+    public static final double MAX_EDGE_WIDTH = 4.0;
     public static final double DEFAULT_EDGE_WIDTH = 2.0;
 
     private static final StyleSettings INSTANCE = new StyleSettings();

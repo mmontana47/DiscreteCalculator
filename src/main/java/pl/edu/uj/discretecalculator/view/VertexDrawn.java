@@ -91,6 +91,8 @@ public class VertexDrawn extends StackPane {
 
     public boolean isPinned() {return pinned;}
 
+    public void setPinned() {pinned = true;}
+
     public void select() {
         pseudoClassStateChanged(SELECTED, true);
     }

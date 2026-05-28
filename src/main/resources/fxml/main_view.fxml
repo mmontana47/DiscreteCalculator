@@ -1,97 +1,170 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.CheckMenuItem?>
-<?import javafx.scene.control.RadioMenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Slider?>
-<BorderPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.uj.discretecalculator.controller.MainController">
-   <top>
-      <VBox BorderPane.alignment="CENTER">
-         <children>
-            <MenuBar>
-              <menus>
-                <Menu mnemonicParsing="false" text="File">
-                  <items>
-                        <MenuItem mnemonicParsing="false" text="New" onAction="#newGraph" />
-                    <MenuItem mnemonicParsing="false" text="Open" onAction="#onOpen" />
-                        <MenuItem mnemonicParsing="false" text="Save" onAction="#onSave"/>
-                        <MenuItem mnemonicParsing="false" text="Exit" onAction="#onExit"/>
-                  </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="Edit">
-                  <items>
-                    <MenuItem fx:id="undoItem" mnemonicParsing="false" text="Undo" onAction="#onUndo"/>
-                    <MenuItem fx:id="redoItem" mnemonicParsing="false" text="Redo" onAction="#onRedo"/>
-                  </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="Build">
-                  <items>
-                    <MenuItem mnemonicParsing="false" text="Cycle C_n"           onAction="#onBuildCycle"/>
-                    <MenuItem mnemonicParsing="false" text="Complete K_n"        onAction="#onBuildComplete"/>
-                    <MenuItem mnemonicParsing="false" text="Complete bipartite K_{n,m}" onAction="#onBuildBipartite"/>
-                    <MenuItem mnemonicParsing="false" text="Random tree Tn"     onAction="#onBuildTree"/>
-                  </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="View">
-                  <items>
-                    <fx:define>
-                        <ToggleGroup fx:id="themeGroup"/>
-                    </fx:define>
-                    <RadioMenuItem fx:id="lightThemeItem" mnemonicParsing="false" text="Light"
-                                   toggleGroup="$themeGroup" selected="true" onAction="#onSelectLightTheme"/>
-                    <RadioMenuItem fx:id="darkThemeItem"  mnemonicParsing="false" text="Dark"
-                                   toggleGroup="$themeGroup" onAction="#onSelectDarkTheme"/>
-                    <MenuItem fx:id="resetViewItem" mnemonicParsing="false" text="Reset View" onAction="#onResetView"/>
-                    <MenuItem fx:id="autoLayout" mnemonicParsing="false" text="Auto Layout" onAction="#onAutoLayout"/>
-                    <CheckMenuItem fx:id="liveLayout" mnemonicParsing="false" text="Live Layout" onAction="#onToggleLiveLayout"/>
-                  </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="Help">
-                  <items>
-                    <MenuItem mnemonicParsing="false" text="About" disable="true"/>
-                  </items>
-                </Menu>
-              </menus>
-            </MenuBar>
-            <ToolBar>
-              <items>
-                  <fx:define>
-                      <ToggleGroup fx:id = "modeGroup"/>
-                  </fx:define>
-                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Add Vertex" toggleGroup="$modeGroup"> </ToggleButton>
-                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Add Edge" toggleGroup="$modeGroup"> </ToggleButton>
-                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Delete" toggleGroup="$modeGroup"> </ToggleButton>
-                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Move" toggleGroup="$modeGroup"> </ToggleButton>
-                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Run BFS" toggleGroup="$modeGroup" > </ToggleButton>
-                  <ToggleButton prefHeight="26.0" prefWidth="90.0" text="Run DFS" toggleGroup="$modeGroup" > </ToggleButton>
-                  <Button prefHeight="26.0" prefWidth="100.0" style="-fx-background-color: #808080" text="Open Graph" onAction="#onOpen" />
-                  <Button prefHeight="26.0" prefWidth="100.0" style="-fx-background-color: #808080" text="Save Graph" onAction="#onSave" />
-              </items>
-               <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </padding>
-            </ToolBar>
-         </children>
-      </VBox>
-   </top>
-   <center>
-      <Pane fx:id="graphPane" BorderPane.alignment="CENTER" />
-   </center>
+<BorderPane prefHeight="600.0" prefWidth="900.0"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="pl.edu.uj.discretecalculator.controller.MainController">
+
+    <top>
+        <VBox BorderPane.alignment="CENTER">
+            <fx:define>
+                <ToggleGroup fx:id="modeGroup"/>
+                <ToggleGroup fx:id="themeGroup"/>
+            </fx:define>
+
+            <TabPane fx:id="ribbon" tabClosingPolicy="UNAVAILABLE" styleClass="ribbon">
+                <tabs>
+                    <Tab text="Edit Graph">
+                        <ToolBar styleClass="ribbon-bar">
+                            <items>
+                                <ToggleButton text="Add Vertex" toggleGroup="$modeGroup" prefWidth="90.0"/>
+                                <ToggleButton text="Add Edge" toggleGroup="$modeGroup" prefWidth="90.0"/>
+                                <ToggleButton text="Delete" toggleGroup="$modeGroup" prefWidth="90.0"/>
+                                <ToggleButton text="Move" toggleGroup="$modeGroup" prefWidth="90.0"/>
+
+                                <Separator orientation="VERTICAL"/>
+
+                                <Button fx:id="undoItem" text="Undo" onAction="#onUndo" prefWidth="70.0"/>
+                                <Button fx:id="redoItem" text="Redo" onAction="#onRedo" prefWidth="70.0"/>
+
+                                <Separator orientation="VERTICAL"/>
+
+                            </items>
+                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                        </ToolBar>
+                    </Tab>
+
+                    <Tab text = "Build">
+                        <ToolBar styleClass="ribbon-bar">
+                        <!-- builders -->
+                            <items>
+                                <Button text="Cycle Cn" onAction="#onBuildCycle" prefWidth="90.0"/>
+                                <Button text="Complete Kn" onAction="#onBuildComplete" prefWidth="110.0"/>
+                                <Button text="Bipartite Kn,m" onAction="#onBuildBipartite" prefWidth="120.0"/>
+                                <Button text="Random tree Tn" onAction="#onBuildTree" prefWidth="120.0"/>
+                            </items>
+                        </ToolBar>
+
+                    </Tab>
+
+                    <!-- algorithms -->
+                    <Tab text="Algorithms">
+                        <ToolBar styleClass="ribbon-bar">
+                            <items>
+                                <ToggleButton text="Run BFS" toggleGroup="$modeGroup" prefWidth="90.0"/>
+                                <ToggleButton text="Run DFS" toggleGroup="$modeGroup" prefWidth="90.0"/>
+
+                                <Separator orientation="VERTICAL"/>
+                                <Label text="(TODO: kolejne algorytmy)" styleClass="ribbon-hint"/>
+                            </items>
+                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                        </ToolBar>
+                    </Tab>
+
+                    <!-- View -->
+                    <Tab text="View">
+                        <ToolBar styleClass="ribbon-bar">
+                            <items>
+                                <ToggleButton fx:id="lightThemeItem" text="Light" toggleGroup="$themeGroup"
+                                              selected="true" onAction="#onSelectLightTheme" prefWidth="70.0"/>
+                                <ToggleButton fx:id="darkThemeItem"  text="Dark"  toggleGroup="$themeGroup"
+                                              onAction="#onSelectDarkTheme" prefWidth="70.0"/>
+
+                                <Separator orientation="VERTICAL"/>
+
+                                <Button fx:id="resetViewItem" text="Reset View" onAction="#onResetView"
+                                        prefWidth="100.0"/>
+
+                                <Separator orientation="VERTICAL"/>
+
+                                <Label text="Zoom:"/>
+                                <Button fx:id="btnZoomIn" text="+" onAction="#OnZoomIn" prefWidth="40.0"
+                                        style="-fx-font-weight: bold;"/>
+                                <Button fx:id="btnZoomOut" text="-" onAction="#OnZoomOut" prefWidth="40.0"
+                                        style="-fx-font-weight: bold;"/>
+                                <Button fx:id="btnResetZoom" text="R" onAction="#OnResetZoom" prefWidth="40.0"/>
+
+                                <Separator orientation="VERTICAL"/>
+
+                                <Button fx:id="autoLayout" text="Auto Layout"
+                                        onAction="#onAutoLayout" prefWidth="110.0"/>
+                                <ToggleButton fx:id="liveLayout" text="Live Layout"
+                                              onAction="#onToggleLiveLayout" prefWidth="110.0"/>
+                            </items>
+                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                        </ToolBar>
+                    </Tab>
+
+                    <!-- Graph view -->
+                    <Tab text="Graph appearance">
+                        <ToolBar styleClass="ribbon-bar">
+                            <items>
+                                <VBox spacing="2.0" prefWidth="200.0">
+                                    <children>
+                                        <Label text="Vertex size" styleClass="ribbon-hint"/>
+                                        <Slider fx:id="vertexSizeSlider" min="10.0" max="22.5" value="15.0"
+                                                showTickMarks="true"/>
+                                    </children>
+                                </VBox>
+
+                                <Separator orientation="VERTICAL"/>
+
+                                <VBox spacing="2.0" prefWidth="200.0">
+                                    <children>
+                                        <Label text="Edge width" styleClass="ribbon-hint"/>
+                                        <Slider fx:id="edgeWidthSlider" min="1.0" max="5.0" value="2.0"
+                                                showTickMarks="true"/>
+                                    </children>
+                                </VBox>
+
+                                <Separator orientation="VERTICAL"/>
+
+                                <Label text="(TODO: ColorPicker)" styleClass="ribbon-hint"/>
+                            </items>
+                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                        </ToolBar>
+                    </Tab>
+
+                    <!-- I/O -->
+                    <Tab text="File">
+                        <ToolBar styleClass="ribbon-bar">
+                            <items>
+                                <Button text="New"  onAction="#newGraph" prefWidth="80.0"/>
+                                <Button text="Open" onAction="#onOpen" prefWidth="80.0"/>
+                                <Button text="Save" onAction="#onSave" prefWidth="80.0"/>
+
+                                <Separator orientation="VERTICAL"/>
+
+                                <Button text="Exit" onAction="#onExit" prefWidth="80.0"/>
+                            </items>
+                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                        </ToolBar>
+                    </Tab>
+
+                </tabs>
+            </TabPane>
+        </VBox>
+    </top>
+
+    <center>
+        <Pane fx:id="graphPane" BorderPane.alignment="CENTER"/>
+    </center>
+
     <bottom>
         <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="8.0">
             <padding>
@@ -108,45 +181,5 @@
             </children>
         </HBox>
     </bottom>
-    <right>
-        <VBox prefWidth="140.0" spacing="10.0" style="-fx-background-color: #f4f4f4; -fx-border-color: #cccccc; -fx-border-width: 0 0 0 1;" BorderPane.alignment="CENTER">
-            <padding>
-                <Insets bottom="10.0" left="8.0" right="8.0" top="10.0" />
-            </padding>
-            <children>
 
-                <Label style="-fx-font-weight: bold; -fx-font-size: 11px;" text="Properties" />
-
-                <VBox spacing="2.0">
-                    <children>
-                        <Label style="-fx-font-size: 11px;" text="Vertices:" />
-                        <Slider fx:id="vertexSizeSlider" min="5.0" max="40.0" value="15.0" showTickMarks="true" />
-                    </children>
-                </VBox>
-
-                <VBox spacing="2.0">
-                    <children>
-                        <Label style="-fx-font-size: 11px;" text="Edges:" />
-                        <Slider fx:id="edgeWidthSlider" min="1.0" max="10.0" value="2.0" showTickMarks="true" />
-                    </children>
-                </VBox>
-
-                <Pane prefHeight="1.0" style="-fx-background-color: #cccccc;" />
-
-                <VBox spacing="5.0">
-                    <children>
-                        <Label style="-fx-font-size: 11px;" text="Zoom:" />
-                        <HBox spacing="4.0" alignment="CENTER">
-                            <children>
-                                <Button fx:id="btnZoomIn" mnemonicParsing="false" onAction="#OnZoomIn" prefWidth="35.0" style="-fx-font-weight: bold;" text="+" />
-                                <Button fx:id="btnZoomOut" mnemonicParsing="false" onAction="#OnZoomOut" prefWidth="35.0" style="-fx-font-weight: bold;" text="-" />
-                                <Button fx:id="btnResetZoom" mnemonicParsing="false" onAction="#OnResetZoom" prefWidth="35.0" style="-fx-font-size: 10px;" text="R" />
-                            </children>
-                        </HBox>
-                    </children>
-                </VBox>
-
-            </children>
-        </VBox>
-    </right>
 </BorderPane>
