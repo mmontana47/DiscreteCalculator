@@ -55,7 +55,7 @@ public class GraphImporterTXT {
                 int v = Integer.parseInt(edgeData[1]);
 
                 if (u >= 0 && u < n && v >= 0 && v < n) {
-                    canvas.createEdge(createdVertices[u], createdVertices[v], ctx.onEdgeClick());
+                    canvas.createEdge(u + "-" + v, createdVertices[u], createdVertices[v], ctx.onEdgeClick());
                 }
             }
         } catch (NumberFormatException e) {

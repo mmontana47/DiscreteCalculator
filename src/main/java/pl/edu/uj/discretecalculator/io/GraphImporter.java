@@ -50,7 +50,7 @@ public final class GraphImporter {
             VertexDrawn s = idToVertex.get(edge.source);
             VertexDrawn t = idToVertex.get(edge.target);
             if(s == null || t == null) continue;
-            canvas.createEdge(s,t,ctx.onEdgeClick());
+            canvas.createEdge(edge.source + "-" + edge.target, s, t, ctx.onEdgeClick());
         }
         canvas.renumber();
     }

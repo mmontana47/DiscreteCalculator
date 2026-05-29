@@ -91,8 +91,7 @@ public class ForceDirectedLayout {
         }
 
         for(VertexDrawn v : canvas.getVertices()){
-            if (v.isPinned()) continue;   // user trzyma wierzchołek myszą — nie ruszaj
-
+            if (v.isPinned()) continue;
             double magnitude = v.getDisplacement().magnitude();
             Point2D normalize = v.getDisplacement().normalize();
             double step = Math.min(magnitude, temperature) * DAMPING;
