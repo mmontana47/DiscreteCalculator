@@ -54,7 +54,6 @@ public class ViewZoom {
     }
 
     public void pan(double dx, double dy) {
-        double r = StyleSettings.get().getVertexRadius();
         for (VertexDrawn v : canvas.getVertices()) {
             v.setLayoutX(v.getLayoutX()+dx);
             v.setLayoutY(v.getLayoutY()+dy);

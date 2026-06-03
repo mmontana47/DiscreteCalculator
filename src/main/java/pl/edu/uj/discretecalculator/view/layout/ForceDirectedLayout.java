@@ -18,7 +18,7 @@ public class ForceDirectedLayout {
 
     private double liveTemperature = 0.0;
     public static final double MIN_TEMP = 0.9;
-    public static final double KICK_TEMP = 35.0;
+    public static final double KICK_TEMP = 25.0;
     public static final double COOL_FACTOR = 0.97;
 
     public ForceDirectedLayout(CanvasManager canvas) {

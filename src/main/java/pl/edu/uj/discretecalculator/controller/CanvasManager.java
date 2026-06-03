@@ -47,7 +47,7 @@ public class CanvasManager {
     public List<EdgeDrawn> getEdges() { return Collections.unmodifiableList(edges); }
 
     public VertexDrawn createVertex(double x, double y, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
-        VertexDrawn vertex = new VertexDrawn(x, y, String.valueOf(vertices.size()), onClick, canDrag);
+        VertexDrawn vertex = new VertexDrawn(x, y, nextAvailableId(), onClick, canDrag);
         attachVertex(vertex);
         return vertex;
     }
@@ -82,10 +82,19 @@ public class CanvasManager {
         updateCounts();
     }
 
+    //nie dziala jesli dane z klawiatury nie sa spojne
     public void renumber() {
         for (int i = 0; i < vertices.size(); i++) {
             vertices.get(i).setVertexId(String.valueOf(i));
         }
+    }
+
+
+
+    private String nextAvailableId(){
+        int i=0;
+        while (getVertexById(String.valueOf(i))!=null) i++;
+        return String.valueOf(i);
     }
 
     public void attachEdge(EdgeDrawn e) {

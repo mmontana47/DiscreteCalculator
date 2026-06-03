@@ -16,6 +16,8 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.TextArea?>
 <BorderPane prefHeight="600.0" prefWidth="900.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pl.edu.uj.discretecalculator.controller.MainController">
@@ -43,6 +45,8 @@
                                 <Button fx:id="redoItem" text="Redo" onAction="#onRedo" prefWidth="70.0"/>
 
                                 <Separator orientation="VERTICAL"/>
+
+                                <ToggleButton text="Quick Input" onAction="#onToggleInputPanel" prefWidth="100.0"/>
 
                             </items>
                             <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
@@ -110,36 +114,6 @@
                         </ToolBar>
                     </Tab>
 
-                    <!-- Graph view -->
-                    <Tab text="Graph appearance">
-                        <ToolBar styleClass="ribbon-bar">
-                            <items>
-                                <VBox spacing="2.0" prefWidth="200.0">
-                                    <children>
-                                        <Label text="Vertex size" styleClass="ribbon-hint"/>
-                                        <Slider fx:id="vertexSizeSlider" min="10.0" max="22.5" value="15.0"
-                                                showTickMarks="true"/>
-                                    </children>
-                                </VBox>
-
-                                <Separator orientation="VERTICAL"/>
-
-                                <VBox spacing="2.0" prefWidth="200.0">
-                                    <children>
-                                        <Label text="Edge width" styleClass="ribbon-hint"/>
-                                        <Slider fx:id="edgeWidthSlider" min="1.0" max="5.0" value="2.0"
-                                                showTickMarks="true"/>
-                                    </children>
-                                </VBox>
-
-                                <Separator orientation="VERTICAL"/>
-
-                                <Label text="(TODO: ColorPicker)" styleClass="ribbon-hint"/>
-                            </items>
-                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
-                        </ToolBar>
-                    </Tab>
-
                     <!-- I/O -->
                     <Tab text="File">
                         <ToolBar styleClass="ribbon-bar">
@@ -162,7 +136,39 @@
     </top>
 
     <center>
-        <Pane fx:id="graphPane" BorderPane.alignment="CENTER"/>
+        <StackPane>
+            <Pane fx:id="graphPane" BorderPane.alignment="CENTER"/>
+            <VBox fx:id="inputPanel"
+                  styleClass="input-panel"
+                  prefWidth="230" maxWidth="230"
+                  StackPane.alignment="CENTER_LEFT"
+                  translateX="-230">
+                <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+                <!-- Quick Input -->
+                <Label text="Quick Input" styleClass="input-panel-header"/>
+                <TextArea fx:id="edgeInput"
+                          prefRowCount="3"
+                          wrapText="true"/>
+
+                <Separator>
+                    <VBox.margin><Insets top="8" bottom="8"/></VBox.margin>
+                </Separator>
+
+                <!-- Graph appearance -->
+                <Label text="Appearance" styleClass="input-panel-header"/>
+
+                <Label text="Vertex size" styleClass="ribbon-hint"/>
+                <Slider fx:id="vertexSizeSlider" min="10.0" max="22.5" value="15.0"
+                        showTickMarks="true"/>
+
+                <Label text="Edge width" styleClass="ribbon-hint">
+                    <VBox.margin><Insets top="6"/></VBox.margin>
+                </Label>
+                <Slider fx:id="edgeWidthSlider" min="1.0" max="5.0" value="2.0"
+                        showTickMarks="true"/>
+            </VBox>
+        </StackPane>
     </center>
 
     <bottom>

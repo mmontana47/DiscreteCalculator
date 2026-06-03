@@ -190,3 +190,11 @@
 .dialog-pane .button {
     -fx-background-radius: 6;
 }
+
+.input-panel{
+    -fx-background-color: -app-surface;
+    -fx-border-color: transparent -app-border transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 12, 0, 4, 0);
+}
+

@@ -6,6 +6,7 @@ import pl.edu.uj.discretecalculator.view.builder.BuilderContext;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 
 public class GraphImporterTXT {
     public static void importFromTxt(File file, BuilderContext ctx) throws IOException {

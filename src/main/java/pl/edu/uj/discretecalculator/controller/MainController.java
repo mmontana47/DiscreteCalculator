@@ -1,5 +1,6 @@
 package pl.edu.uj.discretecalculator.controller;
 
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
@@ -7,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import pl.edu.uj.discretecalculator.io.GraphExporter;
 import pl.edu.uj.discretecalculator.io.GraphExporterTXT;
@@ -53,6 +55,8 @@ public class MainController {
     private Timeline liveTimeline;
     private ForceDirectedLayout liveEngine;
 
+    private boolean inputPanelOpen = false;
+
     @FXML private Pane graphPane;
     @FXML private ToggleGroup modeGroup;
     @FXML private Label modeLabel;
@@ -70,7 +74,8 @@ public class MainController {
     @FXML private Button btnResetZoom;
     @FXML public Button autoLayout;
     @FXML private ToggleButton liveLayout;
-
+    @FXML private VBox inputPanel;
+    @FXML private TextArea edgeInput;
 
     @FXML
     private void initialize() {
@@ -131,7 +136,20 @@ public class MainController {
                         this::onRedo);
                 newValue.getAccelerators().put(
                         new KeyCodeCombination(KeyCode.ESCAPE),
-                        this::onResetView);
+                        () -> {
+                            if(inputPanelOpen) onToggleInputPanel();
+                            else onResetView();
+                        });
+                newValue.getAccelerators().put(
+                        new KeyCodeCombination(KeyCode.I, KeyCombination.SHORTCUT_DOWN),
+                        this::onToggleInputPanel);
+                newValue.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+                    if(event.getTarget() instanceof TextInputControl) return;
+                    if (event.getCode() == KeyCode.V) {selectMode(Mode.ADD_VERTEX);}
+                    if (event.getCode() == KeyCode.E) selectMode(Mode.ADD_EDGE);
+                    if (event.getCode() == KeyCode.D) selectMode(Mode.DELETE);
+                    if (event.getCode() == KeyCode.M) selectMode(Mode.MOVE);
+                });
             }
         });
 
@@ -144,6 +162,8 @@ public class MainController {
         edgeWidthSlider.setMax(StyleSettings.MAX_EDGE_WIDTH);
         edgeWidthSlider.setValue(StyleSettings.get().getEdgeWidth());
         Bindings.bindBidirectional(edgeWidthSlider.valueProperty(), StyleSettings.get().edgeWidthProperty());
+
+        setupInputPanel();
     }
 
     @FXML private void onSelectLightTheme() { applyTheme(Theme.LIGHT); }
@@ -156,7 +176,6 @@ public class MainController {
         if (theme == Theme.LIGHT) lightThemeItem.setSelected(true);
         else darkThemeItem.setSelected(true);
     }
-
 
     @FXML
     private void onResetView() {
@@ -182,7 +201,6 @@ public class MainController {
         }
     }
 
-
     private void kickLiveLayout() {
         if (liveEngine != null && liveLayout.isSelected()) {
             liveEngine.kick();
@@ -196,7 +214,7 @@ public class MainController {
         if(liveLayout.isSelected()) {liveLayout.setSelected(false);}
 
         ForceDirectedLayout layout = new ForceDirectedLayout(canvas);
-        double t0 = canvas.getGraphPane().getWidth()/15;
+        double t0 = canvas.getGraphPane().getWidth()/50;
         int iterations = 120;
         AtomicInteger i= new AtomicInteger();
         temperature = t0;
@@ -227,8 +245,6 @@ public class MainController {
     private void onExit() {
         Platform.exit();
     }
-
-
 
     @FXML
     private void onUndo() {
@@ -293,6 +309,59 @@ public class MainController {
         viewZoom.reset();
     }
 
+    private void setupInputPanel() {
+        edgeInput.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() != KeyCode.ENTER) return;
+            String lines[] = edgeInput.getText().split("\\n");
+            for (String line : lines) {
+                parseLine(line.trim());
+            }
+            edgeInput.clear();
+            e.consume();
+        });
+    }
+
+    private void parseLine(String line) {
+        if (line.isBlank()) return;
+        String[] tokens = line.split("\\s+");
+        if (tokens.length == 1) {
+            getOrCreateVertex(tokens[0]);
+            kickLiveLayout();
+        } else if (tokens.length == 2) {
+            VertexDrawn s = getOrCreateVertex(tokens[0]);
+            VertexDrawn t = getOrCreateVertex(tokens[1]);
+
+            if(!canvas.edgeExists(s,t)) {
+                history.execute(new AddEdgeCommand(canvas, s, t, this::onEdgeClick));
+                kickLiveLayout();
+            }
+        }
+    }
+
+    private VertexDrawn getOrCreateVertex(String id) {
+        VertexDrawn existing = canvas.getVertexById(id);
+        if (existing != null) return existing;
+        Random r = new Random();
+        double x = canvas.getGraphPane().getWidth()/2 + 400*(r.nextDouble()-0.5);
+        double y = canvas.getGraphPane().getHeight()/2 + 400*(r.nextDouble()-0.5);
+        BuilderContext ctx = buildContext();
+        AddVertexCommand cmd = new AddVertexCommand(canvas, x, y, ctx.onVertexClick(), ctx.canDrag(), id);
+        history.execute(cmd);
+        return cmd.getVertex();
+    }
+
+    @FXML
+    private void onToggleInputPanel() {
+        double target = inputPanelOpen ? -230 : 0;
+        TranslateTransition transition = new TranslateTransition(Duration.millis(200), inputPanel);
+        transition.setToX(target);
+        if(inputPanelOpen) {
+            graphPane.requestFocus();
+        }
+        else edgeInput.requestFocus();
+        transition.play();
+        inputPanelOpen = !inputPanelOpen;
+    }
 
     private BuilderContext buildContext() {
         return new BuilderContext(
@@ -443,6 +512,18 @@ public class MainController {
         Toggle tog = modeGroup.getSelectedToggle();
         if (tog == null) return null;
         return Mode.fromLabel(((ToggleButton) tog).getText());
+    }
+
+    void selectMode(Mode mode) {
+        for(Toggle tog: modeGroup.getToggles()) {
+            if(tog instanceof Labeled) {
+                Labeled labeled = (Labeled) tog;
+                if (labeled.getText().equals(mode.label())){
+                    modeGroup.selectToggle(tog);
+                    return;
+                }
+            }
+        }
     }
 
     private static boolean isPositiveInt(String s){
