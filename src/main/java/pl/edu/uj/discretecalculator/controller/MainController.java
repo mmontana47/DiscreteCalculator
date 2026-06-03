@@ -76,6 +76,7 @@ public class MainController {
     @FXML private ToggleButton liveLayout;
     @FXML private VBox inputPanel;
     @FXML private TextArea edgeInput;
+    @FXML private ColorPicker colorPicker;
 
     @FXML
     private void initialize() {
@@ -149,6 +150,7 @@ public class MainController {
                     if (event.getCode() == KeyCode.E) selectMode(Mode.ADD_EDGE);
                     if (event.getCode() == KeyCode.D) selectMode(Mode.DELETE);
                     if (event.getCode() == KeyCode.M) selectMode(Mode.MOVE);
+                    if (event.getCode() == KeyCode.P) selectMode(Mode.PAINT);
                 });
             }
         });
@@ -446,6 +448,8 @@ public class MainController {
         }
     }
 
+    //-----------------on Click---------------------
+
     private void onPaneClick(MouseEvent e) {
         //panic button
         if (panDragged) {
@@ -491,6 +495,7 @@ public class MainController {
             }
             case RUN_BFS -> runAndAnimateAlgorithm(vertex, "BFS");
             case RUN_DFS -> runAndAnimateAlgorithm(vertex, "DFS");
+            case PAINT -> vertex.setUserFillColor(colorPicker.getValue());
             case null -> {}
             default -> {}
         }
@@ -503,10 +508,13 @@ public class MainController {
                 runCommand(new RemoveEdgeCommand(canvas, edge));
                 kickLiveLayout();
             }
+            case Mode.PAINT -> edge.setUserStrokeColor(colorPicker.getValue());
             case null -> {}
             default -> {}
         }
     }
+
+    //------------------------------------------------
 
     private Mode currentMode() {
         Toggle tog = modeGroup.getSelectedToggle();
@@ -598,6 +606,16 @@ public class MainController {
             a.showAndWait();
         }
     }
+
+    // ─── Color / Paint handlers ────────────────────────────────────────────────
+
+    @FXML
+    private void onResetAllColors() {
+        for (VertexDrawn v : canvas.getVertices()) v.setUserFillColor(null);
+        for (EdgeDrawn e : canvas.getEdges()) e.setUserStrokeColor(null);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
 
     private static boolean decideIsTxt(File file, FileChooser.ExtensionFilter selected) {
         String name = file.getName().toLowerCase();

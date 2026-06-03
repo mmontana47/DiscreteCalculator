@@ -2,11 +2,13 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.ToolBar?>
@@ -14,10 +16,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.VBox?>
-
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.VBox?>
 <BorderPane prefHeight="600.0" prefWidth="900.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pl.edu.uj.discretecalculator.controller.MainController">
@@ -38,6 +38,7 @@
                                 <ToggleButton text="Add Edge" toggleGroup="$modeGroup" prefWidth="90.0"/>
                                 <ToggleButton text="Delete" toggleGroup="$modeGroup" prefWidth="90.0"/>
                                 <ToggleButton text="Move" toggleGroup="$modeGroup" prefWidth="90.0"/>
+                                <ToggleButton text="Paint" toggleGroup="$modeGroup" prefWidth="80.0"/>
 
                                 <Separator orientation="VERTICAL"/>
 
@@ -46,7 +47,7 @@
 
                                 <Separator orientation="VERTICAL"/>
 
-                                <ToggleButton text="Quick Input" onAction="#onToggleInputPanel" prefWidth="100.0"/>
+                                <ToggleButton text="Modify" onAction="#onToggleInputPanel" prefWidth="100.0"/>
 
                             </items>
                             <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
@@ -167,6 +168,19 @@
                 </Label>
                 <Slider fx:id="edgeWidthSlider" min="1.0" max="5.0" value="2.0"
                         showTickMarks="true"/>
+
+
+                <Separator>
+                    <VBox.margin><Insets top="8" bottom="8"/></VBox.margin>
+                </Separator>
+
+                <!-- Paint color -->
+                <Label text="Paint color" styleClass="input-panel-header"/>
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <ColorPicker fx:id="colorPicker"
+                                 maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                    <Button text="✕" onAction="#onResetAllColors" prefWidth="28"/>
+                </HBox>
             </VBox>
         </StackPane>
     </center>

@@ -2,6 +2,7 @@ package pl.edu.uj.discretecalculator.view;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.scene.paint.Color;
 
 public final class StyleSettings {
     public static final double MIN_VERTEX_RADIUS = 10.0;
@@ -16,13 +17,20 @@ public final class StyleSettings {
     public static StyleSettings get() { return INSTANCE; }
 
     private final DoubleProperty vertexRadius = new SimpleDoubleProperty(DEFAULT_VERTEX_RADIUS);
-    private final DoubleProperty edgeWidth = new SimpleDoubleProperty(DEFAULT_EDGE_WIDTH);
+    private final DoubleProperty edgeWidth    = new SimpleDoubleProperty(DEFAULT_EDGE_WIDTH);
 
     private StyleSettings() {}
 
     public DoubleProperty vertexRadiusProperty() { return vertexRadius; }
-    public DoubleProperty edgeWidthProperty() { return edgeWidth; }
+    public DoubleProperty edgeWidthProperty()    { return edgeWidth; }
 
     public double getVertexRadius() { return vertexRadius.get(); }
-    public double getEdgeWidth() { return edgeWidth.get(); }
+    public double getEdgeWidth()    { return edgeWidth.get(); }
+
+    public static String toHex(Color c) {
+        return String.format("#%02x%02x%02x",
+                (int) (c.getRed()   * 255),
+                (int) (c.getGreen() * 255),
+                (int) (c.getBlue()  * 255));
+    }
 }

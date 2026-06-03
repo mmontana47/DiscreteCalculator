@@ -14,7 +14,6 @@ public class AddVertexCommand implements Command {
     private final BooleanSupplier canDrag;
     private VertexDrawn vertex;
 
-
     public AddVertexCommand(CanvasManager canvas, double x, double y,
                             Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
         this.canvas = canvas;
@@ -26,20 +25,17 @@ public class AddVertexCommand implements Command {
 
     public AddVertexCommand(CanvasManager canvas, double x, double y,
                             Consumer<VertexDrawn> onClick, BooleanSupplier canDrag, String id) {
-        this.canvas = canvas;
-        this.x = x;
-        this.y = y;
-        this.onClick = onClick;
-        this.canDrag = canDrag;
+        this(canvas, x, y, onClick, canDrag);
         this.id = id;
     }
 
     @Override
     public void execute() {
-        if(vertex == null){
-            vertex = (id!=null) ? canvas.createVertex(x,y,id, onClick,canDrag) : canvas.createVertex(x, y, onClick,canDrag);
-        }
-        else{
+        if (vertex == null) {
+            vertex = (id != null)
+                    ? canvas.createVertex(x, y, id, onClick, canDrag)
+                    : canvas.createVertex(x, y, onClick, canDrag);
+        } else {
             canvas.attachVertex(vertex);
         }
     }
