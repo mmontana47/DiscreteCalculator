@@ -15,13 +15,13 @@ import java.util.LinkedHashMap;
 import java.util.ArrayList;
 
 //eksport grafu do json
-public final class GraphExporter {
+public final class GraphExporterJSON {
 
     private static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
             .create();
 
-    private GraphExporter() {}
+    private GraphExporterJSON() {}
 
     public static void export(CanvasManager canvas, File file) throws IOException {
         GraphDocument doc = fromCanvas(canvas);

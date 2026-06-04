@@ -15,11 +15,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 // import grafu z json
-public final class GraphImporter {
+public final class GraphImporterJSON {
 
     private static final Gson GSON = new Gson();
 
-    private GraphImporter() {}
+    private GraphImporterJSON() {}
 
     public static void importFrom(File file, BuilderContext ctx) throws IOException, JsonSyntaxException {
         GraphDocument doc = read(file);

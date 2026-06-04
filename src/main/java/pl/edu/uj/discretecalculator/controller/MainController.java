@@ -10,10 +10,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import pl.edu.uj.discretecalculator.io.GraphExporter;
-import pl.edu.uj.discretecalculator.io.GraphExporterTXT;
-import pl.edu.uj.discretecalculator.io.GraphImporter;
-import pl.edu.uj.discretecalculator.io.GraphImporterTXT;
+import pl.edu.uj.discretecalculator.io.*;
 import pl.edu.uj.discretecalculator.view.*;
 import pl.edu.uj.discretecalculator.view.builder.BuilderContext;
 import pl.edu.uj.discretecalculator.view.builder.GraphBuilders;
@@ -77,6 +74,7 @@ public class MainController {
     @FXML private VBox inputPanel;
     @FXML private TextArea edgeInput;
     @FXML private ColorPicker colorPicker;
+    @FXML private CheckBox directedCheckbox;
 
     @FXML
     private void initialize() {
@@ -193,7 +191,7 @@ public class MainController {
             if (timeline != null) timeline.stop();
 
             liveEngine = new ForceDirectedLayout(canvas);
-            liveEngine.kick();
+            liveEngine.kick(3);
             liveTimeline = new Timeline(new KeyFrame(Duration.millis(25), e -> liveEngine.tick()));
             liveTimeline.setCycleCount(Timeline.INDEFINITE);
             liveTimeline.play();
@@ -203,9 +201,9 @@ public class MainController {
         }
     }
 
-    private void kickLiveLayout() {
+    private void kickLiveLayout(double scale) {
         if (liveEngine != null && liveLayout.isSelected()) {
-            liveEngine.kick();
+            liveEngine.kick(scale);
         }
     }
 
@@ -242,6 +240,8 @@ public class MainController {
         canvas.clear();
         history.clear();
         refreshUndoRedoState();
+        directedCheckbox.setSelected(false);
+        canvas.setDirected(false);
     }
     @FXML
     private void onExit() {
@@ -254,7 +254,7 @@ public class MainController {
         clearSelection();
         history.undo();
         refreshUndoRedoState();
-        kickLiveLayout();
+        kickLiveLayout(1);
     }
 
     @FXML
@@ -263,7 +263,7 @@ public class MainController {
         clearSelection();
         history.redo();
         refreshUndoRedoState();
-        kickLiveLayout();
+        kickLiveLayout(1);
     }
 
     @FXML private void onBuildCycle() {
@@ -271,28 +271,28 @@ public class MainController {
         OptionalInt n = promptForInt("Cycle", "Build cycle C_n", "n" );
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.cycle(buildContext(),  n.getAsInt()));
-        kickLiveLayout();
+        kickLiveLayout(3);
     }
     @FXML private void onBuildComplete() {
         clearSelection();
         OptionalInt n = promptForInt("Clique", "Build clique K_n", "n");
         if(n.isEmpty()) return;
         runCommand(GraphBuilders.clique(buildContext(),  n.getAsInt()));
-        kickLiveLayout();
+        kickLiveLayout(3);
     }
     @FXML private void onBuildBipartite() {
         clearSelection();
         Optional<int[]> n_m = promptForBipartite();
         if(n_m.isEmpty()) return;
         runCommand(GraphBuilders.bipartite(buildContext(),  n_m.get()[0], n_m.get()[1]));
-        kickLiveLayout();
+        kickLiveLayout(3);
     }
     @FXML private void onBuildTree() {
         clearSelection();
         OptionalInt n = promptForInt("Tree", "Build random tree on n vertices", "n");
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.randomTree(buildContext(),  n.getAsInt()));
-        kickLiveLayout();
+        kickLiveLayout(3);
     }
 
     //graph vizual properties
@@ -328,14 +328,14 @@ public class MainController {
         String[] tokens = line.split("\\s+");
         if (tokens.length == 1) {
             getOrCreateVertex(tokens[0]);
-            kickLiveLayout();
+            kickLiveLayout(1);
         } else if (tokens.length == 2) {
             VertexDrawn s = getOrCreateVertex(tokens[0]);
             VertexDrawn t = getOrCreateVertex(tokens[1]);
 
             if(!canvas.edgeExists(s,t)) {
                 history.execute(new AddEdgeCommand(canvas, s, t, this::onEdgeClick));
-                kickLiveLayout();
+                kickLiveLayout(1);
             }
         }
     }
@@ -467,7 +467,7 @@ public class MainController {
             runCommand(new AddVertexCommand(canvas, e.getX(), e.getY(),
                     this::onVertexClick,
                     () -> (currentMode() == Mode.MOVE)));
-            kickLiveLayout();
+            kickLiveLayout(1);
         } else if ((currentMode() == Mode.ADD_EDGE) && source != null) {
             clearSelection();
         }
@@ -486,12 +486,12 @@ public class MainController {
                 } else {
                     runCommand(new AddEdgeCommand(canvas, source, vertex, this::onEdgeClick));
                     clearSelection();
-                    kickLiveLayout();
+                    kickLiveLayout(1);
                 }
             }
             case DELETE -> {
                 runCommand(new RemoveVertexCommand(canvas, vertex));
-                kickLiveLayout();
+                kickLiveLayout(1);
             }
             case RUN_BFS -> runAndAnimateAlgorithm(vertex, "BFS");
             case RUN_DFS -> runAndAnimateAlgorithm(vertex, "DFS");
@@ -506,7 +506,7 @@ public class MainController {
         switch (currentMode()) {
             case Mode.DELETE -> {
                 runCommand(new RemoveEdgeCommand(canvas, edge));
-                kickLiveLayout();
+                kickLiveLayout(1);
             }
             case Mode.PAINT -> edge.setUserStrokeColor(colorPicker.getValue());
             case null -> {}
@@ -559,16 +559,16 @@ public class MainController {
         File file = chooser.showOpenDialog(graphPane.getScene().getWindow());
         if (file == null) return;
 
-        boolean isTxt = decideIsTxt(file, chooser.getSelectedExtensionFilter());
+        boolean isTxt = (Objects.equals(decideExt(file, chooser.getSelectedExtensionFilter()), ".txt"));
 
         clearSelection();
         try {
             if (isTxt) GraphImporterTXT.importFromTxt(file, buildContext());
-            else GraphImporter.importFrom(file, buildContext());
+            else GraphImporterJSON.importFrom(file, buildContext());
 
             history.clear();
             refreshUndoRedoState();
-            kickLiveLayout();
+            kickLiveLayout(1);
         } catch (Exception ex) {
             Alert a = new Alert(Alert.AlertType.ERROR, "Open failed: " + ex.getMessage(), ButtonType.OK);
             a.setHeaderText("Import exception");
@@ -583,28 +583,34 @@ public class MainController {
 
         FileChooser.ExtensionFilter txtFilter  = new FileChooser.ExtensionFilter("Text (OI Format)", "*.txt");
         FileChooser.ExtensionFilter jsonFilter = new FileChooser.ExtensionFilter("JSON Graph", "*.json");
-        chooser.getExtensionFilters().addAll(txtFilter, jsonFilter);
+        FileChooser.ExtensionFilter tikzFilter = new FileChooser.ExtensionFilter("TikZ Picture", "*.tex");
+        chooser.getExtensionFilters().addAll(txtFilter, jsonFilter, tikzFilter);
         chooser.setSelectedExtensionFilter(txtFilter);
         chooser.setInitialFileName("graph.txt");
 
         File file = chooser.showSaveDialog(graphPane.getScene().getWindow());
         if (file == null) return;
 
-        boolean isTxt = decideIsTxt(file, chooser.getSelectedExtensionFilter());
+        String ext = decideExt(file, chooser.getSelectedExtensionFilter());
 
-        String ext = isTxt ? ".txt" : ".json";
         if (!file.getName().toLowerCase().endsWith(ext)) {
             file = new File(file.getParentFile(), file.getName() + ext);
         }
 
         try {
-            if (isTxt) GraphExporterTXT.exportToTxt(canvas, file);
-            else       GraphExporter.export(canvas, file);
+            if (ext.equals(".txt")) GraphExporterTXT.exportToTxt(canvas, file);
+            if (ext.equals(".json")) GraphExporterJSON.export(canvas, file);
+            if (ext.equals(".tex")) GraphExporterTikZ.export(canvas, canvas.isDirected(), file);
         } catch (IOException ex) {
             Alert a = new Alert(Alert.AlertType.ERROR, "Save failed: " + ex.getMessage(), ButtonType.OK);
             a.setHeaderText("Export exception");
             a.showAndWait();
         }
+    }
+
+    @FXML
+    private void onToggleDirected() {
+        canvas.setDirected(directedCheckbox.isSelected());
     }
 
     // ─── Color / Paint handlers ────────────────────────────────────────────────
@@ -617,17 +623,19 @@ public class MainController {
 
     // ──────────────────────────────────────────────────────────────────────────
 
-    private static boolean decideIsTxt(File file, FileChooser.ExtensionFilter selected) {
+    private static String decideExt(File file, FileChooser.ExtensionFilter selected) {
         String name = file.getName().toLowerCase();
-        if (name.endsWith(".txt"))  return true;
-        if (name.endsWith(".json")) return false;
+        if (name.endsWith(".txt"))  return ".txt";
+        if (name.endsWith(".json")) return ".json";
+        if (name.endsWith(".tex")) return ".tex";
         if (selected != null) {
             for (String ext : selected.getExtensions()) {
-                if (ext.equalsIgnoreCase("*.txt"))  return true;
-                if (ext.equalsIgnoreCase("*.json")) return false;
+                if (ext.equalsIgnoreCase("*.txt"))  return ".txt";
+                if (ext.equalsIgnoreCase("*.json")) return ".json";
+                if (ext.equalsIgnoreCase("*.tex")) return ".tex";
             }
         }
-        return false;
+        return null;
     }
 
     //####################################################

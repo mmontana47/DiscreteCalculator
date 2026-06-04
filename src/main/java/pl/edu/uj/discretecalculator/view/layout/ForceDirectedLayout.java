@@ -18,7 +18,7 @@ public class ForceDirectedLayout {
 
     private double liveTemperature = 0.0;
     public static final double MIN_TEMP = 0.9;
-    public static final double KICK_TEMP = 25.0;
+    public static final double KICK_TEMP = 15.0;
     public static final double COOL_FACTOR = 0.97;
 
     public ForceDirectedLayout(CanvasManager canvas) {
@@ -44,9 +44,9 @@ public class ForceDirectedLayout {
         iteration(liveTemperature);
     }
 
-    public void kick() {
+    public void kick(double scale) {
         recomputeParams();
-        liveTemperature = Math.max(liveTemperature, KICK_TEMP);
+        liveTemperature = Math.max(liveTemperature, KICK_TEMP*scale);
     }
     private double force_Edges(double d){ return 0.5*d*d/IDEAL_LENGTH;}
     private double force_Vertices(double d){

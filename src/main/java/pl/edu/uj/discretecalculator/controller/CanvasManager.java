@@ -16,6 +16,7 @@ public class CanvasManager {
     private final Label countsLabel;
     private final List<VertexDrawn> vertices = new ArrayList<>();
     private final List<EdgeDrawn> edges = new ArrayList<>();
+    private boolean directed = false;
 
     public CanvasManager(Pane graphPane, Label countsLabel) {
         this.graphPane = graphPane;
@@ -45,6 +46,8 @@ public class CanvasManager {
 
     public List<VertexDrawn> getVertices() { return Collections.unmodifiableList(vertices); }
     public List<EdgeDrawn> getEdges() { return Collections.unmodifiableList(edges); }
+    public boolean isDirected() { return directed; }
+    public void setDirected(boolean directed) { this.directed = directed; }
 
     public VertexDrawn createVertex(double x, double y, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
         VertexDrawn vertex = new VertexDrawn(x, y, nextAvailableId(), onClick, canDrag);
