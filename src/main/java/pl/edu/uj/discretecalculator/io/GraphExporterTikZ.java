@@ -49,17 +49,20 @@ public final class GraphExporterTikZ {
                   .append(stroke.toString(), 2, 8).append("}\n");
             }
         }
-        sb.append("\n\\begin{tikzpicture}[\n  scale=2\n]\n");
+        double nodeSize = 2 * radius / SCALE;
+        sb.append("\\usetikzlibrary{backgrounds}\n");
+        sb.append("\n\\begin{tikzpicture}[\n  scale=2,\n")
+          .append("  every node/.style={circle, draw, fill=white, minimum size=").append(nodeSize).append("cm, inner sep=0pt}\n]\n");
 
         for (VertexDrawn v : canvas.getVertices()) {
             double x = (v.getLayoutX() + radius) / SCALE;
             double y = (maxY - v.getLayoutY() - radius) / SCALE;
-            String fill = (v.getUserFillColor() != null) ? ", fill=vc" + v.getVertexId() : "";
-            sb.append("\\node[circle, draw").append(fill).append("] (")
+            String fillOpt = (v.getUserFillColor() != null) ? "[fill=vc" + v.getVertexId() + "]" : "";
+            sb.append("\\node").append(fillOpt).append(" (")
               .append(v.getVertexId()).append(") at (").append(x).append(", ").append(y).append(") ")
               .append("{").append(v.getVertexId()).append("};\n");
         }
-        sb.append("\n");
+        sb.append("\n\\begin{pgfonlayer}{background}\n");
 
         for (int i = 0; i < edges.size(); i++) {
             EdgeDrawn e = edges.get(i);
@@ -69,6 +72,7 @@ public final class GraphExporterTikZ {
               .append(e.getSource().getVertexId()).append(") -- (")
               .append(e.getTarget().getVertexId()).append(");\n");
         }
+        sb.append("\\end{pgfonlayer}\n");
         sb.append("\\end{tikzpicture}\n");
         return sb.toString();
     }
