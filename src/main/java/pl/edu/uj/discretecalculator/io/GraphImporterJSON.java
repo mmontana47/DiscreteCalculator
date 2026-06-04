@@ -52,7 +52,5 @@ public final class GraphImporterJSON {
             if(s == null || t == null) continue;
             canvas.createEdge(edge.source + "-" + edge.target, s, t, ctx.onEdgeClick());
         }
-        canvas.renumber();
     }
-
 }

@@ -333,7 +333,8 @@ public class MainController {
             VertexDrawn s = getOrCreateVertex(tokens[0]);
             VertexDrawn t = getOrCreateVertex(tokens[1]);
 
-            if(!canvas.edgeExists(s,t)) {
+            if(((!canvas.isDirected() && !canvas.edgeExists(s,t))||
+                    (canvas.isDirected() && !canvas.edgeExistsDirected(s,t)))) {
                 history.execute(new AddEdgeCommand(canvas, s, t, this::onEdgeClick));
                 kickLiveLayout(1);
             }
@@ -481,7 +482,9 @@ public class MainController {
                 if (source == null) {
                     source = vertex;
                     vertex.select();
-                } else if (source == vertex || canvas.edgeExists(source, vertex)) {
+                } else if (source == vertex ||
+                        (canvas.isDirected() && canvas.edgeExistsDirected(source, vertex)) ||
+                        (!canvas.isDirected() && canvas.edgeExists(source, vertex))) {
                     clearSelection();
                 } else {
                     runCommand(new AddEdgeCommand(canvas, source, vertex, this::onEdgeClick));

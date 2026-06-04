@@ -159,6 +159,11 @@
     -fx-stroke: -app-accent;
 }
 
+.edge-arrow {
+    -fx-fill: -graph-edge-stroke;
+    -fx-stroke: -graph-edge-stroke;
+}
+
 .edge-label {
     -fx-font-size: 12px;
     -fx-font-weight: bold;
