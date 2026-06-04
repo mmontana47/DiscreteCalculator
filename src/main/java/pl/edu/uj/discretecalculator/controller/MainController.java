@@ -54,6 +54,8 @@ public class MainController {
 
     private boolean inputPanelOpen = false;
 
+    @FXML private Tab editGraphTab;
+    @FXML private TabPane ribbon;
     @FXML private Pane graphPane;
     @FXML private ToggleGroup modeGroup;
     @FXML private Label modeLabel;
@@ -78,6 +80,7 @@ public class MainController {
 
     @FXML
     private void initialize() {
+        ribbon.getSelectionModel().select(editGraphTab);
         canvas = new CanvasManager(graphPane, countsLabel);
         refreshUndoRedoState();
         viewZoom = new ViewZoom(graphPane, canvas);
@@ -327,8 +330,8 @@ public class MainController {
         if (line.isBlank()) return;
         String[] tokens = line.split("\\s+");
         if (tokens.length == 1) {
+            if(canvas.getVertexById(tokens[0])==null) kickLiveLayout(1);
             getOrCreateVertex(tokens[0]);
-            kickLiveLayout(1);
         } else if (tokens.length == 2) {
             VertexDrawn s = getOrCreateVertex(tokens[0]);
             VertexDrawn t = getOrCreateVertex(tokens[1]);
@@ -355,7 +358,7 @@ public class MainController {
 
     @FXML
     private void onToggleInputPanel() {
-        double target = inputPanelOpen ? -230 : 0;
+        double target = inputPanelOpen ? -150 : 0;
         TranslateTransition transition = new TranslateTransition(Duration.millis(200), inputPanel);
         transition.setToX(target);
         if(inputPanelOpen) {

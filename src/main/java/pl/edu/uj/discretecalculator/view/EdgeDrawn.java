@@ -66,7 +66,7 @@ public class EdgeDrawn extends Group {
         line.endYProperty().addListener(arrowUpdater);
         StyleSettings.get().vertexRadiusProperty().addListener((obs, old, val) -> updateArrowHead());
 
-        this.getChildren().addAll(curve, weightLabel, arrowHead);
+        this.getChildren().addAll(curve, arrowHead);
         updateArrowHead();
 
         this.setOnMouseClicked(event -> {

@@ -32,13 +32,28 @@
 
             <TabPane fx:id="ribbon" tabClosingPolicy="UNAVAILABLE" styleClass="ribbon">
                 <tabs>
-                    <Tab text="Edit Graph">
+                    <!-- I/O -->
+                    <Tab text="File">
                         <ToolBar styleClass="ribbon-bar">
                             <items>
-                                <ToggleButton text="Add Vertex" toggleGroup="$modeGroup" prefWidth="90.0"/>
-                                <ToggleButton text="Add Edge" toggleGroup="$modeGroup" prefWidth="90.0"/>
-                                <ToggleButton text="Delete" toggleGroup="$modeGroup" prefWidth="90.0"/>
-                                <ToggleButton text="Move" toggleGroup="$modeGroup" prefWidth="90.0"/>
+                                <Button text="New"  onAction="#newGraph" prefWidth="80.0"/>
+                                <Button text="Open" onAction="#onOpen" prefWidth="80.0"/>
+                                <Button text="Save" onAction="#onSave" prefWidth="80.0"/>
+
+                                <Separator orientation="VERTICAL"/>
+
+                                <Button text="Exit" onAction="#onExit" prefWidth="80.0"/>
+                            </items>
+                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                        </ToolBar>
+                    </Tab>
+                    <Tab fx:id="editGraphTab" text="Edit Graph">
+                        <ToolBar styleClass="ribbon-bar">
+                            <items>
+                                <ToggleButton text="Add Vertex" toggleGroup="$modeGroup" prefWidth="95.0"/>
+                                <ToggleButton text="Add Edge" toggleGroup="$modeGroup" prefWidth="95.0"/>
+                                <ToggleButton text="Delete" toggleGroup="$modeGroup" prefWidth="95.0"/>
+                                <ToggleButton text="Move" toggleGroup="$modeGroup" prefWidth="95.0"/>
                                 <ToggleButton text="Paint" toggleGroup="$modeGroup" prefWidth="80.0"/>
 
                                 <Separator orientation="VERTICAL"/>
@@ -77,7 +92,7 @@
                                 <ToggleButton text="Run DFS" toggleGroup="$modeGroup" prefWidth="90.0"/>
 
                                 <Separator orientation="VERTICAL"/>
-                                <Label text="(TODO: kolejne algorytmy)" styleClass="ribbon-hint"/>
+                                <Label text="More algorithms coming soon" styleClass="ribbon-hint"/>
                             </items>
                             <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
                         </ToolBar>
@@ -116,23 +131,6 @@
                             <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
                         </ToolBar>
                     </Tab>
-
-                    <!-- I/O -->
-                    <Tab text="File">
-                        <ToolBar styleClass="ribbon-bar">
-                            <items>
-                                <Button text="New"  onAction="#newGraph" prefWidth="80.0"/>
-                                <Button text="Open" onAction="#onOpen" prefWidth="80.0"/>
-                                <Button text="Save" onAction="#onSave" prefWidth="80.0"/>
-
-                                <Separator orientation="VERTICAL"/>
-
-                                <Button text="Exit" onAction="#onExit" prefWidth="80.0"/>
-                            </items>
-                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
-                        </ToolBar>
-                    </Tab>
-
                 </tabs>
             </TabPane>
         </VBox>
@@ -143,9 +141,9 @@
             <Pane fx:id="graphPane" BorderPane.alignment="CENTER"/>
             <VBox fx:id="inputPanel"
                   styleClass="input-panel"
-                  prefWidth="230" maxWidth="230"
+                  prefWidth="150" maxWidth="150"
                   StackPane.alignment="CENTER_LEFT"
-                  translateX="-230">
+                  translateX="-150">
                 <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
 
                 <!-- Quick Input -->
