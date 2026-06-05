@@ -1,106 +1,188 @@
 /* === Light theme === */
 
 .root {
-    -fx-base: #f4f5f7;
+    -fx-font-family: "Segoe UI", "Ubuntu", "DejaVu Sans", sans-serif;
+    -fx-font-size: 13px;
+    -fx-base: #f3f2f1;
     -fx-background: #ffffff;
     -fx-control-inner-background: #ffffff;
-    -fx-accent: #2f6fed;
-    -fx-focus-color: -fx-accent;
+    -fx-accent: #0078d4;
+    -fx-focus-color: #0078d4;
     -fx-faint-focus-color: transparent;
-    -fx-text-base-color: #1c1e22;
+    -fx-text-base-color: #201f1e;
 
-    -app-bg:           #ffffff;
-    -app-surface:      #f4f5f7;
-    -app-border:       #d9dde2;
-    -app-text:         #1c1e22;
-    -app-text-muted:   #5a6270;
-    -app-accent:       #2f6fed;
-    -app-accent-soft:  #dbe5fb;
+    -app-bg:            #ffffff;
+    -app-surface:       #f3f2f1;
+    -app-surface-hover: #e1dfdd;
+    -app-border:        #d2d0ce;
+    -app-text:          #201f1e;
+    -app-text-muted:    #605e5c;
+    -app-accent:        #0078d4;
+    -app-accent-dark:   #106ebe;
+    -app-accent-soft:   #deecf9;
+    -app-status-bar:    #4a64a6;
 
-    -graph-vertex-fill:    #ffffff;
-    -graph-vertex-stroke:  #1c1e22;
-    -graph-vertex-text:    #1c1e22;
-    -graph-vertex-selected:#E5E4E2;
-    -graph-vertex-bfs:     #2ECC71;
-    -graph-vertex-dfs:     #3498DB;
+    -graph-vertex-fill:     #ffffff;
+    -graph-vertex-stroke:   #323130;
+    -graph-vertex-text:     #201f1e;
+    -graph-vertex-selected: #cde0f5;
+    -graph-vertex-bfs:      #2ecc71;
+    -graph-vertex-dfs:      #3498db;
 
-    -graph-edge-stroke:    #6e7681;
-    -graph-edge-tree:      #1c1e22;
-    -graph-edge-cycle:     #b0b6bf;
+    -graph-edge-stroke: #8a8886;
+    -graph-edge-tree:   #201f1e;
+    -graph-edge-cycle:  #c8c6c4;
 }
 
-/* --- Menus / toolbar / status bar --- */
+/* ── Menu bar ─────────────────────────────────────────────── */
 .menu-bar {
     -fx-background-color: -app-surface;
     -fx-border-color: transparent transparent -app-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 4 0 4;
 }
 
-.tool-bar {
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-color: transparent !important;
+    -fx-border-width: 0 !important;
+}
+
+/* ── Ribbon (TabPane) ─────────────────────────────────────── */
+.ribbon {
+    -fx-tab-min-height: 28px;
+    -fx-tab-max-height: 28px;
+}
+
+.ribbon > .tab-header-area {
+    -fx-padding: 0 6 0 6;
+    -fx-background-color: -app-surface;
+}
+
+.ribbon > .tab-header-area > .tab-header-background {
+    -fx-background-color: -app-surface;
+}
+
+.ribbon > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-padding: 5 16 5 16;
+}
+
+.ribbon > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: -app-surface-hover;
+}
+
+.ribbon > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: -app-bg;
+    -fx-border-color: -app-accent transparent transparent transparent;
+    -fx-border-width: 2 0 0 0;
+}
+
+.ribbon > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: -app-text-muted;
+    -fx-font-size: 12px;
+}
+
+.ribbon > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: -app-accent;
+    -fx-font-weight: bold;
+}
+
+/* ── Ribbon content bar ───────────────────────────────────── */
+.ribbon-bar {
     -fx-background-color: -app-bg;
     -fx-border-color: transparent transparent -app-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 4 8 4 8;
+    -fx-spacing: 2;
 }
 
-.tool-bar .toggle-button {
-    -fx-background-radius: 6;
-    -fx-background-color: -app-surface;
+.ribbon-hint {
+    -fx-text-fill: -app-text-muted;
+    -fx-font-size: 11px;
+}
+
+/* ── Toolbar buttons ──────────────────────────────────────── */
+.tool-bar .toggle-button,
+.tool-bar .button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-border-color: transparent;
+    -fx-border-radius: 4;
     -fx-text-fill: -app-text;
-    -fx-border-color: -app-border;
-    -fx-border-radius: 6;
+    -fx-padding: 5 12 5 12;
+    -fx-font-size: 12.5px;
+    -fx-cursor: hand;
 }
 
-.tool-bar .toggle-button:hover {
+.tool-bar .toggle-button:hover,
+.tool-bar .button:hover {
     -fx-background-color: -app-accent-soft;
+    -fx-border-color: -app-border;
+}
+
+.tool-bar .button:pressed {
+    -fx-background-color: #c7e0f4;
 }
 
 .tool-bar .toggle-button:selected {
     -fx-background-color: -app-accent;
     -fx-text-fill: white;
-    -fx-border-color: -app-accent;
+    -fx-border-color: transparent;
 }
 
-.tool-bar .button {
-    -fx-background-radius: 6;
-    -fx-background-color: -app-surface;
+.tool-bar .toggle-button:selected:hover {
+    -fx-background-color: -app-accent-dark;
+}
+
+/* CheckBox in toolbar */
+.tool-bar .check-box {
     -fx-text-fill: -app-text;
-    -fx-border-color: -app-border;
-    -fx-border-radius: 6;
+    -fx-font-size: 12.5px;
+    -fx-padding: 5 8 5 8;
 }
 
-.tool-bar .button:hover {
-    -fx-background-color: -app-accent-soft;
-}
-
+/* ── Status bar (Word blue) ───────────────────────────────── */
 .status-bar {
-    -fx-background-color: -app-surface;
-    -fx-border-color: -app-border transparent transparent transparent;
+    -fx-background-color: -app-status-bar;
+    -fx-border-width: 0;
+    -fx-padding: 4 10 4 10;
 }
 
 .status-bar .label {
-    -fx-text-fill: -app-text-muted;
-    -fx-font-size: 11.5px;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
 }
 
-/* --- Canvas --- */
+.status-bar .separator > .line {
+    -fx-border-color: rgba(255, 255, 255, 0.35);
+    -fx-border-width: 0 1 0 0;
+}
+
+/* ── Canvas ───────────────────────────────────────────────── */
 #graphPane {
-    -fx-background-color: -app-bg;
+    -fx-background-color: #f5f4f3;
 }
 
-/* --- Vertex --- */
+/* ── Vertex ───────────────────────────────────────────────── */
 .vertex .vertex-circle {
     -fx-fill: -graph-vertex-fill;
     -fx-stroke: -graph-vertex-stroke;
     -fx-stroke-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.13), 7, 0, 0, 2);
 }
 
 .vertex .vertex-label {
     -fx-text-fill: -graph-vertex-text;
     -fx-font-weight: bold;
+    -fx-font-size: 13px;
 }
 
 .vertex:selected .vertex-circle {
     -fx-fill: -graph-vertex-selected;
-    -fx-stroke: black;
-    -fx-stroke-width: 1;
+    -fx-stroke: -app-accent;
+    -fx-stroke-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0, 120, 212, 0.35), 9, 0, 0, 2);
 }
 
 .vertex:bfs-visited .vertex-circle {
@@ -111,36 +193,43 @@
     -fx-fill: -graph-vertex-dfs;
 }
 
-/* --- Edge --- */
+/* ── Edge ─────────────────────────────────────────────────── */
 .edge {
     -fx-stroke: -graph-edge-stroke;
-    -fx-stroke-width: 2;
+    -fx-stroke-width: 1.75;
 }
 
 .edge:hover {
     -fx-stroke: -app-accent;
+    -fx-stroke-width: 2.5;
+}
+
+.edge-arrow {
+    -fx-fill: -graph-edge-stroke;
+    -fx-stroke: -graph-edge-stroke;
+    -fx-stroke-width: 0.5;
 }
 
 .edge-label {
-    -fx-font-size: 12px;
+    -fx-font-size: 11.5px;
     -fx-font-weight: bold;
-    -fx-text-fill: #333333;
-    -fx-background-color: rgba(255, 255, 255, 0.8);
-    -fx-padding: 2px 4px;
-    -fx-background-radius: 4px;
+    -fx-text-fill: -app-text;
+    -fx-background-color: rgba(255, 255, 255, 0.88);
+    -fx-padding: 1 5 1 5;
+    -fx-background-radius: 3;
 }
 
 .edge:tree-edge {
-    -fx-stroke: -graph-edge-tree;
-    -fx-stroke-width: 3;
+    -fx-stroke: -app-accent;
+    -fx-stroke-width: 2.5;
 }
 
 .edge:cycle-edge {
     -fx-stroke: -graph-edge-cycle;
-    -fx-stroke-dash-array: 10 10;
+    -fx-stroke-dash-array: 9 6;
 }
 
-/* --- Dialogs --- */
+/* ── Dialogs ──────────────────────────────────────────────── */
 .dialog-pane {
     -fx-background-color: -app-bg;
 }
@@ -150,5 +239,40 @@
 }
 
 .dialog-pane .button {
-    -fx-background-radius: 6;
+    -fx-background-radius: 4;
+    -fx-padding: 5 18 5 18;
+}
+
+.dialog-pane .button:default {
+    -fx-background-color: -app-accent;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+}
+
+.dialog-pane .button:default:hover {
+    -fx-background-color: -app-accent-dark;
+}
+
+/* ── Input panel ──────────────────────────────────────────── */
+.input-panel {
+    -fx-background-color: -app-bg;
+    -fx-border-color: transparent -app-border transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.10), 10, 0, 3, 0);
+}
+
+.input-panel-header {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -app-text-muted;
+    -fx-padding: 6 0 3 0;
+    -fx-text-transform: uppercase;
+}
+
+.color-picker .arrow-button {
+    -fx-padding: 0;
+}
+.color-picker .arrow {
+    -fx-padding: 0;
+    -fx-shape: "";
 }

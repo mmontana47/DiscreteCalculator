@@ -3,7 +3,7 @@ package pl.edu.uj.discretecalculator.model.graph;
 import java.util.Objects;
 
 public class DirectedEdge<V> extends Edge<V>{
-    DirectedEdge(Vertex<V> source , Vertex<V> target,int id)
+    public DirectedEdge(Vertex<V> source , Vertex<V> target,int id)
     {
         super(source,target,id);
     }

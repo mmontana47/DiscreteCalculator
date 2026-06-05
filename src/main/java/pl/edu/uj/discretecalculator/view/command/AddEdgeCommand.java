@@ -24,7 +24,7 @@ public class AddEdgeCommand implements Command {
     @Override
     public void execute() {
         if(edge == null){
-            edge = canvas.createEdge(source, target, onClick);
+            edge = canvas.createEdge(source.getVertexId() + "-" + target.getVertexId(), source, target, onClick);
         }
         else {
             canvas.attachEdge(edge);

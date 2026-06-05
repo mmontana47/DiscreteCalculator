@@ -1,13 +1,13 @@
 package pl.edu.uj.discretecalculator.controller;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
@@ -16,11 +16,34 @@ public class CanvasManager {
     private final Label countsLabel;
     private final List<VertexDrawn> vertices = new ArrayList<>();
     private final List<EdgeDrawn> edges = new ArrayList<>();
+    private final BooleanProperty directed = new SimpleBooleanProperty(false);
 
     public CanvasManager(Pane graphPane, Label countsLabel) {
         this.graphPane = graphPane;
         this.countsLabel = countsLabel;
         updateCounts();
+
+        directed.addListener((observable, oldValue, newValue) -> {
+            if(!isDirected()) {
+                for(EdgeDrawn edge : edges) {
+                    EdgeDrawn reverse = findEdge(edge.getTarget(), edge.getSource());
+                    if(reverse != null && edge.getEdgeId().compareTo(reverse.getEdgeId())>0) {
+                        reverse.setVisible(false);
+                        edge.setOffset(0);
+                    }
+                }
+            }
+            else{
+                edges.forEach(e -> e.setVisible(true));
+                for(EdgeDrawn edge : edges) {
+                    EdgeDrawn reverse = findEdge(edge.getTarget(), edge.getSource());
+                    if(reverse != null && edge.getEdgeId().compareTo(reverse.getEdgeId())>0) {
+                        edge.setOffset(0.2);
+                        reverse.setOffset(0.2);
+                    }
+                }
+            }
+        });
     }
 
     public VertexDrawn getVertexById(String id) {
@@ -45,9 +68,12 @@ public class CanvasManager {
 
     public List<VertexDrawn> getVertices() { return Collections.unmodifiableList(vertices); }
     public List<EdgeDrawn> getEdges() { return Collections.unmodifiableList(edges); }
+    public BooleanProperty directedProperty() { return directed; }
+    public boolean isDirected() { return directed.get(); }
+    public void setDirected(boolean value) { directed.set(value); }
 
     public VertexDrawn createVertex(double x, double y, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
-        VertexDrawn vertex = new VertexDrawn(x, y, String.valueOf(vertices.size()), onClick, canDrag);
+        VertexDrawn vertex = new VertexDrawn(x, y, nextAvailableId(), onClick, canDrag);
         attachVertex(vertex);
         return vertex;
     }
@@ -59,13 +85,13 @@ public class CanvasManager {
     }
 
     public EdgeDrawn createEdge(VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
-        EdgeDrawn edge = new EdgeDrawn(String.valueOf(edges.size()), source, target, onClick);
+        EdgeDrawn edge = new EdgeDrawn(String.valueOf(edges.size()), source, target, onClick,directed);
         attachEdge(edge);
         return edge;
     }
 
     public EdgeDrawn createEdge(String id, VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
-        EdgeDrawn edge = new EdgeDrawn(id, source, target, onClick);
+        EdgeDrawn edge = new EdgeDrawn(id, source, target, onClick, directed);
         attachEdge(edge);
         return edge;
     }
@@ -88,22 +114,31 @@ public class CanvasManager {
         updateCounts();
     }
 
+    //nie dziala jesli dane z klawiatury nie sa spojne
     public void renumber() {
         for (int i = 0; i < vertices.size(); i++) {
             vertices.get(i).setVertexId(String.valueOf(i));
         }
     }
 
+    private String nextAvailableId(){
+        int i=0;
+        while (getVertexById(String.valueOf(i))!=null) i++;
+        return String.valueOf(i);
+    }
+
     public void attachEdge(EdgeDrawn e) {
         edges.add(e);
         graphPane.getChildren().addFirst(e);
         updateCounts();
+        updateCurveOffsets(e);
     }
 
     public void detachEdge(EdgeDrawn e) {
         edges.remove(e);
         graphPane.getChildren().remove(e);
         updateCounts();
+        updateCurveOffsets(e);
     }
 
     public List<EdgeDrawn> incidentEdges(VertexDrawn v) {
@@ -114,12 +149,43 @@ public class CanvasManager {
         return result;
     }
 
+    public EdgeDrawn findEdge(VertexDrawn a, VertexDrawn b) {
+        for (EdgeDrawn e : edges) {
+            if (e.getSource() == a && e.getTarget() == b) return e;
+        }
+        return null;
+    }
+
     public boolean edgeExists(VertexDrawn a, VertexDrawn b) {
         for (EdgeDrawn e : edges) {
             if (e.getSource() == a && e.getTarget() == b) return true;
             if (e.getSource() == b && e.getTarget() == a) return true;
         }
         return false;
+    }
+
+    public boolean edgeExistsDirected(VertexDrawn a, VertexDrawn b) {
+        for (EdgeDrawn e : edges) {
+            if (e.getSource() == a && e.getTarget() == b) return true;
+        }
+        return false;
+    }
+
+    private void updateCurveOffsets(EdgeDrawn e) {
+        EdgeDrawn reverse = null;
+        for (EdgeDrawn edge : edges) {
+            if (edge.getSource() == e.getTarget() && edge.getTarget() == e.getSource()) {
+                reverse = edge;
+                break;
+            }
+        }
+        if (reverse == null) return;
+        if (edges.contains(e)) {
+            e.setOffset(0.2);
+            reverse.setOffset(0.2);
+        } else {
+            reverse.setOffset(0);
+        }
     }
 
     public void clear() {

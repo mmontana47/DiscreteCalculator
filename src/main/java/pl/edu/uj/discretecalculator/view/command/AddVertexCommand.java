@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 public class AddVertexCommand implements Command {
     private final CanvasManager canvas;
     private final double x, y;
+    private String id;
     private final Consumer<VertexDrawn> onClick;
     private final BooleanSupplier canDrag;
     private VertexDrawn vertex;
@@ -22,12 +23,19 @@ public class AddVertexCommand implements Command {
         this.canDrag = canDrag;
     }
 
+    public AddVertexCommand(CanvasManager canvas, double x, double y,
+                            Consumer<VertexDrawn> onClick, BooleanSupplier canDrag, String id) {
+        this(canvas, x, y, onClick, canDrag);
+        this.id = id;
+    }
+
     @Override
     public void execute() {
-        if(vertex == null){
-            vertex = canvas.createVertex(x,y,onClick,canDrag);
-        }
-        else{
+        if (vertex == null) {
+            vertex = (id != null)
+                    ? canvas.createVertex(x, y, id, onClick, canDrag)
+                    : canvas.createVertex(x, y, onClick, canDrag);
+        } else {
             canvas.attachVertex(vertex);
         }
     }

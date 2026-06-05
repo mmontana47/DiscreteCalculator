@@ -55,6 +55,10 @@ public class AlgorithmPlayer {
         metronome.pause();
     }
 
+    public boolean isPlaying() {
+        return metronome.getStatus() == Animation.Status.RUNNING;
+    }
+
     public void stepForward() {
         if (currentTrack == null || currentIndex >= currentTrack.size() - 1) {
             pause();

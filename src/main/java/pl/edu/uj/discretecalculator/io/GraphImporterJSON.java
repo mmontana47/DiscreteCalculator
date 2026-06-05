@@ -15,11 +15,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 // import grafu z json
-public final class GraphImporter {
+public final class GraphImporterJSON {
 
     private static final Gson GSON = new Gson();
 
-    private GraphImporter() {}
+    private GraphImporterJSON() {}
 
     public static void importFrom(File file, BuilderContext ctx) throws IOException, JsonSyntaxException {
         GraphDocument doc = read(file);
@@ -50,9 +50,7 @@ public final class GraphImporter {
             VertexDrawn s = idToVertex.get(edge.source);
             VertexDrawn t = idToVertex.get(edge.target);
             if(s == null || t == null) continue;
-            canvas.createEdge(s,t,ctx.onEdgeClick());
+            canvas.createEdge(edge.source + "-" + edge.target, s, t, ctx.onEdgeClick());
         }
-        canvas.renumber();
     }
-
 }

@@ -2,8 +2,10 @@ package pl.edu.uj.discretecalculator.view;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.css.PseudoClass;
+import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 import java.util.function.BooleanSupplier;
@@ -13,10 +15,13 @@ public class VertexDrawn extends StackPane {
     private String id;
     public static final DoubleProperty circleRadius = StyleSettings.get().vertexRadiusProperty();
     private double mouseX, mouseY;
-    private boolean wasDragged = false;
+    private boolean wasDragged=false;
+    private boolean pinned = false;
     private final Circle circle;
     private final Label label;
+    private Point2D displacement;
     private final Label distanceLabel;
+    private String userFillHex = null;
 
     private static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
     private static final PseudoClass BFS_VISITED = PseudoClass.getPseudoClass("bfs-visited");
@@ -25,6 +30,7 @@ public class VertexDrawn extends StackPane {
     public VertexDrawn(double x, double y, String id, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
         this.id = id;
         this.circle = new Circle(x, y, circleRadius.get());
+        this.displacement = Point2D.ZERO;
         circle.radiusProperty().bind(circleRadius);
 
         this.label = new Label(id);
@@ -41,7 +47,6 @@ public class VertexDrawn extends StackPane {
 
 
         this.getChildren().addAll(circle, label, distanceLabel);
-
         this.setLayoutX(x - StyleSettings.get().getVertexRadius());
         this.setLayoutY(y - StyleSettings.get().getVertexRadius());
 
@@ -50,14 +55,19 @@ public class VertexDrawn extends StackPane {
             if(!canDrag.getAsBoolean()) return;
             mouseX = event.getSceneX() - this.getLayoutX();
             mouseY = event.getSceneY() - this.getLayoutY();
+            pinned = true;
 
             this.toFront();
             event.consume();
         });
 
+        this.setOnMouseReleased(event ->
+        {
+            pinned = false;
+        });
+
         this.setOnMouseClicked(event -> {
-            if(!wasDragged)
-                onClick.accept(this);
+            if (!wasDragged) onClick.accept(this);
             event.consume();
         });
 
@@ -76,14 +86,29 @@ public class VertexDrawn extends StackPane {
         this.label.setText(id);
     }
 
+    public void setUserFillColor(Color c) {
+        userFillHex = (c != null) ? StyleSettings.toHex(c) : null;
+        applyFill(userFillHex);
+    }
+
+    public Color getUserFillColor() {
+        return userFillHex != null ? Color.web(userFillHex) : null;
+    }
 
     //################# ALGORITHM PLAYER ####################
-    public void setFillColor(String hexColor) {
-        if (hexColor == null || hexColor.isEmpty()) {
-            circle.setStyle("");
-        } else {
+
+    private void applyFill(String hexColor) {
+        if (hexColor != null && !hexColor.isEmpty()) {
             circle.setStyle("-fx-fill: " + hexColor + ";");
+        } else if (userFillHex != null) {
+            circle.setStyle("-fx-fill: " + userFillHex + ";");
+        } else {
+            circle.setStyle("");
         }
+    }
+
+    public void setFillColor(String hexColor) {
+        applyFill(hexColor);
     }
 
     public void setBottomLabelText(String text) {
@@ -98,12 +123,24 @@ public class VertexDrawn extends StackPane {
         this.setLayoutY(y - StyleSettings.get().getVertexRadius());
     }
 
-
-
     public void markVisited(String algorithmType) {
         pseudoClassStateChanged(BFS_VISITED, "BFS".equals(algorithmType));
         pseudoClassStateChanged(DFS_VISITED, "DFS".equals(algorithmType));
+        if ("BFS".equals(algorithmType)) applyFill("#2ECC71");
+        else if ("DFS".equals(algorithmType)) applyFill("#3498DB");
     }
+
+    public void addDisplacement(Point2D point) {this.displacement = this.displacement.add(point);}
+
+    public void removeDisplacement(Point2D point) {this.displacement = this.displacement.subtract(point);}
+
+    public void resetDisplacement() {this.displacement = Point2D.ZERO;}
+
+    public Point2D getDisplacement() {return displacement;}
+
+    public boolean isPinned() {return pinned;}
+
+    public void setPinned() {pinned = true;}
 
     public void select() {
         pseudoClassStateChanged(SELECTED, true);
@@ -117,7 +154,7 @@ public class VertexDrawn extends StackPane {
         pseudoClassStateChanged(BFS_VISITED, false);
         pseudoClassStateChanged(DFS_VISITED, false);
         pseudoClassStateChanged(SELECTED, false);
-        setFillColor(null);
+        applyFill(null);
         setBottomLabelText(null);
     }
 }
