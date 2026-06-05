@@ -19,6 +19,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.CheckBox?>
+
 <BorderPane prefHeight="600.0" prefWidth="900.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pl.edu.uj.discretecalculator.controller.MainController">
@@ -32,7 +33,6 @@
 
             <TabPane fx:id="ribbon" tabClosingPolicy="UNAVAILABLE" styleClass="ribbon">
                 <tabs>
-                    <!-- I/O -->
                     <Tab text="File">
                         <ToolBar styleClass="ribbon-bar">
                             <items>
@@ -71,9 +71,8 @@
                         </ToolBar>
                     </Tab>
 
-                    <Tab text = "Build">
+                    <Tab text="Build">
                         <ToolBar styleClass="ribbon-bar">
-                        <!-- builders -->
                             <items>
                                 <Button text="Cycle Cn" onAction="#onBuildCycle" prefWidth="90.0"/>
                                 <Button text="Complete Kn" onAction="#onBuildComplete" prefWidth="110.0"/>
@@ -81,24 +80,35 @@
                                 <Button text="Random tree Tn" onAction="#onBuildTree" prefWidth="120.0"/>
                             </items>
                         </ToolBar>
-
                     </Tab>
 
-                    <!-- algorithms -->
                     <Tab text="Algorithms">
                         <ToolBar styleClass="ribbon-bar">
                             <items>
                                 <ToggleButton text="Run BFS" toggleGroup="$modeGroup" prefWidth="90.0"/>
                                 <ToggleButton text="Run DFS" toggleGroup="$modeGroup" prefWidth="90.0"/>
+                                <ToggleButton text="Run Dijkstra" toggleGroup="$modeGroup" prefWidth="100.0"/>
 
                                 <Separator orientation="VERTICAL"/>
-                                <Label text="More algorithms coming soon" styleClass="ribbon-hint"/>
+
+                                <Button text="Greedy Coloring" onAction="#onRunGreedyColoring" prefWidth="120.0" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;"/>
                             </items>
                             <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
                         </ToolBar>
                     </Tab>
 
-                    <!-- View -->
+                    <Tab text="Animation">
+                        <ToolBar styleClass="ribbon-bar">
+                            <items>
+                                <Button prefHeight="26.0" prefWidth="40.0" text="⏪" onAction="#onTestStepBackward" style="-fx-font-size: 14px;"/>
+                                <Button prefHeight="26.0" prefWidth="40.0" text="⏸" onAction="#onTestPause" style="-fx-font-size: 14px;"/>
+                                <Button prefHeight="26.0" prefWidth="40.0" text="▶" onAction="#onTestPlay" style="-fx-font-size: 14px;"/>
+                                <Button prefHeight="26.0" prefWidth="40.0" text="⏭" onAction="#onTestStepForward" style="-fx-font-size: 14px;"/>
+                            </items>
+                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                        </ToolBar>
+                    </Tab>
+
                     <Tab text="View">
                         <ToolBar styleClass="ribbon-bar">
                             <items>
@@ -146,7 +156,6 @@
                   translateX="-150">
                 <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
 
-                <!-- Quick Input -->
                 <Label text="Quick Input" styleClass="input-panel-header"/>
                 <TextArea fx:id="edgeInput"
                           prefRowCount="3"
@@ -156,7 +165,6 @@
                     <VBox.margin><Insets top="8" bottom="8"/></VBox.margin>
                 </Separator>
 
-                <!-- Graph appearance -->
                 <Label text="Appearance" styleClass="input-panel-header"/>
 
                 <Label text="Vertex size" styleClass="ribbon-hint"/>
@@ -174,7 +182,6 @@
                     <VBox.margin><Insets top="8" bottom="8"/></VBox.margin>
                 </Separator>
 
-                <!-- Paint color -->
                 <Label text="Paint color" styleClass="input-panel-header"/>
                 <HBox spacing="6" alignment="CENTER_LEFT">
                     <ColorPicker fx:id="colorPicker"

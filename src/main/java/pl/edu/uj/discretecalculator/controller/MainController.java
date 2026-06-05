@@ -10,8 +10,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import pl.edu.uj.discretecalculator.algorithm.*;
 import pl.edu.uj.discretecalculator.io.*;
 import pl.edu.uj.discretecalculator.view.*;
+import pl.edu.uj.discretecalculator.view.animation.*;
 import pl.edu.uj.discretecalculator.view.builder.BuilderContext;
 import pl.edu.uj.discretecalculator.view.builder.GraphBuilders;
 import pl.edu.uj.discretecalculator.view.command.*;
@@ -24,10 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import pl.edu.uj.discretecalculator.algorithm.BFS;
-import pl.edu.uj.discretecalculator.algorithm.BFSResult;
-import pl.edu.uj.discretecalculator.algorithm.DFS;
-import pl.edu.uj.discretecalculator.algorithm.DFSResult;
 import pl.edu.uj.discretecalculator.model.graph.Edge;
 import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.model.graph.Vertex;
@@ -37,12 +35,14 @@ public class MainController {
     private CanvasManager canvas;
     private final CommandHistory history = new CommandHistory();
     private VertexDrawn source = null;
-    private Timeline activeAnimation = null;
     private ViewZoom viewZoom;
     private double lastMouseX, lastMouseY;
     private boolean panDragged = false;
     private static final double panLimit = 5.0;
     private double lastPanX, lastPanY;
+
+    // Silnik odtwarzacza animacji (Nowa Architektura)
+    private AlgorithmPlayer player;
 
     //layout
     private Timeline timeline = new Timeline();
@@ -182,7 +182,7 @@ public class MainController {
 
     @FXML
     private void onResetView() {
-        if (activeAnimation != null) return;
+        if (player != null) player.pause();
         clearSelection();
         resetCanvasStyles();
     }
@@ -225,11 +225,11 @@ public class MainController {
         timeline = new Timeline();
         KeyFrame keyFrame = new KeyFrame(Duration.millis(25), e -> {
             i.getAndIncrement();
-           layout.iteration(temperature);
-           temperature=t0*(1- (double) i.get() /iterations);
-           if(i.get() >= iterations) {
-               timeline.stop();
-           }
+            layout.iteration(temperature);
+            temperature=t0*(1- (double) i.get() /iterations);
+            if(i.get() >= iterations) {
+                timeline.stop();
+            }
         });
         timeline.getKeyFrames().add(keyFrame);
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -253,7 +253,7 @@ public class MainController {
 
     @FXML
     private void onUndo() {
-        if (activeAnimation != null) return;
+        if (player != null) player.pause();
         clearSelection();
         history.undo();
         refreshUndoRedoState();
@@ -262,7 +262,7 @@ public class MainController {
 
     @FXML
     private void onRedo() {
-        if (activeAnimation != null) return;
+        if (player != null) player.pause();
         clearSelection();
         history.redo();
         refreshUndoRedoState();
@@ -460,12 +460,11 @@ public class MainController {
             panDragged = false;
             return;
         }
-        if (activeAnimation != null) {
-            activeAnimation.stop();
-            activeAnimation = null;
+        if (player != null) {
+            player.pause();
             resetCanvasStyles();
             clearSelection();
-            return;
+            // Możemy ewentualnie schować odtwarzacz: player = null;
         }
         if (currentMode()== Mode.ADD_VERTEX) {
             runCommand(new AddVertexCommand(canvas, e.getX(), e.getY(),
@@ -475,12 +474,15 @@ public class MainController {
         } else if ((currentMode() == Mode.ADD_EDGE) && source != null) {
             clearSelection();
         }
-
     }
 
     private void onVertexClick(VertexDrawn vertex) {
-        if (activeAnimation != null) return;
-        switch (currentMode()) {
+        if (player != null && player.isPlaying()) return;
+
+        Mode currentMode = currentMode();
+        if (currentMode == null) return;
+
+        switch (currentMode) {
             case ADD_EDGE -> {
                 if (source == null) {
                     source = vertex;
@@ -502,20 +504,27 @@ public class MainController {
             case RUN_BFS -> runAndAnimateAlgorithm(vertex, "BFS");
             case RUN_DFS -> runAndAnimateAlgorithm(vertex, "DFS");
             case PAINT -> vertex.setUserFillColor(colorPicker.getValue());
-            case null -> {}
-            default -> {}
+            default -> {
+                // Ręczna obsługa algorytmów kolegów, dopóki nie dodasz ich do enum Mode
+                if (currentMode.label().equals("Run Dijkstra")) {
+                    runAndAnimateAlgorithm(vertex, "DIJKSTRA");
+                }
+            }
         }
     }
 
     private void onEdgeClick(EdgeDrawn edge) {
-        if (activeAnimation != null) return;
-        switch (currentMode()) {
-            case Mode.DELETE -> {
+        if (player != null && player.isPlaying()) return;
+
+        Mode currentMode = currentMode();
+        if (currentMode == null) return;
+
+        switch (currentMode) {
+            case DELETE -> {
                 runCommand(new RemoveEdgeCommand(canvas, edge));
                 kickLiveLayout(1);
             }
-            case Mode.PAINT -> edge.setUserStrokeColor(colorPicker.getValue());
-            case null -> {}
+            case PAINT -> edge.setUserStrokeColor(colorPicker.getValue());
             default -> {}
         }
     }
@@ -645,14 +654,62 @@ public class MainController {
     }
 
     //####################################################
+    //##################### TESTY ########################
+    //####################################################
+
+    @FXML
+    private void onTestPlay() {
+        if (player != null) player.play();
+    }
+
+    @FXML
+    private void onTestPause() {
+        if (player != null) player.pause();
+    }
+
+    @FXML
+    private void onTestStepForward() {
+        if (player != null) {
+            player.pause();
+            player.stepForward();
+        }
+    }
+
+    @FXML
+    private void onTestStepBackward() {
+        if (player != null) {
+            player.pause();
+            player.stepBackward();
+        }
+    }
+
+    // --- ALGORYTMY GLOBALNE (Nie wymagają wierzchołka startowego) ---
+
+    @FXML
+    private void onRunGreedyColoring() {
+        if (player == null) player = new AlgorithmPlayer(canvas);
+        clearSelection();
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getVertices().isEmpty()) return;
+
+        GreedyVC<String> algorithm = new GreedyVC<>();
+        GreedyVCResult<String> result = algorithm.start(graph);
+        AlgorithmTrack track = TrackFactory.buildGreedyColoringTrack(result, graph);
+
+        player.loadTrack(track);
+        player.play();
+    }
+
+    //####################################################
     //##################### KONTROLER ####################
     //####################################################
+
     private Graph<String> buildMathematicalGraph() {
+        // TODO: W przyszłości zmienimy na tworzenie WeightedGraph, jeśli algorytm to wymusi.
         Graph<String> mathGraph = new Graph<>("CanvasGraph");
         Map<String, Vertex<String>> dictionary = new HashMap<>();
 
         for (VertexDrawn vd : canvas.getVertices()) {
-            String vId = vd.getVertexId();
             Vertex<String> v = new Vertex<>(Integer.parseInt(vd.getVertexId()), vd.getVertexId());
             mathGraph.addVertex(v);
             dictionary.put(vd.getVertexId(), v);
@@ -668,103 +725,48 @@ public class MainController {
         return mathGraph;
     }
 
-    // resetowanie płótna przed animacją
     private void resetCanvasStyles() {
-        for (VertexDrawn v : canvas.getVertices()) v.resetStyle();
-        for (EdgeDrawn e : canvas.getEdges()) e.resetStyle();
+        canvas.resetAllStyles();
     }
 
-    // logika animacji
+    /**
+     * Główna metoda sterująca uruchamianiem i animowaniem algorytmów
+     * zależnych od wierzchołka startowego.
+     */
     private void runAndAnimateAlgorithm(VertexDrawn startVisualNode, String algorithmType) {
+        if (player == null) player = new AlgorithmPlayer(canvas);
+
         Graph<String> graph = buildMathematicalGraph();
 
-        // znajdujemy startowy węzeł
         Vertex<String> startNode = null;
         for (Vertex<String> v : graph.getVertices()) {
             if (v.getValue().equals(startVisualNode.getVertexId())) { startNode = v; break; }
         }
         if (startNode == null) return;
 
-        resetCanvasStyles();
+        AlgorithmTrack generatedTrack = null;
 
-        // zmienne wynikowe
-        List<Vertex<String>> visitOrder = new ArrayList<>();
-        Map<Vertex<String>, Vertex<String>> parentMap = new HashMap<>();
-        Set<Edge<String>> cycles;
-
-        // miejsce na typ algorytmu
-        if (algorithmType.equals("BFS")) {
-            BFSResult<String> result = new BFS<>(startNode).start(graph);
-            visitOrder = result.getVisitOrder();
-            parentMap = result.getParentMap();
-            cycles = result.getNonTreeEdges();
-        } else if (algorithmType.equals("DFS")) {
-            DFSResult<String> result = new DFS<>(startNode).start(graph);
-            visitOrder = result.getVisitOrder();
-            parentMap = result.getParentMap();
-            cycles = result.getNonTreeEdges();
-        }
-        else {
-            cycles = new HashSet<>();
-        }
-
-        //ANIMACJA
-        activeAnimation = new Timeline();
-        double delaySeconds = 0.5;
-
-        // malowanie wezłów
-        for (int i = 0; i < visitOrder.size(); i++) {
-            String nodeId = visitOrder.get(i).getValue();
-            Vertex<String> currentNode = visitOrder.get(i);
-
-            Vertex<String> parentNode = parentMap.get(currentNode);
-            String parentId = (parentNode != null) ? parentNode.getValue() : null;
-
-            KeyFrame kf = new KeyFrame(Duration.seconds(i * delaySeconds), event -> {
-                for (VertexDrawn vd : canvas.getVertices()) {
-                    if (vd.getVertexId().equals(nodeId)) {
-                        vd.markVisited(algorithmType);
-                        break;
-                    }
-                }
-                if (parentId != null) {
-                    for (EdgeDrawn ed : canvas.getEdges()) {
-                        String source = ed.getSource().getVertexId();
-                        String target = ed.getTarget().getVertexId();
-
-                        if ((source.equals(nodeId) && target.equals(parentId)) ||
-                                (source.equals(parentId) && target.equals(nodeId))) {
-
-                            ed.highlightAsTreeEdge();
-                            break;
-                        }
-                    }
-                }
-            });
-            activeAnimation.getKeyFrames().add(kf);
-        }
-
-        // krawędzie spoza drzewa na czerwono
-        KeyFrame cyclesFrame = new KeyFrame(Duration.seconds(visitOrder.size() * delaySeconds), event -> {
-            for (Edge<String> badEdge : cycles) {
-                String sourceId = badEdge.getSource().getValue();
-                String targetId = badEdge.getTarget().getValue();
-
-                for (EdgeDrawn ed : canvas.getEdges()) {
-                    if ((ed.getSource().getVertexId().equals(sourceId) && ed.getTarget().getVertexId().equals(targetId)) ||
-                            (ed.getSource().getVertexId().equals(targetId) && ed.getTarget().getVertexId().equals(sourceId))) {
-                        ed.highlightAsCycle();
-                    }
-                }
+        try {
+            if (algorithmType.equals("BFS")) {
+                BFSResult<String> result = new BFS<>(startNode).start(graph);
+                generatedTrack = TrackFactory.buildBfsTrack(result, graph);
             }
-        });
-        activeAnimation.getKeyFrames().add(cyclesFrame);
+            else if (algorithmType.equals("DFS")) {
+                DFSResult<String> result = new DFS<>(startNode).start(graph);
+                generatedTrack = TrackFactory.buildDfsTrack(result, graph);
+            }
+            else if (algorithmType.equals("DIJKSTRA")) {
+                // DijkstraAlgorithm<String> algorithm = new DijkstraAlgorithm<>(startNode, null);
+                // DijkstraAlgorithmResult<String> result = algorithm.start(graph);
+                // generatedTrack = TrackFactory.buildDijkstraTrack(result, graph);
+            }
+        } catch (Exception e) {
+            System.err.println("Błąd wykonania algorytmu: " + e.getMessage());
+        }
 
-        activeAnimation.setOnFinished(event -> {
-            activeAnimation = null;
-        });
-
-        activeAnimation.play();
+        if (generatedTrack != null) {
+            player.loadTrack(generatedTrack);
+            player.play();
+        }
     }
-
 }
