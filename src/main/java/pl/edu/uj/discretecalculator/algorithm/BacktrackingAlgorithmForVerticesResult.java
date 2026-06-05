@@ -7,7 +7,7 @@ import java.util.*;
 
 public class BacktrackingAlgorithmForVerticesResult<V> {
     //every time vertex changes colour we put it into array
-    private final ArrayList<ColouredVertex<V>> coloringOrder;
+    private final ArrayList<Pair<Integer,Integer>> coloringOrder;
     private final List<ColouredVertex<V>> result;
 
     public BacktrackingAlgorithmForVerticesResult()
@@ -16,7 +16,7 @@ public class BacktrackingAlgorithmForVerticesResult<V> {
         result=new ArrayList<>();
     }
 
-    public ArrayList<ColouredVertex<V>> getColoringOrder(){
+    public ArrayList<Pair<Integer,Integer>> getColoringOrder(){
         return coloringOrder;
     }
 
