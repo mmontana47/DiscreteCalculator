@@ -46,10 +46,12 @@ public class BacktrackingAlgorithmForEdges<V> implements AlgorithmicInterface<V,
             if(isSafe(current,c))
             {
                 current.setColour(c);
-                result.getColoringOrder().add(current);
+                Pair<Integer,Integer> pair=new Pair<>(current.getId(),current.getColour());
+                result.getColoringOrder().add(pair);
                 if(solve(edges,result,colour))return true;
                 current.setColour(0);
-                result.getColoringOrder().add(current);
+                Pair<Integer,Integer> pair2=new Pair<>(current.getId(),current.getColour());
+                result.getColoringOrder().add(pair2);
                 edges.addFirst(current);
             }
         }

@@ -54,10 +54,12 @@ public class BacktrackingAlgorithmForVertices<V> implements AlgorithmicInterface
             if(isSafe(current,c))
             {
                 current.setColour(c);
-                res.getColoringOrder().add(current);
+                Pair<Integer,Integer>pair=new Pair<>(current.getId(),current.getColour());
+                res.getColoringOrder().add(pair);
                 if(solve(vertices,colurs,res))return true;
                 current.setColour(0);
-                res.getColoringOrder().add(current);
+                Pair<Integer,Integer>pair2=new Pair<>(current.getId(),current.getColour());
+                res.getColoringOrder().add(pair2);
                 vertices.addFirst(current);
             }
         }

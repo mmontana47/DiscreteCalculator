@@ -4,7 +4,7 @@ import pl.edu.uj.discretecalculator.model.graph.ColouredEdge;
 import java.util.*;
 
 public class BacktrackingAlgorithmForEdgesResult<V> {
-    private final ArrayList<ColouredEdge<V>> coloringOrder;
+    private final ArrayList<Pair<Integer,Integer>> coloringOrder;
     private final ArrayList<ColouredEdge<V>> finalColoring;
 
     public BacktrackingAlgorithmForEdgesResult()
@@ -13,6 +13,6 @@ public class BacktrackingAlgorithmForEdgesResult<V> {
         finalColoring=new ArrayList<>();
     }
 
-    public ArrayList<ColouredEdge<V>> getColoringOrder(){return coloringOrder;}
+    public ArrayList<Pair<Integer,Integer>> getColoringOrder(){return coloringOrder;}
     public ArrayList<ColouredEdge<V>> getFinalColoring(){return finalColoring;}
 }
