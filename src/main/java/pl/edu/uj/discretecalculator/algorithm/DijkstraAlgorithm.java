@@ -18,7 +18,7 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlg
     public DijkstraAlgorithmResult<V> start(Graph<V> g) {
         //nie musimy rozwazac WeightedDirected - tutaj dziedziczenie jest ok
         if (!(g instanceof WeightedGraph<?>)) {
-            throw new IllegalArgumentException("Algorytm Dijkstry wymaga grafu ważonego.");
+            throw new IllegalArgumentException("Dijkstra requires for the graph to be weighted.");
         }
 
         WeightedGraph<V> graph = (WeightedGraph<V>) g;
