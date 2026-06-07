@@ -21,6 +21,7 @@ public class EdgeDrawn extends Group {
     private final Polygon arrowHead;
     private QuadCurve curve;
     private double offset = 0;
+    private boolean isActive = false;
 
     private static final PseudoClass TREE_EDGE  = PseudoClass.getPseudoClass("tree-edge");
     private static final PseudoClass CYCLE_EDGE = PseudoClass.getPseudoClass("cycle-edge");
@@ -46,7 +47,9 @@ public class EdgeDrawn extends Group {
         curve.getStyleClass().add("edge");
         curve.setFill(Color.TRANSPARENT);
         curve.setStrokeWidth(StyleSettings.get().getEdgeWidth());
-        StyleSettings.get().edgeWidthProperty().addListener((obs, old, w) -> curve.setStrokeWidth(w.doubleValue()));
+        StyleSettings.get().edgeWidthProperty().addListener((obs, old, w) -> {
+            curve.setStrokeWidth(isActive ? w.doubleValue() * 2.5 : w.doubleValue());
+        });
 
         this.weightLabel.getStyleClass().add("edge-label");
         this.arrowHead.getStyleClass().add("edge-arrow");
@@ -66,7 +69,7 @@ public class EdgeDrawn extends Group {
         line.endYProperty().addListener(arrowUpdater);
         StyleSettings.get().vertexRadiusProperty().addListener((obs, old, val) -> updateArrowHead());
 
-        this.getChildren().addAll(curve, arrowHead);
+        this.getChildren().addAll(curve, arrowHead, weightLabel);;
         updateArrowHead();
 
         this.setOnMouseClicked(event -> {
@@ -170,11 +173,16 @@ public class EdgeDrawn extends Group {
         weightLabel.setText(text == null ? "" : text);
     }
 
+    public String getWeightText() {
+        return weightLabel.getText();
+    }
+
     public void highlightAsTreeEdge() {
         curve.pseudoClassStateChanged(TREE_EDGE, true);
         curve.pseudoClassStateChanged(CYCLE_EDGE, false);
         curve.setStyle("-fx-stroke: #1a56db; -fx-stroke-width: 3;");
     }
+
 
     public void highlightAsCycle() {
         curve.pseudoClassStateChanged(CYCLE_EDGE, true);
@@ -182,10 +190,22 @@ public class EdgeDrawn extends Group {
         curve.setStyle("-fx-stroke: #9ca3af; -fx-stroke-width: 2; -fx-stroke-dash-array: 10 10;");
     }
 
+    // NOWA METODA
+    public void setActive(boolean active) {
+        this.isActive = active;
+        double baseWidth = StyleSettings.get().getEdgeWidth();
+        curve.setStrokeWidth(active ? baseWidth * 4 : baseWidth);
+    }
+
+    public void bindWeightVisibility(javafx.beans.value.ObservableBooleanValue visibilityProperty) {
+        weightLabel.visibleProperty().bind(visibilityProperty);
+    } // do naprawienia kwestii zwiazanej z pustymi polami labelow wag
+
     public void resetStyle() {
         curve.pseudoClassStateChanged(TREE_EDGE, false);
         curve.pseudoClassStateChanged(CYCLE_EDGE, false);
         applyStroke(null);
         setWeightText(null);
+        setActive(false); // Reset grubości przy czyszczeniu płótna
     }
 }
