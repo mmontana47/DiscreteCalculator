@@ -1,24 +1,36 @@
 package pl.edu.uj.discretecalculator.algorithm;
-import pl.edu.uj.discretecalculator.model.graph.*;
-import pl.edu.uj.discretecalculator.model.graph.Vertex;
 
+import pl.edu.uj.discretecalculator.model.graph.Vertex;
 import java.util.*;
 
-
 public class BacktrackingAlgorithmForVerticesResult<V> {
-    //every time vertex changes colour we put it into array
-    private final ArrayList<ColouredVertex<V>> coloringOrder;
-    private final List<ColouredVertex<V>> result;
 
-    public BacktrackingAlgorithmForVerticesResult()
-    {
-        coloringOrder=new ArrayList<>();
-        result=new ArrayList<>();
+    public enum Phase {
+        TRY_COLOR,
+        BACKTRACK
     }
 
-    public ArrayList<ColouredVertex<V>> getColoringOrder(){
-        return coloringOrder;
+    public static class BacktrackVertexStep<V> {
+        public final Phase phase;
+        public final Vertex<V> activeNode;
+        public final int color;
+        public final int maxColorsAllowed;
+        public final Map<Vertex<V>, Integer> colorsSnapshot;
+
+        public BacktrackVertexStep(Phase phase, Vertex<V> activeNode, int color, int maxColorsAllowed, Map<Vertex<V>, Integer> colors) {
+            this.phase = phase;
+            this.activeNode = activeNode;
+            this.color = color;
+            this.maxColorsAllowed = maxColorsAllowed;
+            this.colorsSnapshot = new HashMap<>(colors);
+        }
     }
 
-    public List<ColouredVertex<V>> getResult(){return result;}
+    private final List<BacktrackVertexStep<V>> history = new ArrayList<>();
+    private final Map<Vertex<V>, Integer> finalColors = new HashMap<>();
+
+    public void addStep(BacktrackVertexStep<V> step) { history.add(step); }
+    public List<BacktrackVertexStep<V>> getHistory() { return history; }
+    public void clearHistory() { history.clear(); }
+    public Map<Vertex<V>, Integer> getFinalColors() { return finalColors; }
 }
