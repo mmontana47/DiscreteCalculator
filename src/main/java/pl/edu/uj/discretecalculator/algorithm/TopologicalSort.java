@@ -1,53 +1,74 @@
 package pl.edu.uj.discretecalculator.algorithm;
-import java.util.*;
 
+import java.util.*;
 import pl.edu.uj.discretecalculator.exception.TopologicalSortException;
 import pl.edu.uj.discretecalculator.model.graph.*;
 
-public class TopologicalSort<V> implements AlgorithmicInterface<V,List<Vertex<V>>>{
-    TopoSortResult<V> toposort;
-    DirectedGraph<V> modifiable_graph;
-    @Override
-    public String algorithmName(){
-        return "Obgryzanie grafu(topologiczny sort)";
-    }
+public class TopologicalSort<V> implements AlgorithmicInterface<V, TopoSortResult<V>> {
 
     @Override
-    public List<Vertex<V>> start(Graph<V> graph)
-    {
-        toposort=new TopoSortResult<>();
-        modifiable_graph=new DirectedGraph<>("temporary");
-        for(Vertex<V> v:graph.getVertices())
-        {
-            modifiable_graph.addVertex(v);
-        }
-        for(Map.Entry<Vertex<V>,List<Edge<V>>> entry:graph.getAdjacencyList().entrySet())
-        {
-            for (Edge<V> edge:entry.getValue())
-            {
-                DirectedEdge<V> edge1=new DirectedEdge<>(edge.getTarget(),edge.getSource(),edge.getId());
-                modifiable_graph.addEdge(edge1);
-            }
-        }
-        topoSort(modifiable_graph);
-        if(toposort.getResult().size()!=graph.getVertices().size())
-            throw new TopologicalSortException("Graph contains cycle");
-        return toposort.getResult();
-    }
+    public String algorithmName() { return "Algorytm Kahna (Sortowanie Topologiczne)"; }
 
-    private void topoSort(DirectedGraph<V> modifiable_graph)
-    {
-        boolean contains_degree_zero=false;
-        for(Vertex<V> v:modifiable_graph.getVertices())
-        {
-            if(modifiable_graph.getNeighbors(v).isEmpty())
-            {
-                modifiable_graph.deleteVertex(v);
-                toposort.getResult().add(v);
-                contains_degree_zero=true;
+    @Override
+    public TopoSortResult<V> start(Graph<V> graph) {
+
+        // rozwiazanie problemu z dziedziczeniem
+        boolean isDirected = (graph instanceof DirectedGraph<?>) ||
+                graph.getClass().getSimpleName().contains("Directed");
+
+        if (!isDirected) {
+            throw new TopologicalSortException("Sortowanie topologiczne wymaga grafu skierowanego.");
+        }
+
+        TopoSortResult<V> result = new TopoSortResult<>();
+        Map<Vertex<V>, Integer> inDegrees = new HashMap<>();
+
+        for (Vertex<V> v : graph.getVertices()) {
+            inDegrees.put(v, 0);
+        }
+
+        for (Edge<V> e : graph.getEdges()) {
+            Vertex<V> target = e.getTarget();
+            inDegrees.put(target, inDegrees.get(target) + 1);
+        }
+
+        Queue<Vertex<V>> queue = new LinkedList<>();
+        for (Map.Entry<Vertex<V>, Integer> entry : inDegrees.entrySet()) {
+            if (entry.getValue() == 0) queue.add(entry.getKey());
+        }
+
+        result.addStep(new TopoSortResult.TopoStep<>(TopoSortResult.Phase.INIT, null, null, inDegrees, result.getSortedResult()));
+
+        int processedCount = 0;
+
+        while (!queue.isEmpty()) {
+            Vertex<V> current = queue.poll();
+            result.getSortedResult().add(current);
+            processedCount++;
+
+            result.addStep(new TopoSortResult.TopoStep<>(TopoSortResult.Phase.TAKE_NODE, current, null, inDegrees, result.getSortedResult()));
+
+            for (Edge<V> e : graph.getIncidentEdges(current)) {
+                if (e.getSource().equals(current)) {
+                    Vertex<V> neighbor = e.getTarget();
+
+                    inDegrees.put(neighbor, inDegrees.get(neighbor) - 1);
+
+                    result.addStep(new TopoSortResult.TopoStep<>(TopoSortResult.Phase.UPDATE_DEGREES, neighbor, e, inDegrees, result.getSortedResult()));
+
+                    if (inDegrees.get(neighbor) == 0) {
+                        queue.add(neighbor);
+                    }
+                }
             }
         }
-        if(contains_degree_zero)
-            topoSort(modifiable_graph);
+
+        // detekcja cyklu
+        if (processedCount != graph.getVertices().size()) {
+            result.addStep(new TopoSortResult.TopoStep<>(TopoSortResult.Phase.CYCLE_DETECTED, null, null, inDegrees, result.getSortedResult()));
+            throw new TopologicalSortException("Graf zawiera cykl");
+        }
+
+        return result;
     }
 }
