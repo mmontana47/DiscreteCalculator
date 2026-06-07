@@ -1,4 +1,5 @@
 package pl.edu.uj.discretecalculator.view.animation;
+import java.util.Locale;
 
 import pl.edu.uj.discretecalculator.controller.CanvasManager;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
@@ -11,7 +12,7 @@ public class ShortestPathFrame implements AlgorithmFrame {
     private final String activeVertexId;
     private final String activeEdgeId;
     private final Map<String, Double> distances;
-    private final double maxGraphDistance; // Maksymalny dostep dla skalowania gradientu
+    private final double maxGraphDistance; // Maksymalny dystans dla skalowania gradientu
 
     public ShortestPathFrame(String description, String phaseName, String activeVertexId,
                              String activeEdgeId, Map<String, Double> distances, double maxGraphDistance) {
@@ -38,7 +39,7 @@ public class ShortestPathFrame implements AlgorithmFrame {
                     vd.setBottomLabelText("∞");
                 } else {
                     vd.setFillColor(calculateGradientColor(entry.getValue()));
-                    vd.setBottomLabelText(String.format("%.1f", entry.getValue()));
+                    vd.setBottomLabelText(String.format(Locale.US, "%.1f", entry.getValue()));
                 }
             }
         }
