@@ -11,7 +11,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import pl.edu.uj.discretecalculator.algorithm.*;
+import pl.edu.uj.discretecalculator.exception.TopologicalSortException;
 import pl.edu.uj.discretecalculator.io.*;
+import pl.edu.uj.discretecalculator.model.graph.*;
 import pl.edu.uj.discretecalculator.view.*;
 import pl.edu.uj.discretecalculator.view.animation.*;
 import pl.edu.uj.discretecalculator.view.builder.BuilderContext;
@@ -26,9 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import pl.edu.uj.discretecalculator.model.graph.Edge;
-import pl.edu.uj.discretecalculator.model.graph.Graph;
-import pl.edu.uj.discretecalculator.model.graph.Vertex;
 import pl.edu.uj.discretecalculator.view.layout.ForceDirectedLayout;
 
 public class MainController {
@@ -505,10 +504,8 @@ public class MainController {
             case RUN_DFS -> runAndAnimateAlgorithm(vertex, "DFS");
             case PAINT -> vertex.setUserFillColor(colorPicker.getValue());
             default -> {
-                // Ręczna obsługa algorytmów kolegów, dopóki nie dodasz ich do enum Mode
-                if (currentMode.label().equals("Run Dijkstra")) {
-                    runAndAnimateAlgorithm(vertex, "DIJKSTRA");
-                }
+                if (currentMode.label().equals("Run Dijkstra")) runAndAnimateAlgorithm(vertex, "DIJKSTRA");
+                else if (currentMode.label().equals("Run Bellman-Ford")) runAndAnimateAlgorithm(vertex, "BELLMAN_FORD");
             }
         }
     }
@@ -525,6 +522,17 @@ public class MainController {
                 kickLiveLayout(1);
             }
             case PAINT -> edge.setUserStrokeColor(colorPicker.getValue());
+            case EDIT_WEIGHT -> {
+                OptionalDouble newWeight = promptForDouble("Waga krawędzi", "Zmień wagę dla wybranej krawędzi", "Waga");
+                if (newWeight.isPresent()) {
+                    // Wymuszamy zaznaczenie checkboxa "Weighted Graph", jeśli użytkownik zaczął ręcznie edytować wagi
+                    if (!weightedCheckbox.isSelected()) {
+                        weightedCheckbox.setSelected(true);
+                    }
+                    String weightStr = String.valueOf(newWeight.getAsDouble());
+                    runCommand(new ChangeWeightCommand(edge, weightStr));
+                }
+            }
             default -> {}
         }
     }
@@ -628,6 +636,44 @@ public class MainController {
         canvas.setDirected(directedCheckbox.isSelected());
     }
 
+    @FXML private CheckBox weightedCheckbox;
+
+    @FXML
+    private void onToggleWeighted() {
+        boolean isWeighted = weightedCheckbox.isSelected();
+        if (isWeighted) {
+            // Jeśli zaznaczono, dla każdej krawędzi bez wagi ustaw "1.0"
+            for (EdgeDrawn ed : canvas.getEdges()) {
+                if (ed.getWeightText() == null || ed.getWeightText().isEmpty()) {
+                    ed.setWeightText("1.0");
+                }
+            }
+        } else {
+            // Jeśli odznaczono, czyścimy wszystkie wagi (ukrywamy je)
+            for (EdgeDrawn ed : canvas.getEdges()) {
+                ed.setWeightText("");
+            }
+        }
+    }
+
+    private OptionalDouble promptForDouble(String title, String header, String var) {
+        TextInputDialog dlg = new TextInputDialog();
+        dlg.setTitle(title);
+        dlg.setHeaderText(header);
+        dlg.setGraphic(null);
+        dlg.setContentText(var + " =");
+        Platform.runLater(() -> dlg.getEditor().requestFocus());
+        Optional<String> r = dlg.showAndWait();
+        if (r.isEmpty()) return OptionalDouble.empty();
+        try {
+            // Zamiana przecinków na kropki, by zapobiec błędom formatowania regionalnego
+            double n = Double.parseDouble(r.get().trim().replace(",", "."));
+            return OptionalDouble.of(n);
+        } catch (NumberFormatException ex) {
+            return OptionalDouble.empty();
+        }
+    }
+
     // ─── Color / Paint handlers ────────────────────────────────────────────────
 
     @FXML
@@ -652,10 +698,6 @@ public class MainController {
         }
         return null;
     }
-
-    //####################################################
-    //##################### TESTY ########################
-    //####################################################
 
     @FXML
     private void onTestPlay() {
@@ -692,12 +734,95 @@ public class MainController {
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
 
-        GreedyVC<String> algorithm = new GreedyVC<>();
-        GreedyVCResult<String> result = algorithm.start(graph);
+        // Przekazujemy null jako węzeł startowy - algorytm sam weźmie pierwszy z brzegu
+        GreedyVertexColoring<String> algorithm = new GreedyVertexColoring<>(null);
+        var result = algorithm.start(graph);
         AlgorithmTrack track = TrackFactory.buildGreedyColoringTrack(result, graph);
 
         player.loadTrack(track);
         player.play();
+    }
+
+    @FXML
+    private void onRunGreedyEdgeColoring() {
+        if (player == null) player = new AlgorithmPlayer(canvas);
+        clearSelection();
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getEdges().isEmpty()) return;
+
+        GreedyEdgeColoring<String> algorithm = new GreedyEdgeColoring<>();
+        var result = algorithm.start(graph);
+        AlgorithmTrack track = TrackFactory.buildGreedyEdgeColoringTrack(result, graph);
+
+        player.loadTrack(track);
+        player.play();
+    }
+
+    @FXML
+    private void onRunBacktrackingVertexColoring() {
+        if (player == null) player = new AlgorithmPlayer(canvas);
+        clearSelection();
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getVertices().isEmpty()) return;
+
+        // Przekazujemy null, algorytm obsłuży to prawidłowo
+        BacktrackingAlgorithmForVertices<String> algorithm = new BacktrackingAlgorithmForVertices<>(null);
+        var result = algorithm.start(graph);
+        AlgorithmTrack track = TrackFactory.buildBacktrackingVertexTrack(result, graph);
+
+        player.loadTrack(track);
+        player.play();
+    }
+
+    @FXML
+    private void onRunBacktrackingEdgeColoring() {
+        if (player == null) player = new AlgorithmPlayer(canvas);
+        clearSelection();
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getEdges().isEmpty()) return;
+
+        BacktrackingAlgorithmForEdges<String> algorithm = new BacktrackingAlgorithmForEdges<>();
+        var result = algorithm.start(graph);
+        AlgorithmTrack track = TrackFactory.buildBacktrackingEdgeTrack(result, graph);
+
+        player.loadTrack(track);
+        player.play();
+    }
+
+    @FXML
+    private void onRunSCC() {
+        if (player == null) player = new AlgorithmPlayer(canvas);
+        clearSelection();
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getVertices().isEmpty()) return;
+
+        StronglyConnectedComponent<String> algorithm = new StronglyConnectedComponent<>();
+        var result = algorithm.start(graph);
+        AlgorithmTrack track = TrackFactory.buildSccTrack(result, graph);
+
+        player.loadTrack(track);
+        player.play();
+    }
+
+    @FXML
+    private void onRunTopoSort() {
+        if (player == null) player = new AlgorithmPlayer(canvas);
+        clearSelection();
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getVertices().isEmpty()) return;
+
+        TopologicalSort<String> algorithm = new TopologicalSort<>();
+        try {
+            var result = algorithm.start(graph);
+            AlgorithmTrack track = TrackFactory.buildTopoSortTrack(result, graph);
+            player.loadTrack(track);
+            player.play();
+        } catch (TopologicalSortException e) {
+            // Obsługa alertu gdy użytkownik próbuje posortować graf z cyklem
+            Alert alert = new Alert(Alert.AlertType.WARNING, e.getMessage(), ButtonType.OK);
+            alert.setHeaderText("Błąd TopoSort");
+            alert.showAndWait();
+        }
     }
 
     //####################################################
@@ -705,8 +830,15 @@ public class MainController {
     //####################################################
 
     private Graph<String> buildMathematicalGraph() {
-        // TODO: W przyszłości zmienimy na tworzenie WeightedGraph, jeśli algorytm to wymusi.
-        Graph<String> mathGraph = new Graph<>("CanvasGraph");
+        Graph<String> mathGraph;
+
+        // Decyzja o strukturze zależy od stanu przełącznika z UI (DirectedCheckbox)
+        if (canvas.isDirected()) {
+            mathGraph = new WeightedDirectedGraph<>("CanvasGraph");
+        } else {
+            mathGraph = new WeightedGraph<>("CanvasGraph");
+        }
+
         Map<String, Vertex<String>> dictionary = new HashMap<>();
 
         for (VertexDrawn vd : canvas.getVertices()) {
@@ -715,11 +847,25 @@ public class MainController {
             dictionary.put(vd.getVertexId(), v);
         }
 
-        int edgeId = 0;
+        // Wewnątrz buildMathematicalGraph()
+        int edgeId = 0; // Nasza konwencja liczbowa
         for (EdgeDrawn ed : canvas.getEdges()) {
             Vertex<String> source = dictionary.get(ed.getSource().getVertexId());
             Vertex<String> target = dictionary.get(ed.getTarget().getVertexId());
-            Edge<String> edge = new Edge<>(source, target, edgeId++);
+
+            double weight = 1.0;
+            try {
+                if (ed.getWeightText() != null && !ed.getWeightText().isEmpty()) {
+                    weight = Double.parseDouble(ed.getWeightText());
+                }
+            } catch (NumberFormatException ignored) {}
+
+            Edge<String> edge;
+            if (canvas.isDirected()) {
+                edge = new WeightedDirectedEdge<>(source, target, edgeId++, weight);
+            } else {
+                edge = new WeightedEdge<>(source, target, edgeId++, weight);
+            }
             mathGraph.addEdge(edge);
         }
         return mathGraph;
@@ -756,9 +902,14 @@ public class MainController {
                 generatedTrack = TrackFactory.buildDfsTrack(result, graph);
             }
             else if (algorithmType.equals("DIJKSTRA")) {
-                // DijkstraAlgorithm<String> algorithm = new DijkstraAlgorithm<>(startNode, null);
-                // DijkstraAlgorithmResult<String> result = algorithm.start(graph);
-                // generatedTrack = TrackFactory.buildDijkstraTrack(result, graph);
+                DijkstraAlgorithm<String> algorithm = new DijkstraAlgorithm<>(startNode); // path_end zostało usunięte
+                var result = algorithm.start(graph);
+                generatedTrack = TrackFactory.buildDijkstraTrack(result, graph);
+            }
+            else if (algorithmType.equals("BELLMAN_FORD")) {
+                BellmanFordAlgorithm<String> algorithm = new BellmanFordAlgorithm<>(startNode);
+                var result = algorithm.start(graph);
+                generatedTrack = TrackFactory.buildBellmanFordTrack(result, graph);
             }
         } catch (Exception e) {
             System.err.println("Błąd wykonania algorytmu: " + e.getMessage());
