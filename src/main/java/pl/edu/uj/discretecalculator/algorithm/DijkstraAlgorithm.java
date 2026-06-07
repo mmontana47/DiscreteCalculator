@@ -1,104 +1,90 @@
 package pl.edu.uj.discretecalculator.algorithm;
 
 import java.util.*;
-
-import pl.edu.uj.discretecalculator.exception.DijkstraNoPathException;
 import pl.edu.uj.discretecalculator.model.graph.*;
 
-public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V,DijkstraAlgorithmResult<V>>{
-    private final Vertex<V> path_beg;
-    private final Vertex<V> path_end;
+public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlgorithmResult<V>> {
+    private final Vertex<V> startNode;
 
-    public DijkstraAlgorithm(Vertex<V> beg,Vertex<V> end)
-    {
-        path_beg=beg;
-        path_end=end;
+    // Usunąłem path_end, aby algorytm zawsze liczył dystanse dla całego grafu
+    public DijkstraAlgorithm(Vertex<V> startNode) {
+        this.startNode = startNode;
     }
 
     @Override
-    public String algorithmName(){return "Dijkstra Algorithm";}
+    public String algorithmName() { return "Dijkstra Algorithm"; }
 
     @Override
-    public DijkstraAlgorithmResult<V> start(Graph<V> g)
-    {
+    public DijkstraAlgorithmResult<V> start(Graph<V> g) {
         if (!(g instanceof WeightedGraph<?>)) {
             throw new IllegalArgumentException("Algorytm Dijkstry wymaga grafu ważonego (WeightedGraph).");
         }
-        DijkstraAlgorithmResult<V> result=new DijkstraAlgorithmResult<>();
-        WeightedGraph<V> graph=(WeightedGraph<V>)g;
-        Map<Vertex<V>,Double> distance_map=new HashMap<>();
-        PriorityQueue<VertexDistance<V>> queue=new PriorityQueue<>(Comparator.comparingDouble(vertex_distance->vertex_distance.distance));
 
-        for(Vertex<V> vertex:graph.getVertices())
-        {
-            if(vertex.equals(path_beg)) {
-                distance_map.put(vertex, Double.POSITIVE_INFINITY);
-                result.getDistances().put(vertex, new ArrayList<>());
-                result.getDistances().get(vertex).add(Double.POSITIVE_INFINITY);
-            }else
-            {
-                distance_map.put(vertex,0.0);
-                result.getDistances().put(vertex, new ArrayList<>());
-                result.getDistances().get(vertex).add(0.0);
-            }
+        WeightedGraph<V> graph = (WeightedGraph<V>) g;
+        DijkstraAlgorithmResult<V> result = new DijkstraAlgorithmResult<>();
+
+        Map<Vertex<V>, Double> distances = new HashMap<>();
+        Map<Vertex<V>, Vertex<V>> parents = new HashMap<>();
+        Set<Vertex<V>> visited = new HashSet<>();
+        PriorityQueue<VertexDistance<V>> queue = new PriorityQueue<>(Comparator.comparingDouble(vd -> vd.distance));
+
+        // Poprawiona inicjalizacja! Start = 0.0, Reszta = Nieskończoność
+        for (Vertex<V> vertex : graph.getVertices()) {
+            distances.put(vertex, vertex.equals(startNode) ? 0.0 : Double.POSITIVE_INFINITY);
         }
-        queue.add(new VertexDistance<>(path_beg,0.0));
-        while (!queue.isEmpty())
-        {
-            VertexDistance<V> current=queue.poll();
-            Vertex<V> current_vertex=current.vertex;
-            if(current_vertex.equals(path_end))
-                break;
-            if(result.getVisited().contains(current_vertex))
-                continue;
-            result.getVisited().add(current_vertex);
-            for(Edge<V> e:graph.getIncidentEdges(current_vertex))
-            {
-                WeightedEdge<V> edge=(WeightedEdge<V>) e;
-                Vertex<V> next_vertex;
-                if(edge instanceof WeightedDirectedEdge<?>)
-                    next_vertex=edge.getTarget();
-                else {
-                    if (edge.getTarget().equals(current_vertex)) {
-                        next_vertex = edge.getSource();
-                    } else {
-                        next_vertex = edge.getTarget();
-                    }
-                }
-                if(result.getVisited().contains(next_vertex))
-                    continue;
-                double dist=edge.getWeight();
-                double new_dist=distance_map.get(current_vertex)+dist;
 
-                if(new_dist<distance_map.get(next_vertex))
-                {
-                    distance_map.put(next_vertex,new_dist);
-                    result.getDistances().get(next_vertex).add(new_dist);
-                    result.getParents().put(next_vertex,current_vertex);
-                    queue.add(new VertexDistance<>(next_vertex,new_dist));
+        queue.add(new VertexDistance<>(startNode, 0.0));
+
+        while (!queue.isEmpty()) {
+            Vertex<V> current = queue.poll().vertex;
+
+            if (visited.contains(current)) continue;
+            visited.add(current);
+
+            // Rejestrujemy krok odwiedzin wierzchołka
+            result.addStep(new DijkstraAlgorithmResult.DijkstraStep<>(
+                    DijkstraAlgorithmResult.Phase.VISIT_NODE, current, null, distances, parents));
+
+            for (Edge<V> e : graph.getIncidentEdges(current)) {
+                WeightedEdge<V> edge = (WeightedEdge<V>) e;
+                Vertex<V> neighbor = edge.getTarget().equals(current) ? edge.getSource() : edge.getTarget();
+
+                // Pomiń, jeśli graf jest skierowany i idziemy pod prąd
+                if (edge instanceof WeightedDirectedEdge<?> && edge.getTarget().equals(current)) continue;
+
+                if (visited.contains(neighbor)) continue;
+
+                // Rejestrujemy krok badania krawędzi
+                result.addStep(new DijkstraAlgorithmResult.DijkstraStep<>(
+                        DijkstraAlgorithmResult.Phase.CHECK_EDGE, neighbor, edge, distances, parents));
+
+                double newDist = distances.get(current) + edge.getWeight();
+
+                if (newDist < distances.get(neighbor)) {
+                    distances.put(neighbor, newDist);
+                    parents.put(neighbor, current);
+                    queue.add(new VertexDistance<>(neighbor, newDist));
+
+                    // Rejestrujemy udaną relaksację (aktualizację dystansu)
+                    result.addStep(new DijkstraAlgorithmResult.DijkstraStep<>(
+                            DijkstraAlgorithmResult.Phase.UPDATE_DISTANCE, neighbor, edge, distances, parents));
                 }
             }
         }
-        result.setShortest_distance(distance_map.get(path_end));
-        if(result.getShortest_distance()!=Double.POSITIVE_INFINITY)
-        {
-            for(Vertex<V> v=path_end;v!=null;v=result.getParents().get(v))
-                result.getShortest_path().add(v);
-            Collections.reverse(result.getShortest_path());
-        }
-        else
-            throw new DijkstraNoPathException("No path exists connecting "+path_beg.getValue()+" and "+path_end.getValue());
+
+        // Zapisujemy ostateczny stan do wyniku
+        result.getFinalDistances().putAll(distances);
+        result.getFinalParents().putAll(parents);
+
         return result;
     }
 
-    private static class VertexDistance<V>
-    {
+    private static class VertexDistance<V> {
         final Vertex<V> vertex;
         final double distance;
-        VertexDistance(Vertex<V> vertex,double distance)
-        {
-            this.vertex=vertex;
-            this.distance=distance;
+        VertexDistance(Vertex<V> vertex, double distance) {
+            this.vertex = vertex;
+            this.distance = distance;
         }
     }
 }
