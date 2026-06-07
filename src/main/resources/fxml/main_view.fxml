@@ -55,7 +55,7 @@
                                 <ToggleButton text="Delete" toggleGroup="$modeGroup" prefWidth="95.0"/>
                                 <ToggleButton text="Move" toggleGroup="$modeGroup" prefWidth="95.0"/>
                                 <ToggleButton text="Paint" toggleGroup="$modeGroup" prefWidth="80.0"/>
-
+                                <ToggleButton text="Edit Weight" toggleGroup="$modeGroup" />
                                 <Separator orientation="VERTICAL"/>
 
                                 <Button fx:id="undoItem" text="Undo" onAction="#onUndo" prefWidth="70.0"/>
@@ -65,6 +65,7 @@
 
                                 <ToggleButton text="Modify" onAction="#onToggleInputPanel" prefWidth="100.0"/>
                                 <CheckBox fx:id="directedCheckbox" text="Directed" onAction="#onToggleDirected"/>
+                                <CheckBox fx:id="weightedCheckbox" text="Weighted Graph" onAction="#onToggleWeighted" />
 
                             </items>
                             <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
@@ -87,11 +88,20 @@
                             <items>
                                 <ToggleButton text="Run BFS" toggleGroup="$modeGroup" prefWidth="90.0"/>
                                 <ToggleButton text="Run DFS" toggleGroup="$modeGroup" prefWidth="90.0"/>
-                                <ToggleButton text="Run Dijkstra" toggleGroup="$modeGroup" prefWidth="100.0"/>
+                                <ToggleButton text="Run Dijkstra" toggleGroup="$modeGroup"/>
+                                <ToggleButton text="Run Bellman-Ford" toggleGroup="$modeGroup"/>
 
                                 <Separator orientation="VERTICAL"/>
 
-                                <Button text="Greedy Coloring" onAction="#onRunGreedyColoring" prefWidth="120.0" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                                <Label text="Vertex Coloring" styleClass="menu-header"/>
+                                <Button text="Greedy" onAction="#onRunGreedyColoring" />
+                                <Button text="Backtracking" onAction="#onRunBacktrackingVertexColoring" />
+
+                                <Label text="Edge Coloring" styleClass="menu-header"/>
+                                <Button text="Greedy" onAction="#onRunGreedyEdgeColoring" />
+                                <Button text="Backtracking" onAction="#onRunBacktrackingEdgeColoring" />
+                                <Button text="Tarjan (SCC)" onAction="#onRunSCC" />
+                                <Button text="Topological Sort" onAction="#onRunTopoSort" />
                             </items>
                             <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
                         </ToolBar>

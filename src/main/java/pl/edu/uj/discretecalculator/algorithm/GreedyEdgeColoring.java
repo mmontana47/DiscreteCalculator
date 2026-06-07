@@ -1,51 +1,56 @@
 package pl.edu.uj.discretecalculator.algorithm;
 
-import pl.edu.uj.discretecalculator.model.graph.*;
+import pl.edu.uj.discretecalculator.model.graph.Edge;
+import pl.edu.uj.discretecalculator.model.graph.Graph;
 import java.util.*;
 
-public class GreedyEdgeColoring<V> implements AlgorithmicInterface<V,GreedyEdgeColoringResult<V>>{
-    private final EdgeColouredGraph<V> graph;
-    private final HashSet<Integer> usedColours;
+public class GreedyEdgeColoring<V> implements AlgorithmicInterface<V, GreedyEdgeColoringResult<V>> {
 
-    public GreedyEdgeColoring(EdgeColouredGraph<V> graph)
-    {
-        this.graph=graph;
-        this.usedColours=new HashSet<>();
+    @Override
+    public String algorithmName() {
+        return "Zachłanne Kolorowanie Krawędzi";
     }
 
     @Override
-    public String algorithmName(){return "Greedy Edge Coloring Algorithm";}
+    public GreedyEdgeColoringResult<V> start(Graph<V> graph) {
+        GreedyEdgeColoringResult<V> result = new GreedyEdgeColoringResult<>();
+        Map<Edge<V>, Integer> edgeColors = new HashMap<>();
+        int maxColorUsed = 0;
 
-    @Override
-    public GreedyEdgeColoringResult<V> start(Graph<V> graph)
-    {
-        GreedyEdgeColoringResult<V> result=new GreedyEdgeColoringResult<>();
-        for(Edge<V> e:this.graph.getEdges())
-        {
-            ColouredEdge<V> edge=(ColouredEdge<V>)e;
-            List<Edge<V>> sourceIncidentEdges = graph.getIncidentEdges(edge.getSource());
-            List<Edge<V>> targetIncidentEdges = graph.getIncidentEdges(edge.getTarget());
+        for (Edge<V> edge : graph.getEdges()) {
 
-            for(Edge<V> e1:sourceIncidentEdges)
-            {
-                if (!e1.equals(edge)) {
-                    int c = ((ColouredEdge<V>) e1).getColour();
-                    if (c > 0) usedColours.add(c);
+            // dodałem lokalne palety użytych kolorów
+            Set<Integer> neighborColors = new HashSet<>();
+
+            //logika sie zmieni dla grafow skierowanych (!).
+            for (Edge<V> e1 : graph.getIncidentEdges(edge.getSource())) {
+                if (!e1.equals(edge) && edgeColors.containsKey(e1)) {
+                    neighborColors.add(edgeColors.get(e1));
                 }
             }
-            for (Edge<V> e1 : targetIncidentEdges) {
-                if (!e1.equals(edge)) {
-                    int c = ((ColouredEdge<V>) e1).getColour();
-                    if (c > 0) usedColours.add(c);
+
+            for (Edge<V> e1 : graph.getIncidentEdges(edge.getTarget())) {
+                if (!e1.equals(edge) && edgeColors.containsKey(e1)) {
+                    neighborColors.add(edgeColors.get(e1));
                 }
             }
+
             int colorToAssign = 1;
-            while (usedColours.contains(colorToAssign)) {
+            while (neighborColors.contains(colorToAssign)) {
                 colorToAssign++;
             }
-            edge.setColour(colorToAssign);
-            result.getColoringOrder().add(edge);
+
+            //apliikowanie i update
+            edgeColors.put(edge, colorToAssign);
+            maxColorUsed = Math.max(maxColorUsed, colorToAssign);
+
+            result.addStep(new GreedyEdgeColoringResult.EdgeColoringStep<>(
+                    GreedyEdgeColoringResult.Phase.EDGE_COLORED, edge, colorToAssign, edgeColors));
         }
-        return  result;
+
+        result.getFinalColors().putAll(edgeColors);
+        result.setChromaticIndexUpperBound(maxColorUsed);
+
+        return result;
     }
 }

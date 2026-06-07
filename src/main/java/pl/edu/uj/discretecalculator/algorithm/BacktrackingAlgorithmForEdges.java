@@ -3,76 +3,78 @@ package pl.edu.uj.discretecalculator.algorithm;
 import pl.edu.uj.discretecalculator.model.graph.*;
 import java.util.*;
 
-public class BacktrackingAlgorithmForEdges<V> implements AlgorithmicInterface<V,BacktrackingAlgorithmForEdgesResult<V>>{
-    private final EdgeColouredGraph<V> graph;
-
-    public BacktrackingAlgorithmForEdges(EdgeColouredGraph<V> graph)
-    {
-        this.graph=graph;
-    }
+public class BacktrackingAlgorithmForEdges<V> implements AlgorithmicInterface<V, BacktrackingAlgorithmForEdgesResult<V>> {
 
     @Override
-    public String algorithmName(){return "Backtracking algorithm for edges.";}
+    public String algorithmName() { return "Algorytm Backtracking dla krawędzi"; }
 
     @Override
-    public BacktrackingAlgorithmForEdgesResult<V> start(Graph<V> graph)
-    {
-        BacktrackingAlgorithmForEdgesResult<V> result=new BacktrackingAlgorithmForEdgesResult<>();
-        Deque<ColouredEdge<V>> edges=new ArrayDeque<>();
-        for(Edge<V> e:this.graph.getEdges())
-        {
-            ColouredEdge<V> edge=(ColouredEdge<V>) e;
-            edges.addLast(edge);
-        }
-        int k=this.graph.getEdges().size();
-        for(int i=1;i<=k;i++)
-        {
-            if(solve(edges,result,i))
-            {
-                this.graph.getEdges().forEach(e->result.getFinalColoring().add((ColouredEdge<V>) e));
+    public BacktrackingAlgorithmForEdgesResult<V> start(Graph<V> graph) {
+        BacktrackingAlgorithmForEdgesResult<V> result = new BacktrackingAlgorithmForEdgesResult<>();
+        List<Edge<V>> edgeList = new ArrayList<>(graph.getEdges());
+        int maxEdges = edgeList.size();
+
+        for (int k = 1; k <= maxEdges; k++) {
+            //result.clearHistory(); //do czyszczenia
+
+            Map<Edge<V>, Integer> colors = new HashMap<>();
+            Deque<Edge<V>> deque = new ArrayDeque<>(edgeList);
+
+            //łamanie symetrii
+            Edge<V> firstEdge = deque.pollFirst();
+            colors.put(firstEdge, 1);
+
+            result.addStep(new BacktrackingAlgorithmForEdgesResult.BacktrackStep<>(
+                    BacktrackingAlgorithmForEdgesResult.Phase.TRY_COLOR, firstEdge, 1, k, colors));
+
+            if (solve(deque, colors, result, k, graph)) {
+                result.getFinalColors().putAll(colors);
                 return result;
             }
+
+            colors.remove(firstEdge);
+            result.addStep(new BacktrackingAlgorithmForEdgesResult.BacktrackStep<>(
+                    BacktrackingAlgorithmForEdgesResult.Phase.BACKTRACK, firstEdge, 0, k, colors));
         }
         return result;
     }
 
-    private boolean solve(Deque<ColouredEdge<V>> edges,BacktrackingAlgorithmForEdgesResult<V> result,int colour)
-    {
-        if(edges.isEmpty())return true;
+    private boolean solve(Deque<Edge<V>> edges, Map<Edge<V>, Integer> colors,
+                          BacktrackingAlgorithmForEdgesResult<V> result, int maxColorsAllowed, Graph<V> graph) {
 
-        ColouredEdge<V> current=edges.pollFirst();
-        for(int c=1;c<=colour;c++)
-        {
-            if(isSafe(current,c))
-            {
-                current.setColour(c);
-                Pair<Integer,Integer> pair=new Pair<>(current.getId(),current.getColour());
-                result.getColoringOrder().add(pair);
-                if(solve(edges,result,colour))return true;
-                current.setColour(0);
-                Pair<Integer,Integer> pair2=new Pair<>(current.getId(),current.getColour());
-                result.getColoringOrder().add(pair2);
-                edges.addFirst(current);
+        if (edges.isEmpty()) return true;
+
+        Edge<V> current = edges.pollFirst();
+
+        for (int c = 1; c <= maxColorsAllowed; c++) {
+            if (isSafe(current, c, colors, graph)) {
+
+                colors.put(current, c);
+                result.addStep(new BacktrackingAlgorithmForEdgesResult.BacktrackStep<>(
+                        BacktrackingAlgorithmForEdgesResult.Phase.TRY_COLOR, current, c, maxColorsAllowed, colors));
+
+                if (solve(edges, colors, result, maxColorsAllowed, graph)) {
+                    return true;
+                }
+
+                colors.remove(current);
+                result.addStep(new BacktrackingAlgorithmForEdgesResult.BacktrackStep<>(
+                        BacktrackingAlgorithmForEdgesResult.Phase.BACKTRACK, current, 0, maxColorsAllowed, colors));
+
             }
         }
+
+        //analogiczna poprawka jak w backtrackingVC
+        edges.addFirst(current);
         return false;
     }
 
-    private boolean isSafe(ColouredEdge<V> edge,int colour)
-    {
-        for(Edge<V> incident:this.graph.getIncidentEdges(edge.getSource()))
-        {
-            if(!incident.equals(edge)&&((ColouredEdge<V>)incident).getColour()==colour)
-            {
-                return false;
-            }
+    private boolean isSafe(Edge<V> edge, int color, Map<Edge<V>, Integer> colors, Graph<V> graph) {
+        for (Edge<V> incident : graph.getIncidentEdges(edge.getSource())) {
+            if (!incident.equals(edge) && colors.getOrDefault(incident, 0) == color) return false;
         }
-        for(Edge<V> incident:this.graph.getIncidentEdges(edge.getTarget()))
-        {
-            if(!incident.equals(edge)&&((ColouredEdge<V>)incident).getColour()==colour)
-            {
-                return false;
-            }
+        for (Edge<V> incident : graph.getIncidentEdges(edge.getTarget())) {
+            if (!incident.equals(edge) && colors.getOrDefault(incident, 0) == color) return false;
         }
         return true;
     }

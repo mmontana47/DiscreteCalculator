@@ -1,80 +1,96 @@
 package pl.edu.uj.discretecalculator.algorithm;
-import java.util.*;
+
 import pl.edu.uj.discretecalculator.model.graph.*;
-import pl.edu.uj.discretecalculator.model.graph.Graph;
-import pl.edu.uj.discretecalculator.model.graph.Vertex;
-import pl.edu.uj.discretecalculator.model.graph.VertexColouredGraph;
+import java.util.*;
 
-import javax.swing.text.AttributeSet;
+public class BacktrackingAlgorithmForVertices<V> implements AlgorithmicInterface<V, BacktrackingAlgorithmForVerticesResult<V>> {
+    private final Vertex<V> startingVertex;
 
-public class BacktrackingAlgorithmForVertices<V> implements AlgorithmicInterface<V,BacktrackingAlgorithmForVerticesResult<V>>{
-    private final VertexColouredGraph<V> graph;
-    private final ColouredVertex<V> startingVertex;
-
-    public BacktrackingAlgorithmForVertices(VertexColouredGraph<V> graph,ColouredVertex<V> startingVertex)
-    {
-        this.graph=graph;
-        this.startingVertex=startingVertex;
+    public BacktrackingAlgorithmForVertices(Vertex<V> startingVertex) {
+        this.startingVertex = startingVertex;
     }
 
     @Override
-    public String algorithmName(){return "Backtracking algorithm for vertices";}
+    public String algorithmName() { return "Algorytm Backtracking dla wierzchołków"; }
 
-    //IMPORTANT: in this algorithm I assume the IDs of vertices are 0,1,2,3,...,graph_size-1
     @Override
-    public BacktrackingAlgorithmForVerticesResult<V> start(Graph<V> graph)
-    {
-        BacktrackingAlgorithmForVerticesResult<V> result=new BacktrackingAlgorithmForVerticesResult<>();
-        Deque<ColouredVertex<V>>vertices=new ArrayDeque<>();
-        vertices.addLast(startingVertex);
-        for(Vertex<V> v:this.graph.getVertices())
-        {
+    public BacktrackingAlgorithmForVerticesResult<V> start(Graph<V> graph) {
+        BacktrackingAlgorithmForVerticesResult<V> result = new BacktrackingAlgorithmForVerticesResult<>();
+        int graphSize = graph.getVertices().size();
 
-            ColouredVertex<V> vertex=(ColouredVertex<V>) v;
-            if(!vertex.equals(startingVertex))
-            {
-                vertices.addLast(vertex);
+        // Jeśli graf jest pusty
+        if (graphSize == 0) return result;
+
+        // slabe ograniczenie, ale i tak kolorowanie sie znajdzie
+        for (int k = 1; k <= graphSize; k++) {
+
+            //result.clearHistory(); // do czyszczenia nieudanych prob
+            Map<Vertex<V>, Integer> colors = new HashMap<>();
+            Deque<Vertex<V>> verticesDeque = new ArrayDeque<>();
+
+            //zmieniłem żeby szło od wybranego wierzchołka
+            if (startingVertex != null && graph.getVertices().contains(startingVertex)) {
+                verticesDeque.addLast(startingVertex);
             }
-        }
-        for(int i=1;i<=this.graph.getSize();i++)
-        {
-            if(solve(vertices,i,result)) {
-                this.graph.getVertices().forEach(v->result.getResult().add((ColouredVertex<V>)v));
+            for (Vertex<V> v : graph.getVertices()) {
+                if (!v.equals(startingVertex)) {
+                    verticesDeque.addLast(v);
+                }
+            }
+
+            // łamanie symetrii kolorów (parę razy mniej klatek)
+            Vertex<V> firstVertex = verticesDeque.pollFirst();
+            colors.put(firstVertex, 1);
+
+            result.addStep(new BacktrackingAlgorithmForVerticesResult.BacktrackVertexStep<>(
+                    BacktrackingAlgorithmForVerticesResult.Phase.TRY_COLOR, firstVertex, 1, k, colors));
+
+            if (solve(verticesDeque, colors, result, k, graph)) {
+                result.getFinalColors().putAll(colors);
                 return result;
             }
+
+            colors.remove(firstVertex);
+            result.addStep(new BacktrackingAlgorithmForVerticesResult.BacktrackVertexStep<>(
+                    BacktrackingAlgorithmForVerticesResult.Phase.BACKTRACK, firstVertex, 0, k, colors));
         }
         return result;
     }
 
-    private boolean solve(Deque<ColouredVertex<V>> vertices,int colurs,BacktrackingAlgorithmForVerticesResult<V> res) {
+    private boolean solve(Deque<Vertex<V>> vertices, Map<Vertex<V>, Integer> colors,
+                          BacktrackingAlgorithmForVerticesResult<V> result, int maxColorsAllowed, Graph<V> graph) {
+
         if (vertices.isEmpty()) return true;
-        ColouredVertex<V> current=vertices.pollFirst();
-        for(int c=1;c<colurs;c++)
-        {
-            if(isSafe(current,c))
-            {
-                current.setColour(c);
-                Pair<Integer,Integer>pair=new Pair<>(current.getId(),current.getColour());
-                res.getColoringOrder().add(pair);
-                if(solve(vertices,colurs,res))return true;
-                current.setColour(0);
-                Pair<Integer,Integer>pair2=new Pair<>(current.getId(),current.getColour());
-                res.getColoringOrder().add(pair2);
-                vertices.addFirst(current);
+
+        Vertex<V> current = vertices.pollFirst();
+
+        for (int c = 1; c <= maxColorsAllowed; c++) {
+            if (isSafe(current, c, colors, graph)) {
+
+                colors.put(current, c);
+                result.addStep(new BacktrackingAlgorithmForVerticesResult.BacktrackVertexStep<>(
+                        BacktrackingAlgorithmForVerticesResult.Phase.TRY_COLOR, current, c, maxColorsAllowed, colors));
+
+                if (solve(vertices, colors, result, maxColorsAllowed, graph)) {
+                    return true;
+                }
+
+                colors.remove(current);
+                result.addStep(new BacktrackingAlgorithmForVerticesResult.BacktrackVertexStep<>(
+                        BacktrackingAlgorithmForVerticesResult.Phase.BACKTRACK, current, 0, maxColorsAllowed, colors));
             }
         }
+
+        //drobna pomylka - wczesniej dodawalismy current w petli powyzej, powinnismy go dodac z powrotem po potwierdzeniu
+        //że nic pozniej nie działa
+        vertices.addFirst(current);
         return false;
     }
 
-    private boolean isSafe(ColouredVertex<V> vertex,int colour)
-    {
-        for(Vertex<V> v:this.graph.getNeighbors(vertex))
-        {
-            ColouredVertex<V> neighbor=(ColouredVertex<V>) v;
-            if(colour==neighbor.getColour())
-                return false;
+    private boolean isSafe(Vertex<V> vertex, int color, Map<Vertex<V>, Integer> colors, Graph<V> graph) {
+        for (Vertex<V> neighbor : graph.getNeighbors(vertex)) {
+            if (colors.getOrDefault(neighbor, 0) == color) return false;
         }
         return true;
     }
-
 }

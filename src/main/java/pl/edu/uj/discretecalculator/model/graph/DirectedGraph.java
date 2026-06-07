@@ -17,4 +17,11 @@ public class DirectedGraph<V> extends Graph<V>{
         super.addVertex(edge.getTarget());
         this.getAdjacencyList().get(edge.getSource()).add(edge);
     }
+
+    public void ReverseEdge(DirectedEdge<V> edge)
+    {
+        this.deleteEdge(edge);
+        DirectedEdge<V> newedge=new DirectedEdge<>(edge.getTarget(),edge.getSource(),edge.getId());
+        this.addEdge(newedge);
+    }
 }
