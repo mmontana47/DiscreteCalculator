@@ -16,11 +16,12 @@ public class BellmanFordResult<V> {
     public static class BellmanFordStep<V> {
         public final Phase phase;
         public final int iteration;
-        public final Edge<V> activeEdge; // Badana krawędź
-        public final Vertex<V> activeNode; // Węzeł, do którego aktualizujemy dystans
+        public final Edge<V> activeEdge;
+        public final Vertex<V> activeNode;
         public final Map<Vertex<V>, Double> distancesSnapshot;
         public final Map<Vertex<V>, Vertex<V>> parentsSnapshot;
 
+        //znow przerobiłem na wzorzec krokow - tak jest wygodniej
         public BellmanFordStep(Phase phase, int iteration, Edge<V> activeEdge, Vertex<V> activeNode,
                                Map<Vertex<V>, Double> dist, Map<Vertex<V>, Vertex<V>> par) {
             this.phase = phase;
