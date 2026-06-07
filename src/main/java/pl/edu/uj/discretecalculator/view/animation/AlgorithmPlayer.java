@@ -81,12 +81,8 @@ public class AlgorithmPlayer {
         }
     }
 
-    // TUTAJ ZADZIAŁAŁA MAGIA POLIMORFIZMU!
     private void applyFrame(AlgorithmFrame frame) {
-        // Odtwarzacz po prostu rzuca klatkę na płótno i mówi: "Narysuj się!"
         frame.apply(canvas);
 
-        // W przyszłości możesz tu np. zaktualizować Label w UI:
-        // uiController.setHintLabel(frame.getStepDescription());
     }
 }
