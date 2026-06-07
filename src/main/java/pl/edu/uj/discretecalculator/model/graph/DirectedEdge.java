@@ -16,6 +16,7 @@ public class DirectedEdge<V> extends Edge<V>{
         return this.getId() == edge.getId()&&this.getSource().equals(edge.getSource())&&this.getTarget().equals(edge.getTarget());
     }
 
+
     @Override
     public int hashCode() {
         return Objects.hash(this.getId(),this.getSource(),this.getTarget());
