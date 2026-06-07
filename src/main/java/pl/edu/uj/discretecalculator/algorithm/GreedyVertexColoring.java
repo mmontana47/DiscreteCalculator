@@ -1,100 +1,90 @@
 package pl.edu.uj.discretecalculator.algorithm;
 
-import pl.edu.uj.discretecalculator.model.graph.ColouredVertex;
 import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.model.graph.Vertex;
-import pl.edu.uj.discretecalculator.model.graph.VertexColouredGraph;
+import java.util.*;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
 
-public class GreedyVertexColoring<V> implements AlgorithmicInterface<V,GreedyVertexColoringResult<V>>{
-    private final ColouredVertex<V> startingVertex;
-    private final VertexColouredGraph<V> graph;
-    private final Set<Integer> usedColours;
+//WAŻNE: porzuciłem użycie klasy ColouredVertex.
+//imo trzeba byłoby wtedy bardziej uważać z kodem w dalszej części apki, bo nadpisujemy w takiej sytuacji inherentną własność wierzchołka
+//analogicznie zmieniłem dla wszystkich innych algorytmow
+//zmienianie takich właściwości raczej powinno się ograniczać do świadomych operacji użytkownika w panelu Edit Graph
+// jak zmienianie wag krawędzi lub skierowania grafu
+public class GreedyVertexColoring<V> implements AlgorithmicInterface<V, GreedyVertexColoringResult<V>> {
+    private final Vertex<V> startingVertex;
 
-    public GreedyVertexColoring(VertexColouredGraph<V> graph,ColouredVertex<V> startingVertex)
-    {
-        this.startingVertex=startingVertex;
-        this.graph=graph;
-        this.usedColours=new HashSet<>();
-        this.startingVertex.setColour(1);
-        usedColours.add(1);
+    public GreedyVertexColoring(Vertex<V> startingVertex) {
+        this.startingVertex = startingVertex;
     }
 
     @Override
-    public String algorithmName(){
-        return "Greedy vertex coloring algorithm";
+    public String algorithmName() {
+        return "Zachłanne Kolorowanie Wierzchołków";
     }
 
     @Override
-    public GreedyVertexColoringResult<V> start(Graph<V> graph)
-    {
-        GreedyVertexColoringResult<V> result =new GreedyVertexColoringResult<>();
-        result.getColoringOrder().add(startingVertex);
-        Set<ColouredVertex<V>> visited=new HashSet<>();
-        Queue<ColouredVertex<V>> bfs=new LinkedList<>();
+    public GreedyVertexColoringResult<V> start(Graph<V> graph) {
+        GreedyVertexColoringResult<V> result = new GreedyVertexColoringResult<>();
+        Map<Vertex<V>, Integer> colors = new HashMap<>();
+        Set<Vertex<V>> visited = new HashSet<>();
+        Queue<Vertex<V>> queue = new LinkedList<>();
 
-        visited.add(startingVertex);
-        for(Vertex<V> vertex:this.graph.getNeighbors(startingVertex))
-        {
-            ColouredVertex<V> v=(ColouredVertex<V>)vertex;
-            if(!visited.contains(v))
-            {
-                bfs.add(v);
+        int maxColorUsed = 0;
+
+        if (startingVertex != null && graph.getVertices().contains(startingVertex)) {
+            queue.add(startingVertex);
+            visited.add(startingVertex);
+        }
+
+        while (!queue.isEmpty()) {
+            Vertex<V> current = queue.poll();
+            int color = colorVertex(current, graph, colors);
+            maxColorUsed = Math.max(maxColorUsed, color);
+            result.addStep(new GreedyVertexColoringResult.ColoringStep<>(
+                    GreedyVertexColoringResult.Phase.NODE_COLORED, current, color, colors));
+
+            for (Vertex<V> neighbor : graph.getNeighbors(current)) {
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                }
             }
         }
 
-        while(!bfs.isEmpty())
-        {
-            ColouredVertex<V> current = bfs.poll();
-            if(visited.contains(current))
-                continue;
-            colorVertex(current);
-            visited.add(current);
-            result.getColoringOrder().add(current);
-            for(Vertex<V> v:this.graph.getNeighbors(current))
-            {
-                ColouredVertex<V> vertex=(ColouredVertex<V>)v;
-                if(!visited.contains(vertex))
-                    bfs.add(vertex);
+        // obsluga innych skladowych
+        for (Vertex<V> v : graph.getVertices()) {
+            if (!visited.contains(v)) {
+                visited.add(v);
+                int color = colorVertex(v, graph, colors);
+                maxColorUsed = Math.max(maxColorUsed, color);
+
+                result.addStep(new GreedyVertexColoringResult.ColoringStep<>(
+                        GreedyVertexColoringResult.Phase.NODE_COLORED, v, color, colors));
             }
         }
 
-        // handling vertices in other connected components
-        for(Vertex<V> v:this.graph.getVertices())
-        {
-            ColouredVertex<V> vertex=(ColouredVertex<V>)v;
-            if(!visited.contains(vertex))
-            {
-                colorVertex(vertex);
-                visited.add(vertex);
-                result.getColoringOrder().add(vertex);
-            }
-        }
-
-
+        // koncowa klatka
+        result.getFinalColors().putAll(colors);
+        result.setChromaticUpperBound(maxColorUsed);
 
         return result;
     }
 
-    private void colorVertex(ColouredVertex<V> vertex)
-    {
-        Set<Integer> neighborColours=new HashSet<>();
-        for(Vertex<V> v:this.graph.getNeighbors(vertex))
-        {
-            ColouredVertex<V> neigbor=(ColouredVertex<V>)v;
-            int colour=neigbor.getColour();
-            if(colour>0)
-                neighborColours.add(colour);
+    private int colorVertex(Vertex<V> vertex, Graph<V> graph, Map<Vertex<V>, Integer> colors) {
+        Set<Integer> neighborColors = new HashSet<>();
+
+        for (Vertex<V> neighbor : graph.getNeighbors(vertex)) {
+            if (colors.containsKey(neighbor)) {
+                neighborColors.add(colors.get(neighbor));
+            }
         }
-        int myColour=1;
-        while(neighborColours.contains(myColour))
-            myColour++;
-        vertex.setColour(myColour);
-        this.usedColours.add(myColour);
+
+        int colorToAssign = 1;
+        while (neighborColors.contains(colorToAssign)) {
+            colorToAssign++;
+        }
+
+        colors.put(vertex, colorToAssign);
+        return colorToAssign;
     }
 }
-
