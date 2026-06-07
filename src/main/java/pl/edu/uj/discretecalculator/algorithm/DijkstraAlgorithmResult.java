@@ -6,26 +6,27 @@ import java.util.*;
 
 public class DijkstraAlgorithmResult<V> {
 
-    // Fazy, które chcemy animować w interfejsie
     public enum Phase {
-        VISIT_NODE,      // Pobranie wierzchołka z kolejki (np. kolorujemy go na żółto)
-        CHECK_EDGE,      // Badanie krawędzi (np. podświetlamy krawędź)
-        UPDATE_DISTANCE  // Aktualizacja dystansu (np. odświeżamy tabelę i kolor węzła)
+        VISIT_NODE,
+        CHECK_EDGE,      // (podświetlamy krawędź)
+        UPDATE_DISTANCE
     }
 
     public static class DijkstraStep<V> {
         public final Phase phase;
         public final Vertex<V> activeNode;
         public final Edge<V> activeEdge; // Może być null
-        public final Map<Vertex<V>, Double> distancesSnapshot; // Zdjęcie tabeli dystansów w danym momencie
+        public final Map<Vertex<V>, Double> distancesSnapshot;
         public final Map<Vertex<V>, Vertex<V>> parentsSnapshot;
 
+        //WAZNE: zmienilem na mechanizm snapshotow - latwiej mi idzie wtedy logika w trackfactory. analogicznie dla wszystkich innych algorytmow
+        //Wczesniej trzymalismy mapę wierzchołków odwiedzonych i list dystansów - trudniej było z tego odtworzyć chronologię
         public DijkstraStep(Phase phase, Vertex<V> activeNode, Edge<V> activeEdge,
                             Map<Vertex<V>, Double> dist, Map<Vertex<V>, Vertex<V>> par) {
             this.phase = phase;
             this.activeNode = activeNode;
             this.activeEdge = activeEdge;
-            this.distancesSnapshot = new HashMap<>(dist); // Robimy twardą kopię (Snapshot)
+            this.distancesSnapshot = new HashMap<>(dist);
             this.parentsSnapshot = new HashMap<>(par);
         }
     }

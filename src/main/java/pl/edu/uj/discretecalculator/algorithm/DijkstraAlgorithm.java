@@ -6,7 +6,7 @@ import pl.edu.uj.discretecalculator.model.graph.*;
 public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlgorithmResult<V>> {
     private final Vertex<V> startNode;
 
-    // Usunąłem path_end, aby algorytm zawsze liczył dystanse dla całego grafu
+    //brak path_end - lepiej wygląda gdy liczy dla całego grafu
     public DijkstraAlgorithm(Vertex<V> startNode) {
         this.startNode = startNode;
     }
@@ -16,19 +16,21 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlg
 
     @Override
     public DijkstraAlgorithmResult<V> start(Graph<V> g) {
+        //nie musimy rozwazac WeightedDirected - tutaj dziedziczenie jest ok
         if (!(g instanceof WeightedGraph<?>)) {
-            throw new IllegalArgumentException("Algorytm Dijkstry wymaga grafu ważonego (WeightedGraph).");
+            throw new IllegalArgumentException("Algorytm Dijkstry wymaga grafu ważonego.");
         }
 
         WeightedGraph<V> graph = (WeightedGraph<V>) g;
         DijkstraAlgorithmResult<V> result = new DijkstraAlgorithmResult<>();
 
+        //nowe pola dla rozbudowy result
         Map<Vertex<V>, Double> distances = new HashMap<>();
         Map<Vertex<V>, Vertex<V>> parents = new HashMap<>();
         Set<Vertex<V>> visited = new HashSet<>();
         PriorityQueue<VertexDistance<V>> queue = new PriorityQueue<>(Comparator.comparingDouble(vd -> vd.distance));
 
-        // Poprawiona inicjalizacja! Start = 0.0, Reszta = Nieskończoność
+        // drobna pomyłka w inicjalizacji (wczesniej bylo na odwrot)
         for (Vertex<V> vertex : graph.getVertices()) {
             distances.put(vertex, vertex.equals(startNode) ? 0.0 : Double.POSITIVE_INFINITY);
         }
@@ -41,7 +43,7 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlg
             if (visited.contains(current)) continue;
             visited.add(current);
 
-            // Rejestrujemy krok odwiedzin wierzchołka
+            // rejestrujemy krok odwiedzin wierzchołka
             result.addStep(new DijkstraAlgorithmResult.DijkstraStep<>(
                     DijkstraAlgorithmResult.Phase.VISIT_NODE, current, null, distances, parents));
 
@@ -49,12 +51,12 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlg
                 WeightedEdge<V> edge = (WeightedEdge<V>) e;
                 Vertex<V> neighbor = edge.getTarget().equals(current) ? edge.getSource() : edge.getTarget();
 
-                // Pomiń, jeśli graf jest skierowany i idziemy pod prąd
+                // jesli jest skierowany i idziemy w złą stronę - continue
                 if (edge instanceof WeightedDirectedEdge<?> && edge.getTarget().equals(current)) continue;
 
                 if (visited.contains(neighbor)) continue;
 
-                // Rejestrujemy krok badania krawędzi
+                // rejestrujemy krok badania krawędzi
                 result.addStep(new DijkstraAlgorithmResult.DijkstraStep<>(
                         DijkstraAlgorithmResult.Phase.CHECK_EDGE, neighbor, edge, distances, parents));
 
@@ -65,20 +67,21 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlg
                     parents.put(neighbor, current);
                     queue.add(new VertexDistance<>(neighbor, newDist));
 
-                    // Rejestrujemy udaną relaksację (aktualizację dystansu)
+                    // rejestrujemy relaksację
                     result.addStep(new DijkstraAlgorithmResult.DijkstraStep<>(
                             DijkstraAlgorithmResult.Phase.UPDATE_DISTANCE, neighbor, edge, distances, parents));
                 }
             }
         }
 
-        // Zapisujemy ostateczny stan do wyniku
+        //ostateczny stan
         result.getFinalDistances().putAll(distances);
         result.getFinalParents().putAll(parents);
 
         return result;
     }
 
+    //TODO: wyciagnac stąd tablicę odległości (może gdzieś na bok ekranu?)
     private static class VertexDistance<V> {
         final Vertex<V> vertex;
         final double distance;
