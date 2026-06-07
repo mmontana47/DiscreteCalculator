@@ -3,6 +3,7 @@ package pl.edu.uj.discretecalculator.controller;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
@@ -268,6 +269,22 @@ public class MainController {
         kickLiveLayout(1);
     }
 
+    @FXML
+    private void onSelectAlgorithmMode(ActionEvent event) {
+        MenuItem item = (MenuItem) event.getSource();
+        selectModeToggle(item.getText());
+    }
+
+    private void selectModeToggle(String label) {
+        for (Toggle toggle : modeGroup.getToggles()) {
+            ToggleButton btn = (ToggleButton) toggle;
+            if (btn.getText().equals(label)) {
+                modeGroup.selectToggle(toggle);
+                return;
+            }
+        }
+    }
+
     @FXML private void onBuildCycle() {
         clearSelection();
         OptionalInt n = promptForInt("Cycle", "Build cycle C_n", "n" );
@@ -297,7 +314,7 @@ public class MainController {
         kickLiveLayout(3);
     }
 
-    //graph vizual properties
+    //graph visual properties
     @FXML
     public void OnZoomIn() {
         viewZoom.zoomIn(graphPane.getWidth()/2, graphPane.getHeight()/2);

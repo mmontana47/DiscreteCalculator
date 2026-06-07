@@ -51,6 +51,41 @@
     -fx-border-width: 0 !important;
 }
 
+/* ── Ribbon undo/redo overlay ─────────────────────────────── */
+.ribbon-undo-redo .button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-border-color: transparent;
+    -fx-border-radius: 4;
+    -fx-text-fill: -app-text-muted;
+    -fx-padding: 3 8 3 8;
+    -fx-font-size: 11.5px;
+    -fx-cursor: hand;
+}
+
+.ribbon-undo-redo .button:hover {
+    -fx-background-color: -app-surface-hover;
+    -fx-text-fill: -app-text;
+}
+
+.ribbon-undo-redo .button:disabled {
+    -fx-opacity: 0.4;
+}
+
+/* ── Animation bar (status bar) ───────────────────────────── */
+.animation-bar .button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 3;
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+    -fx-padding: 2 4 2 4;
+    -fx-cursor: hand;
+}
+
+.animation-bar .button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.18);
+}
+
 /* ── Ribbon (TabPane) ─────────────────────────────────────── */
 .ribbon {
     -fx-tab-min-height: 28px;
@@ -58,7 +93,7 @@
 }
 
 .ribbon > .tab-header-area {
-    -fx-padding: 0 6 0 6;
+    -fx-padding: 0 130 0 6;
     -fx-background-color: -app-surface;
 }
 
@@ -108,7 +143,8 @@
 
 /* ── Toolbar buttons ──────────────────────────────────────── */
 .tool-bar .toggle-button,
-.tool-bar .button {
+.tool-bar .button,
+.tool-bar .menu-button {
     -fx-background-color: transparent;
     -fx-background-radius: 4;
     -fx-border-color: transparent;
@@ -120,7 +156,8 @@
 }
 
 .tool-bar .toggle-button:hover,
-.tool-bar .button:hover {
+.tool-bar .button:hover,
+.tool-bar .menu-button:hover {
     -fx-background-color: -app-accent-soft;
     -fx-border-color: -app-border;
 }

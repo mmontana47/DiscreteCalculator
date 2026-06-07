@@ -4,6 +4,8 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Tab?>
@@ -20,18 +22,20 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.CheckBox?>
 
+<?import javafx.scene.control.MenuBar?>
 <BorderPane prefHeight="600.0" prefWidth="900.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pl.edu.uj.discretecalculator.controller.MainController">
 
     <top>
-        <VBox BorderPane.alignment="CENTER">
+        <VBox BorderPane.alignment="CENTER" spacing="0">
             <fx:define>
                 <ToggleGroup fx:id="modeGroup"/>
                 <ToggleGroup fx:id="themeGroup"/>
             </fx:define>
 
-            <TabPane fx:id="ribbon" tabClosingPolicy="UNAVAILABLE" styleClass="ribbon">
+            <StackPane>
+                <TabPane fx:id="ribbon" tabClosingPolicy="UNAVAILABLE" styleClass="ribbon">
                 <tabs>
                     <Tab text="File">
                         <ToolBar styleClass="ribbon-bar">
@@ -58,14 +62,9 @@
                                 <ToggleButton text="Edit Weight" toggleGroup="$modeGroup" />
                                 <Separator orientation="VERTICAL"/>
 
-                                <Button fx:id="undoItem" text="Undo" onAction="#onUndo" prefWidth="70.0"/>
-                                <Button fx:id="redoItem" text="Redo" onAction="#onRedo" prefWidth="70.0"/>
-
-                                <Separator orientation="VERTICAL"/>
-
                                 <ToggleButton text="Modify" onAction="#onToggleInputPanel" prefWidth="100.0"/>
                                 <CheckBox fx:id="directedCheckbox" text="Directed" onAction="#onToggleDirected"/>
-                                <CheckBox fx:id="weightedCheckbox" text="Weighted Graph" onAction="#onToggleWeighted" />
+                                <CheckBox fx:id="weightedCheckbox" text="Weighted" onAction="#onToggleWeighted" />
 
                             </items>
                             <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
@@ -86,34 +85,48 @@
                     <Tab text="Algorithms">
                         <ToolBar styleClass="ribbon-bar">
                             <items>
-                                <ToggleButton text="Run BFS" toggleGroup="$modeGroup" prefWidth="90.0"/>
-                                <ToggleButton text="Run DFS" toggleGroup="$modeGroup" prefWidth="90.0"/>
-                                <ToggleButton text="Run Dijkstra" toggleGroup="$modeGroup"/>
-                                <ToggleButton text="Run Bellman-Ford" toggleGroup="$modeGroup"/>
+                                <MenuButton text="Traversals">
+                                    <items>
+                                        <MenuItem text="Run BFS" onAction="#onSelectAlgorithmMode"/>
+                                        <MenuItem text="Run DFS" onAction="#onSelectAlgorithmMode"/>
+                                    </items>
+                                </MenuButton>
+                                <MenuButton text="Shortest Paths">
+                                    <items>
+                                        <MenuItem text="Run Dijkstra" onAction="#onSelectAlgorithmMode"/>
+                                        <MenuItem text="Run Bellman-Ford" onAction="#onSelectAlgorithmMode"/>
+                                    </items>
+                                </MenuButton>
+                                <MenuButton text="Vertex Coloring">
+                                    <items>
+                                        <MenuItem text="Greedy" onAction="#onRunGreedyColoring"/>
+                                        <MenuItem text="Backtracking" onAction="#onRunBacktrackingVertexColoring"/>
+                                    </items>
+                                </MenuButton>
+                                <MenuButton text="Edge Coloring">
+                                    <items>
+                                        <MenuItem text="Greedy" onAction="#onRunGreedyEdgeColoring"/>
+                                        <MenuItem text="Backtracking" onAction="#onRunBacktrackingEdgeColoring"/>
+                                    </items>
+                                </MenuButton>
+                                <MenuButton text="Directed">
+                                    <items>
+                                        <MenuItem text="Tarjan (SCC)" onAction="#onRunSCC"/>
+                                        <MenuItem text="Topological Sort" onAction="#onRunTopoSort"/>
+                                    </items>
+                                </MenuButton>
+                                <MenuButton text="Miscellaneous" disable="true">
+                                    <items>
+                                        <MenuItem text="No algorithms yet" disable="true"/>
+                                    </items>
+                                </MenuButton>
 
-                                <Separator orientation="VERTICAL"/>
-
-                                <Label text="Vertex Coloring" styleClass="menu-header"/>
-                                <Button text="Greedy" onAction="#onRunGreedyColoring" />
-                                <Button text="Backtracking" onAction="#onRunBacktrackingVertexColoring" />
-
-                                <Label text="Edge Coloring" styleClass="menu-header"/>
-                                <Button text="Greedy" onAction="#onRunGreedyEdgeColoring" />
-                                <Button text="Backtracking" onAction="#onRunBacktrackingEdgeColoring" />
-                                <Button text="Tarjan (SCC)" onAction="#onRunSCC" />
-                                <Button text="Topological Sort" onAction="#onRunTopoSort" />
-                            </items>
-                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
-                        </ToolBar>
-                    </Tab>
-
-                    <Tab text="Animation">
-                        <ToolBar styleClass="ribbon-bar">
-                            <items>
-                                <Button prefHeight="26.0" prefWidth="40.0" text="⏪" onAction="#onTestStepBackward" style="-fx-font-size: 14px;"/>
-                                <Button prefHeight="26.0" prefWidth="40.0" text="⏸" onAction="#onTestPause" style="-fx-font-size: 14px;"/>
-                                <Button prefHeight="26.0" prefWidth="40.0" text="▶" onAction="#onTestPlay" style="-fx-font-size: 14px;"/>
-                                <Button prefHeight="26.0" prefWidth="40.0" text="⏭" onAction="#onTestStepForward" style="-fx-font-size: 14px;"/>
+                                <HBox visible="false" managed="false">
+                                    <ToggleButton text="Run BFS" toggleGroup="$modeGroup"/>
+                                    <ToggleButton text="Run DFS" toggleGroup="$modeGroup"/>
+                                    <ToggleButton text="Run Dijkstra" toggleGroup="$modeGroup"/>
+                                    <ToggleButton text="Run Bellman-Ford" toggleGroup="$modeGroup"/>
+                                </HBox>
                             </items>
                             <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
                         </ToolBar>
@@ -152,13 +165,24 @@
                         </ToolBar>
                     </Tab>
                 </tabs>
-            </TabPane>
+                </TabPane>
+
+                <HBox styleClass="ribbon-undo-redo" alignment="TOP_RIGHT" spacing="5"
+                      pickOnBounds="false" StackPane.alignment="TOP_RIGHT" maxHeight="30.0">
+                    <padding>
+                        <Insets top="2.0" right="10.0" />
+                    </padding>
+                    <Button fx:id="undoItem" text="Undo" onAction="#onUndo" prefWidth="58.0"/>
+                    <Button fx:id="redoItem" text="Redo" onAction="#onRedo" prefWidth="58.0"/>
+                </HBox>
+            </StackPane>
         </VBox>
     </top>
 
     <center>
         <StackPane>
             <Pane fx:id="graphPane" BorderPane.alignment="CENTER"/>
+
             <VBox fx:id="inputPanel"
                   styleClass="input-panel"
                   prefWidth="150" maxWidth="150"
@@ -213,6 +237,15 @@
                 <Label fx:id="hintLabel" text="Select a mode to start"/>
 
                 <Region HBox.hgrow="ALWAYS"/>
+
+                <HBox styleClass="animation-bar" spacing="2" alignment="CENTER">
+                    <Button prefHeight="22.0" prefWidth="32.0" text="⏪" onAction="#onTestStepBackward" style="-fx-font-size: 12px;"/>
+                    <Button prefHeight="22.0" prefWidth="32.0" text="⏸" onAction="#onTestPause" style="-fx-font-size: 12px;"/>
+                    <Button prefHeight="22.0" prefWidth="32.0" text="▶" onAction="#onTestPlay" style="-fx-font-size: 12px;"/>
+                    <Button prefHeight="22.0" prefWidth="32.0" text="⏭" onAction="#onTestStepForward" style="-fx-font-size: 12px;"/>
+                </HBox>
+
+                <Separator orientation="VERTICAL"/>
 
                 <Label fx:id="countsLabel" text="V: 0   E: 0"/>
             </children>
