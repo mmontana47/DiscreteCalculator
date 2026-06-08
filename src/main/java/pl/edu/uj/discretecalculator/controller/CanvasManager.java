@@ -17,11 +17,12 @@ public class CanvasManager {
     private final List<VertexDrawn> vertices = new ArrayList<>();
     private final List<EdgeDrawn> edges = new ArrayList<>();
     private final BooleanProperty directed = new SimpleBooleanProperty(false);
-
+    private final BooleanProperty weighted = new SimpleBooleanProperty(false);
     public CanvasManager(Pane graphPane, Label countsLabel) {
         this.graphPane = graphPane;
         this.countsLabel = countsLabel;
         updateCounts();
+
 
         directed.addListener((observable, oldValue, newValue) -> {
             if(!isDirected()) {
@@ -72,6 +73,7 @@ public class CanvasManager {
     public BooleanProperty directedProperty() { return directed; }
     public boolean isDirected() { return directed.get(); }
     public void setDirected(boolean value) { directed.set(value); }
+    public BooleanProperty weightedProperty() { return weighted; }
 
     public VertexDrawn createVertex(double x, double y, Consumer<VertexDrawn> onClick, BooleanSupplier canDrag) {
         VertexDrawn vertex = new VertexDrawn(x, y, nextAvailableId(), onClick, canDrag);
@@ -86,13 +88,15 @@ public class CanvasManager {
     }
 
     public EdgeDrawn createEdge(VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
-        EdgeDrawn edge = new EdgeDrawn(String.valueOf(edges.size()), source, target, onClick,directed);
+        EdgeDrawn edge = new EdgeDrawn(String.valueOf(edges.size()), source, target, onClick, directed);
+        edge.bindWeightVisibility(this.weighted); // <--- Krawędź sama wie o wagach z CanvasManagera!
         attachEdge(edge);
         return edge;
     }
 
     public EdgeDrawn createEdge(String id, VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
         EdgeDrawn edge = new EdgeDrawn(id, source, target, onClick, directed);
+        edge.bindWeightVisibility(this.weighted); // <--- Krawędź sama wie o wagach z CanvasManagera!
         attachEdge(edge);
         return edge;
     }
@@ -126,6 +130,17 @@ public class CanvasManager {
         int i=0;
         while (getVertexById(String.valueOf(i))!=null) i++;
         return String.valueOf(i);
+    }
+
+    public void sortVerticesById() {
+        vertices.sort((v1, v2) -> {
+            try {
+                return Integer.compare(Integer.parseInt(v1.getVertexId()), Integer.parseInt(v2.getVertexId()));
+            } catch (NumberFormatException e) {
+                // Safe-fallback, gdyby któryś wierzchołek miał jeszcze dopisek "_wait" lub "_temp"
+                return v1.getVertexId().compareTo(v2.getVertexId());
+            }
+        });
     }
 
     public void attachEdge(EdgeDrawn e) {

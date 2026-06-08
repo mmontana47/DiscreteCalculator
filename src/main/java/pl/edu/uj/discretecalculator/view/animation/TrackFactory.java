@@ -3,9 +3,9 @@ package pl.edu.uj.discretecalculator.view.animation;
 import pl.edu.uj.discretecalculator.algorithm.BFSResult;
 import pl.edu.uj.discretecalculator.algorithm.DFSResult;
 import pl.edu.uj.discretecalculator.algorithm.GreedyVCResult;
-import pl.edu.uj.discretecalculator.algorithm.KosarajuAlgorithmResult;
 import pl.edu.uj.discretecalculator.model.graph.Edge;
 import pl.edu.uj.discretecalculator.model.graph.Graph;
+import pl.edu.uj.discretecalculator.algorithm.KosarajuAlgorithmResult;
 import pl.edu.uj.discretecalculator.model.graph.Vertex;
 
 import java.util.*;
@@ -243,7 +243,6 @@ public class TrackFactory {
             case SCC_FOUND        -> "Znaleziono SCC zawierające " + vLabel;
         };
     }
-
 
     public static AlgorithmTrack buildTopoSortTrack(pl.edu.uj.discretecalculator.algorithm.TopoSortResult<String> result, Graph<String> graph) {
         AlgorithmTrack track = new AlgorithmTrack();

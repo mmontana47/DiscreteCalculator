@@ -45,7 +45,9 @@ public class MainController {
     private double lastPanX, lastPanY;
     private final DoubleProperty currentSpeedMs = new SimpleDoubleProperty();
     private final double DEFAULT_SPEED_MS = AppConfig.get().animation.defaultSpeedMs;
-
+    private int customRenumberCounter = 0;
+    private final Map<VertexDrawn, String> originalIdsBackup = new HashMap<>();
+  
     // Silnik odtwarzacza animacji (Nowa Architektura)
     private AlgorithmPlayer player;
 
@@ -83,6 +85,14 @@ public class MainController {
     @FXML private ColorPicker colorPicker;
     @FXML private CheckBox directedCheckbox;
     @FXML public ComboBox<SpeedOption> speedComboBox;
+    @FXML private ToolBar fileToolBar;
+    @FXML private ToolBar buildToolBar;
+    @FXML private ToolBar algorithmsToolBar;
+    @FXML private ToggleButton addVertexMode;
+    @FXML private ToggleButton addEdgeMode;
+    @FXML private ToggleButton deleteMode;
+    @FXML private ToggleButton editWeightMode;
+    @FXML private Button resetWeightsBtn;
 
 
     @FXML
@@ -91,19 +101,38 @@ public class MainController {
         canvas = new CanvasManager(graphPane, countsLabel);
         refreshUndoRedoState();
         viewZoom = new ViewZoom(graphPane, canvas);
-
+        canvas.weightedProperty().bind(weightedCheckbox.selectedProperty());
         modeGroup.selectedToggleProperty().addListener(
                 (observable, oldValue, newValue) -> {
                     clearSelection();
+
+                    // --- SPRZĄTANIE (Wychodzenie z trybu) ---
+                    if (oldValue != null) {
+                        Mode oldMode = Mode.fromLabel(((ToggleButton) oldValue).getText());
+                        if (oldMode != null && oldMode.label().equals("Custom Renumber")) {
+                            // Jeśli nie wyklikano wszystkich, to znaczy że użytkownik przerwał
+                            if (customRenumberCounter < canvas.getVertices().size()) {
+                                abortCustomRenumbering();
+                            } else {
+                                finishCustomRenumbering();
+                            }
+                        }
+                    }
+
                     if (newValue == null) {
                         modeLabel.setText("Mode: -");
                         hintLabel.setText("Select a mode to start");
                     } else {
                         ToggleButton btn = (ToggleButton) newValue;
                         Mode m = Mode.fromLabel(btn.getText());
-                        if(m==null) return;
+                        if(m == null) return;
                         modeLabel.setText("Mode: " + m.label());
                         hintLabel.setText(m.hint());
+
+                        // --- INICJALIZACJA (Wejście w tryb) ---
+                        if (m.label().equals("Custom Renumber")) {
+                            startCustomRenumbering();
+                        }
                     }
                 }
         );
@@ -191,6 +220,17 @@ public class MainController {
         Bindings.bindBidirectional(edgeWidthSlider.valueProperty(), StyleSettings.get().edgeWidthProperty());
 
         setupInputPanel();
+        weightedCheckbox.selectedProperty().addListener((observable, oldValue, isVisible) -> {
+            for (EdgeDrawn ed : canvas.getEdges()) {
+                // Jeśli wyłączamy tryb ważony, ukrywamy etykiety niezależnie od tekstu
+                if (!isVisible) {
+                    ed.getWeightLabel().setVisible(false);
+                } else {
+                    // Jeśli włączamy, pokazujemy je tylko wtedy, gdy mają tekst
+                    ed.getWeightLabel().setVisible(ed.getWeightText() != null && !ed.getWeightText().isEmpty());
+                }
+            }
+        });
     }
 
     @FXML private void onSelectLightTheme() { applyTheme(Theme.LIGHT); }
@@ -500,12 +540,13 @@ public class MainController {
             panDragged = false;
             return;
         }
-        if (player != null) {
-            player.pause();
-            resetCanvasStyles();
-            clearSelection();
-            // Możemy ewentualnie schować odtwarzacz: player = null;
+
+        if (currentMode() == Mode.CUSTOM_RENUMBER) {
+            abortCustomRenumbering();
+            selectMode(Mode.MOVE); // Bezpieczny powrót
+            return;
         }
+
         if (currentMode()== Mode.ADD_VERTEX) {
             runCommand(new AddVertexCommand(canvas, e.getX(), e.getY(),
                     this::onVertexClick,
@@ -544,6 +585,17 @@ public class MainController {
             case RUN_BFS -> runAndAnimateAlgorithm(vertex, "BFS");
             case RUN_DFS -> runAndAnimateAlgorithm(vertex, "DFS");
             case PAINT -> runCommand(new PaintVertexCommand(vertex, colorPicker));
+            case CUSTOM_RENUMBER -> {
+                if (vertex.getVertexId().endsWith("*")) {
+                    vertex.setVertexId(String.valueOf(customRenumberCounter++));
+                    vertex.setFillColor(null);
+
+                    // Jeśli to był ostatni węzeł -> sukces!
+                    if (customRenumberCounter >= canvas.getVertices().size()) {
+                        selectMode(Mode.MOVE); // Listener wykryje wyjście i wyczyści backup
+                    }
+                }
+            }
             default -> {
                 if (currentMode.label().equals("Run Dijkstra")) runAndAnimateAlgorithm(vertex, "DIJKSTRA");
                 else if (currentMode.label().equals("Run Bellman-Ford")) runAndAnimateAlgorithm(vertex, "BELLMAN_FORD");
@@ -573,6 +625,9 @@ public class MainController {
                     String weightStr = String.valueOf(newWeight.getAsDouble());
                     runCommand(new ChangeWeightCommand(edge, weightStr));
                 }
+            }
+            case CUSTOM_RENUMBER -> {
+                return; // Absolutnie nic nie rób!
             }
             default -> {}
         }
@@ -689,12 +744,25 @@ public class MainController {
                     ed.setWeightText("1.0");
                 }
             }
-        } else {
-            // Jeśli odznaczono, czyścimy wszystkie wagi (ukrywamy je)
-            for (EdgeDrawn ed : canvas.getEdges()) {
+        }
+    }
+
+    @FXML
+    private void onResetWeights() {
+        // Twardy, świadomy reset wszystkich wag do domyślnych wartości
+        for (EdgeDrawn ed : canvas.getEdges()) {
+            if (weightedCheckbox.isSelected()) {
+                // Jeśli wagi są włączone, resetujemy je do domyślnego "1.0"
+                // (Dzięki bindWeightVisibility w EdgeDrawn od razu się pojawią)
+                ed.setWeightText("1.0");
+            } else {
+                // Jeśli wagi są wyłączone, po prostu czyścimy ich "pamięć" z powrotem do pustego pola
                 ed.setWeightText("");
             }
         }
+
+        // Zabezpieczenie: jeśli jesteś w trybie podglądu algorytmu, warto zaktualizować layout
+        kickLiveLayout(1);
     }
 
     private OptionalDouble promptForDouble(String title, String header, String var) {
@@ -723,6 +791,54 @@ public class MainController {
         for (EdgeDrawn e : canvas.getEdges()) e.setUserStrokeColor(null);
     }
 
+    /**
+     * Zamraża lub rozmraża interfejs użytkownika w zależności od tego, czy trwa animacja.
+     */
+    /**
+     * Zamraża krytyczne operacje na grafie podczas trwania animacji.
+     */
+    private void setAnimationModeUI(boolean isAnimating) {
+        // Blokujemy całe grupy (Paski narzędzi)
+        fileToolBar.setDisable(isAnimating);
+        buildToolBar.setDisable(isAnimating);
+        algorithmsToolBar.setDisable(isAnimating);
+
+        // Blokujemy Quick Input z lewej strony
+        inputPanel.setDisable(isAnimating);
+
+        // Blokujemy specyficzne przyciski w zakładce Edit Graph
+        addVertexMode.setDisable(isAnimating);
+        addEdgeMode.setDisable(isAnimating);
+        deleteMode.setDisable(isAnimating);
+        editWeightMode.setDisable(isAnimating);
+
+        // Blokujemy atrybuty globalne
+        directedCheckbox.setDisable(isAnimating);
+        weightedCheckbox.setDisable(isAnimating);
+        if (resetWeightsBtn != null) resetWeightsBtn.setDisable(isAnimating);
+
+        if (isAnimating) {
+            // Bezpiecznik: Jeśli użytkownik był w trybie dodawania/usuwania,
+            // wymuszamy przełączenie na bezpieczny tryb MOVE.
+            Mode current = currentMode();
+            if (current == Mode.ADD_VERTEX || current == Mode.ADD_EDGE ||
+                    current == Mode.DELETE || current == Mode.EDIT_WEIGHT || current == Mode.CUSTOM_RENUMBER) {
+
+                selectMode(Mode.MOVE);
+            }
+        }
+    }
+
+    @FXML
+    private void onStopAnimation() {
+        if (player != null) {
+            player.pause();
+            // Możemy ewentualnie zresetować track: player.loadTrack(null);
+        }
+        resetCanvasStyles();
+        clearSelection();
+        setAnimationModeUI(false); // Rozmrażamy interfejs!
+    }
     // ──────────────────────────────────────────────────────────────────────────
 
     private static String decideExt(File file, FileChooser.ExtensionFilter selected) {
@@ -739,6 +855,128 @@ public class MainController {
         }
         return null;
     }
+
+    // --- FUNKCJE PRZENUMEROWANIA (VERTEX ORDERING) ---
+
+    @FXML
+    private void onRenumberBFS() {
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getVertices().isEmpty()) return;
+
+        // Zaczynamy od dowolnego wierzchołka (np. tego, który system widzi jako pierwszy)
+        Vertex<String> startNode = graph.getVertices().iterator().next();
+        BFSResult<String> result = new BFS<>(startNode).start(graph);
+
+        List<String> newOrder = result.getVisitOrder().stream()
+                .map(Vertex::getValue)
+                .toList();
+
+        applyRenumbering(newOrder);
+    }
+
+    @FXML
+    private void onRenumberDFS() {
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getVertices().isEmpty()) return;
+
+        Vertex<String> startNode = graph.getVertices().iterator().next();
+        DFSResult<String> result = new DFS<>(startNode).start(graph);
+
+        List<String> newOrder = result.getVisitOrder().stream()
+                .map(Vertex::getValue)
+                .toList();
+
+        applyRenumbering(newOrder);
+    }
+
+    @FXML
+    private void onRenumberDegreeDesc() {
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getVertices().isEmpty()) return;
+
+        // Sortowanie malejąco po stopniu wierzchołka (Largest Degree First)
+        List<String> newOrder = graph.getVertices().stream()
+                .sorted((v1, v2) -> Integer.compare(
+                        graph.getIncidentEdges(v2).size(),
+                        graph.getIncidentEdges(v1).size()
+                ))
+                .map(Vertex::getValue)
+                .toList();
+
+        applyRenumbering(newOrder);
+    }
+
+    @FXML
+    private void onRenumberDegreeAsc() {
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getVertices().isEmpty()) return;
+
+        // Sortowanie rosnąco po stopniu wierzchołka (Smallest Degree First)
+        List<String> newOrder = graph.getVertices().stream()
+                .sorted((v1, v2) -> Integer.compare(
+                        graph.getIncidentEdges(v1).size(),
+                        graph.getIncidentEdges(v2).size()
+                ))
+                .map(Vertex::getValue)
+                .toList();
+
+        applyRenumbering(newOrder);
+    }
+
+    private void startCustomRenumbering() {
+        customRenumberCounter = 0;
+        originalIdsBackup.clear();
+
+        for (VertexDrawn v : canvas.getVertices()) {
+            originalIdsBackup.put(v, v.getVertexId()); // Robimy twardy backup
+            v.setVertexId(v.getVertexId() + "*");
+            v.setFillColor("#BDC3C7"); // Szary kolor
+        }
+    }
+
+    // Wywoływane TYLKO gdy użytkownik przerwie proces
+    private void abortCustomRenumbering() {
+        for (VertexDrawn v : canvas.getVertices()) {
+            // Przywracamy oryginalne ID
+            if (originalIdsBackup.containsKey(v)) {
+                v.setVertexId(originalIdsBackup.get(v));
+            }
+            v.setFillColor(null); // Resetujemy kolory
+        }
+        originalIdsBackup.clear();
+    }
+
+    // Wywoływane TYLKO gdy użytkownik pomyślnie wyklika wszystkie wierzchołki
+    private void finishCustomRenumbering() {
+        originalIdsBackup.clear();
+        canvas.sortVerticesById();
+    }
+
+    /**
+     * Bezpiecznie aktualizuje ID wierzchołków na płótnie, unikając kolizji nazw.
+     */
+    private void applyRenumbering(List<String> orderedOldIds) {
+        clearSelection();
+
+        // Faza 1: Zmiana ID na tymczasowe (zapobiega kolizjom, gdy próbujemy nazwać wierzchołek "0", a stary "0" jeszcze istnieje)
+        for (String oldId : orderedOldIds) {
+            VertexDrawn vd = canvas.getVertexById(oldId);
+            if (vd != null) {
+                vd.setVertexId(oldId + "_temp");
+            }
+        }
+
+        // Faza 2: Nadanie właściwych numerów docelowych (0, 1, 2...)
+        for (int i = 0; i < orderedOldIds.size(); i++) {
+            String tempId = orderedOldIds.get(i) + "_temp";
+            VertexDrawn vd = canvas.getVertexById(tempId);
+            if (vd != null) {
+                vd.setVertexId(String.valueOf(i));
+            }
+        }
+        canvas.sortVerticesById();
+    }
+
 
     @FXML
     private void onTestPlay() {
@@ -781,6 +1019,7 @@ public class MainController {
         AlgorithmTrack track = TrackFactory.buildGreedyColoringTrack(result, graph);
 
         player.loadTrack(track);
+        setAnimationModeUI(true);
         player.play();
     }
 
@@ -796,7 +1035,29 @@ public class MainController {
         AlgorithmTrack track = TrackFactory.buildGreedyEdgeColoringTrack(result, graph);
 
         player.loadTrack(track);
+        setAnimationModeUI(true);
         player.play();
+    }
+
+    /**
+     * Wyświetla ostrzeżenie przed uruchomieniem algorytmów wykładniczych dla dużych grafów.
+     * @return true jeśli użytkownik chce kontynuować, false jeśli anulował.
+     */
+    private boolean confirmBacktracking(int currentSize, int safeLimit, String elementType) {
+        if (currentSize <= safeLimit) {
+            return true; // Graf jest mały, puszczamy bez ostrzeżenia
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Warning");
+        alert.setHeaderText("Your graph has " + currentSize + " " + elementType);
+        alert.setContentText(
+                "Animating backtracking may result in the app crashing. \n" +
+                        "It is recommended to make sure that the chromatic number/index is reasonably bounded. \nDo you want to continue?"
+        );
+
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
     }
 
     @FXML
@@ -806,12 +1067,16 @@ public class MainController {
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
 
+        if (!confirmBacktracking(graph.getVertices().size(), 15, "vertices")) {
+            return;
+        }
         // Przekazujemy null, algorytm obsłuży to prawidłowo
         BacktrackingAlgorithmForVertices<String> algorithm = new BacktrackingAlgorithmForVertices<>(null);
         var result = algorithm.start(graph);
         AlgorithmTrack track = TrackFactory.buildBacktrackingVertexTrack(result, graph);
 
         player.loadTrack(track);
+        setAnimationModeUI(true);
         player.play();
     }
 
@@ -822,11 +1087,16 @@ public class MainController {
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getEdges().isEmpty()) return;
 
+        if (!confirmBacktracking(graph.getVertices().size(), 15, "edges")) {
+            return;
+        }
+
         BacktrackingAlgorithmForEdges<String> algorithm = new BacktrackingAlgorithmForEdges<>();
         var result = algorithm.start(graph);
         AlgorithmTrack track = TrackFactory.buildBacktrackingEdgeTrack(result, graph);
 
         player.loadTrack(track);
+        setAnimationModeUI(true);
         player.play();
     }
 
@@ -842,6 +1112,7 @@ public class MainController {
         AlgorithmTrack track = TrackFactory.buildSccTrack(result, graph);
 
         player.loadTrack(track);
+        setAnimationModeUI(true);
         player.play();
     }
 
@@ -857,6 +1128,7 @@ public class MainController {
             var result = algorithm.start(graph);
             AlgorithmTrack track = TrackFactory.buildTopoSortTrack(result, graph);
             player.loadTrack(track);
+            setAnimationModeUI(true);
             player.play();
         } catch (TopologicalSortException e) {
             // Obsługa alertu gdy użytkownik próbuje posortować graf z cyklem
@@ -983,6 +1255,7 @@ public class MainController {
 
         if (generatedTrack != null) {
             player.loadTrack(generatedTrack);
+            setAnimationModeUI(true);
             player.play();
         }
     }
