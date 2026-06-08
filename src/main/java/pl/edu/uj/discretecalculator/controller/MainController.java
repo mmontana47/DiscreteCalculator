@@ -865,6 +865,31 @@ public class MainController {
         }
     }
 
+    @FXML
+    private void onRunKosaraju() {
+        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
+        clearSelection();
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getVertices().isEmpty()) return;
+
+
+        if (!canvas.isDirected()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING,
+                    "Algorytm Kosaraju wymaga grafu skierowanego.\nWłącz opcję 'Directed' i spróbuj ponownie.",
+                    ButtonType.OK);
+            alert.setHeaderText("Graf nieskierowany");
+            alert.showAndWait();
+            return;
+        }
+
+        KosarajuAlgorithm<String> algorithm = new KosarajuAlgorithm<>();
+        KosarajuAlgorithmResult<String> result = algorithm.start(graph);
+        AlgorithmTrack track = TrackFactory.buildKosarajuTrack(result, graph);
+
+        player.loadTrack(track);
+        player.play();
+    }
+
     //####################################################
     //##################### KONTROLER ####################
     //####################################################

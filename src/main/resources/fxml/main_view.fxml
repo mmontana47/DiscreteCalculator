@@ -113,7 +113,7 @@
                                 <MenuButton text="Directed">
                                     <items>
                                         <MenuItem text="Tarjan (SCC)" onAction="#onRunSCC"/>
-                                        <MenuItem text="Topological Sort" onAction="#onRunTopoSort"/>
+                                        <MenuItem text="Run Kosaraju (SCC)" onAction="#onRunKosaraju"/><MenuItem text="Topological Sort" onAction="#onRunTopoSort"/>
                                     </items>
                                 </MenuButton>
                                 <MenuButton text="Miscellaneous" disable="true">

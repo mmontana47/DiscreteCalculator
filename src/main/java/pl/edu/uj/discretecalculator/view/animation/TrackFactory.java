@@ -3,14 +3,12 @@ package pl.edu.uj.discretecalculator.view.animation;
 import pl.edu.uj.discretecalculator.algorithm.BFSResult;
 import pl.edu.uj.discretecalculator.algorithm.DFSResult;
 import pl.edu.uj.discretecalculator.algorithm.GreedyVCResult;
+import pl.edu.uj.discretecalculator.algorithm.KosarajuAlgorithmResult;
 import pl.edu.uj.discretecalculator.model.graph.Edge;
 import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.model.graph.Vertex;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class TrackFactory {
 
@@ -199,6 +197,53 @@ public class TrackFactory {
         }
         return track;
     }
+
+    public static AlgorithmTrack buildKosarajuTrack(KosarajuAlgorithmResult<String> result, Graph<String> graph) {
+        AlgorithmTrack track = new AlgorithmTrack();
+        for (KosarajuAlgorithmResult.KosarajuStep<String> step : result.getHistory()) {
+
+            String activeVertexId = step.activeNode != null ? step.activeNode.getValue() : null;
+            String activeEdgeId   = step.activeEdge != null ? String.valueOf(step.activeEdge.getId()) : null;
+
+            Set<String> visitedIds = new HashSet<>();
+            for (Vertex<String> v : step.visitedSnapshot) visitedIds.add(v.getValue());
+
+            List<String> stackIds = new ArrayList<>();
+            for (Vertex<String> v : step.stackSnapshot) stackIds.add(v.getValue());
+
+            Map<Integer, List<String>> sccIds = new HashMap<>();
+            for (Map.Entry<Integer, List<Vertex<String>>> entry : step.sccSnapshot.entrySet()) {
+                List<String> ids = new ArrayList<>();
+                for (Vertex<String> v : entry.getValue()) ids.add(v.getValue());
+                sccIds.put(entry.getKey(), ids);
+            }
+
+            track.addFrame(new KosarajuFrame(
+                    buildKosarajuDescription(step),
+                    step.phase.name(),
+                    activeVertexId,
+                    activeEdgeId,
+                    visitedIds,
+                    stackIds,
+                    sccIds
+            ));
+        }
+        return track;
+    }
+
+    private static String buildKosarajuDescription(KosarajuAlgorithmResult.KosarajuStep<String> step) {
+        String vLabel = step.activeNode != null ? step.activeNode.getValue() : "?";
+        return switch (step.phase) {
+            case DFS1_VISIT       -> "Faza 1 – odwiedzam wierzchołek " + vLabel;
+            case DFS1_CHECK_EDGE  -> "Faza 1 – sprawdzam krawędź z " + vLabel;
+            case DFS1_PUSH        -> "Faza 1 – odkładam " + vLabel + " na stos";
+            case DFS2_POP         -> "Faza 2 – zdejmuję " + vLabel + " ze stosu";
+            case DFS2_VISIT       -> "Faza 2 – odwiedzam " + vLabel + " (graf transponowany)";
+            case DFS2_CHECK_EDGE  -> "Faza 2 – sprawdzam krawędź z " + vLabel + " (transponowana)";
+            case SCC_FOUND        -> "Znaleziono SCC zawierające " + vLabel;
+        };
+    }
+
 
     public static AlgorithmTrack buildTopoSortTrack(pl.edu.uj.discretecalculator.algorithm.TopoSortResult<String> result, Graph<String> graph) {
         AlgorithmTrack track = new AlgorithmTrack();
