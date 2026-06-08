@@ -46,7 +46,7 @@ public class TrackFactory {
                                                        Graph<String> graph) {
 
         AlgorithmTrack track = new AlgorithmTrack();
-        SearchAlgorithmFrame initialFrame = new SearchAlgorithmFrame("Uruchomiono algorytm " + algName);
+        SearchAlgorithmFrame initialFrame = new SearchAlgorithmFrame(algName + " started");
         track.addFrame(initialFrame);
 
         Map<String, String> cumulativeVertexColors = new HashMap<>();
@@ -57,7 +57,7 @@ public class TrackFactory {
 
         for (Vertex<String> currentNode : visitOrder) {
             String nodeId = String.valueOf(currentNode.getId());
-            SearchAlgorithmFrame frame = new SearchAlgorithmFrame("Odwiedzam wierzchołek " + nodeId);
+            SearchAlgorithmFrame frame = new SearchAlgorithmFrame("Visiting vertex " + nodeId);
 
             cumulativeVertexColors.put(nodeId, visitColor);
 
@@ -79,7 +79,7 @@ public class TrackFactory {
         }
 
         if (!cycles.isEmpty()) {
-            SearchAlgorithmFrame finalFrame = new SearchAlgorithmFrame("Zaznaczanie krawędzi wstecznych/krzyżowych");
+            SearchAlgorithmFrame finalFrame = new SearchAlgorithmFrame("Marking back/cross edges");
             finalFrame.getVertexColors().putAll(cumulativeVertexColors);
             finalFrame.getEdgeColors().putAll(cumulativeEdgeColors);
 
@@ -116,9 +116,9 @@ public class TrackFactory {
             }
 
             switch (step.phase) {
-                case VISIT_NODE -> desc = "Pobrano węzeł [" + vId + "] z kolejki jako najbliższy.";
-                case CHECK_EDGE -> desc = "Badanie krawędzi prowadzącej do węzła [" + vId + "].";
-                case UPDATE_DISTANCE -> desc = "Udany update! Skrócono dystans do węzła [" + vId + "].";
+                case VISIT_NODE -> desc = "Processing node [" + vId + "] — closest in queue.";
+                case CHECK_EDGE -> desc = "Checking edge toward node [" + vId + "].";
+                case UPDATE_DISTANCE -> desc = "Distance to node [" + vId + "] relaxed.";
             }
 
             track.addFrame(new ShortestPathFrame(desc, step.phase.name(), vId, eId, guiDistances, maxDist));
@@ -149,10 +149,10 @@ public class TrackFactory {
             }
 
             switch (step.phase) {
-                case START_ITERATION -> desc = "Rozpoczęto pełną iterację nr " + step.iteration + " po wszystkich krawędziach.";
-                case CHECK_EDGE -> desc = "Badanie krawędzi w kierunku węzła [" + vId + "] (Iteracja " + step.iteration + ").";
-                case UPDATE_DISTANCE -> desc = "Relaksacja w iteracji " + step.iteration + " zaktualizowała dystans do [" + vId + "].";
-                case NEGATIVE_CYCLE_FOUND -> desc = "UWAGA: Znaleziono cykl o ujemnej wadze! Algorytm przerwany.";
+                case START_ITERATION -> desc = "Starting iteration #" + step.iteration + " over all edges.";
+                case CHECK_EDGE -> desc = "Checking edge toward node [" + vId + "] (iteration " + step.iteration + ").";
+                case UPDATE_DISTANCE -> desc = "Iteration " + step.iteration + ": distance to [" + vId + "] relaxed.";
+                case NEGATIVE_CYCLE_FOUND -> desc = "WARNING: Negative-weight cycle detected! Algorithm aborted.";
             }
 
             track.addFrame(new ShortestPathFrame(desc, step.phase.name(), vId, eId, guiDistances, maxDist));
@@ -187,10 +187,10 @@ public class TrackFactory {
 
             // Generowanie czytelnych opisów klatek
             switch (step.phase) {
-                case VISIT_NODE -> desc = "Odwiedzanie węzła [" + vId + "]. Przypisano index i odłożono go na stos.";
-                case CHECK_EDGE -> desc = "Analiza sąsiada z węzła [" + vId + "].";
-                case UPDATE_LOW_LINK -> desc = "Znaleziono powiązanie! Zaktualizowano wartość Low-Link dla węzła [" + vId + "].";
-                case COMPONENT_FOUND -> desc = "Sukces! Węzeł [" + vId + "] jest korzeniem nowej Silnie Spójnej Składowej. Zdejmowanie ze stosu.";
+                case VISIT_NODE -> desc = "Visiting node [" + vId + "]. Index assigned and pushed onto stack.";
+                case CHECK_EDGE -> desc = "Examining neighbor from node [" + vId + "].";
+                case UPDATE_LOW_LINK -> desc = "Back link found! Low-link of node [" + vId + "] updated.";
+                case COMPONENT_FOUND -> desc = "Node [" + vId + "] is root of a new SCC. Popping from stack.";
             }
 
             track.addFrame(new TarjanFrame(desc, step.phase.name(), vId, eId, guiIndices, guiLowLinks, guiStack, guiScc));
@@ -234,13 +234,13 @@ public class TrackFactory {
     private static String buildKosarajuDescription(KosarajuAlgorithmResult.KosarajuStep<String> step) {
         String vLabel = step.activeNode != null ? step.activeNode.getValue() : "?";
         return switch (step.phase) {
-            case DFS1_VISIT       -> "Faza 1 – odwiedzam wierzchołek " + vLabel;
-            case DFS1_CHECK_EDGE  -> "Faza 1 – sprawdzam krawędź z " + vLabel;
-            case DFS1_PUSH        -> "Faza 1 – odkładam " + vLabel + " na stos";
-            case DFS2_POP         -> "Faza 2 – zdejmuję " + vLabel + " ze stosu";
-            case DFS2_VISIT       -> "Faza 2 – odwiedzam " + vLabel + " (graf transponowany)";
-            case DFS2_CHECK_EDGE  -> "Faza 2 – sprawdzam krawędź z " + vLabel + " (transponowana)";
-            case SCC_FOUND        -> "Znaleziono SCC zawierające " + vLabel;
+            case DFS1_VISIT       -> "Phase 1 – visiting vertex " + vLabel;
+            case DFS1_CHECK_EDGE  -> "Phase 1 – checking edge from " + vLabel;
+            case DFS1_PUSH        -> "Phase 1 – pushing " + vLabel + " onto stack";
+            case DFS2_POP         -> "Phase 2 – popping " + vLabel + " from stack";
+            case DFS2_VISIT       -> "Phase 2 – visiting " + vLabel + " (transposed graph)";
+            case DFS2_CHECK_EDGE  -> "Phase 2 – checking edge from " + vLabel + " (transposed)";
+            case SCC_FOUND        -> "SCC found containing " + vLabel;
         };
     }
 
@@ -263,10 +263,10 @@ public class TrackFactory {
             }
 
             switch (step.phase) {
-                case INIT -> desc = "Wyliczono początkowe stopnie wejściowe (in-degree) dla wszystkich wierzchołków.";
-                case TAKE_NODE -> desc = "Pobrano węzeł [" + vId + "] (in-degree = 0) i dodano do wyniku.";
-                case UPDATE_DEGREES -> desc = "Obgryzanie grafu: usunięto krawędź. Stopień wejściowy węzła [" + vId + "] maleje.";
-                case CYCLE_DETECTED -> desc = "BŁĄD: Graf zablokował się (brak węzłów z in-degree 0). Wykryto cykl!";
+                case INIT -> desc = "Computed initial in-degrees for all vertices.";
+                case TAKE_NODE -> desc = "Took node [" + vId + "] (in-degree = 0) and added to result.";
+                case UPDATE_DEGREES -> desc = "Removed edge; in-degree of node [" + vId + "] decremented.";
+                case CYCLE_DETECTED -> desc = "ERROR: No node with in-degree 0 remaining. Cycle detected!";
             }
 
             // Używamy nowej klatki TopoFrame!
@@ -277,10 +277,10 @@ public class TrackFactory {
 
     public static AlgorithmTrack buildGreedyColoringTrack(pl.edu.uj.discretecalculator.algorithm.GreedyVertexColoringResult<String> result, Graph<String> graph) {
         AlgorithmTrack track = new AlgorithmTrack();
-        track.addFrame(new ColoringFrame("Uruchomiono Zachłanne Kolorowanie Wierzchołków (BFS)"));
+        track.addFrame(new ColoringFrame("Greedy Vertex Coloring started"));
 
         for (var step : result.getHistory()) {
-            String desc = "Węzeł [" + step.activeNode.getId() + "] otrzymuje najmniejszy wolny kolor: " + step.assignedColor;
+            String desc = "Node [" + step.activeNode.getId() + "] assigned smallest available color: " + step.assignedColor;
             ColoringFrame frame = new ColoringFrame(desc);
             frame.setActiveVertexId(String.valueOf(step.activeNode.getId()));
 
@@ -291,7 +291,7 @@ public class TrackFactory {
             track.addFrame(frame);
         }
 
-        ColoringFrame finalFrame = new ColoringFrame("Zakończono! Górne oszacowanie liczby chromatycznej: " + result.getChromaticUpperBound());
+        ColoringFrame finalFrame = new ColoringFrame("Done! Chromatic number upper bound: " + result.getChromaticUpperBound());
         if (!track.getFrames().isEmpty()) {
             finalFrame.getVertexColors().putAll(((ColoringFrame) track.getFrames().get(track.getFrames().size() - 1)).getVertexColors());
         }
@@ -303,7 +303,7 @@ public class TrackFactory {
 
     public static AlgorithmTrack buildGreedyEdgeColoringTrack(pl.edu.uj.discretecalculator.algorithm.GreedyEdgeColoringResult<String> result, Graph<String> graph) {
         AlgorithmTrack track = new AlgorithmTrack();
-        track.addFrame(new ColoringFrame("Uruchomiono Zachłanne Kolorowanie Krawędzi"));
+        track.addFrame(new ColoringFrame("Greedy Edge Coloring started"));
 
         // Trzymamy "bieżący" stan kolorów poza snapshotami algorytmu
         Map<String, String> cumulativeColors = new HashMap<>();
@@ -312,7 +312,7 @@ public class TrackFactory {
             String numericEdgeId = String.valueOf(step.activeEdge.getId());
             String hexColor = COLOR_PALETTE[(step.assignedColor - 1) % COLOR_PALETTE.length];
 
-            String desc = "Krawędź [" + numericEdgeId + "] otrzymuje kolor: " + step.assignedColor;
+            String desc = "Edge [" + numericEdgeId + "] assigned color: " + step.assignedColor;
             ColoringFrame frame = new ColoringFrame(desc);
 
             // 1. Zaznaczamy krawędź jako aktywną (będzie pogrubiona)
@@ -330,7 +330,7 @@ public class TrackFactory {
             track.addFrame(frame);
         }
 
-        ColoringFrame finalFrame = new ColoringFrame("Zakończono! Górne oszacowanie indeksu chromatycznego: " + result.getChromaticIndexUpperBound());
+        ColoringFrame finalFrame = new ColoringFrame("Done! Chromatic index upper bound: " + result.getChromaticIndexUpperBound());
         if (!track.getFrames().isEmpty()) {
             finalFrame.getEdgeColors().putAll(((ColoringFrame) track.getFrames().get(track.getFrames().size() - 1)).getEdgeColors());
         }
@@ -350,13 +350,13 @@ public class TrackFactory {
             // Opcjonalna klatka informacyjna, gdy algorytm zwiększa 'k'
             if (step.maxColorsAllowed > currentK) {
                 currentK = step.maxColorsAllowed;
-                track.addFrame(new ColoringFrame(">>> ZWIĘKSZAM LIMIT KOLORÓW DO: " + currentK + " <<<"));
+                track.addFrame(new ColoringFrame(">>> INCREASING COLOR LIMIT TO: " + currentK + " <<<"));
             }
 
             if (step.phase == pl.edu.uj.discretecalculator.algorithm.BacktrackingAlgorithmForVerticesResult.Phase.TRY_COLOR) {
                 // --- FAZA 1: PRÓBA KOLORU ---
                 String hexColor = COLOR_PALETTE[(step.color - 1) % COLOR_PALETTE.length];
-                ColoringFrame frame = new ColoringFrame("Próba koloru " + step.color + " dla węzła [" + vId + "] (Limit k=" + step.maxColorsAllowed + ")");
+                ColoringFrame frame = new ColoringFrame("Trying color " + step.color + " for node [" + vId + "] (limit k=" + step.maxColorsAllowed + ")");
                 frame.setActiveVertexId(vId); // Pogrubiamy
 
                 cumulativeColors.put(vId, hexColor);
@@ -366,7 +366,7 @@ public class TrackFactory {
             } else {
                 // --- FAZA 2: ŚLEPY ZAUŁEK I COFNIĘCIE ---
                 // Tworzymy klatkę "ALARMOWĄ", żeby uwydatnić porażkę
-                ColoringFrame failFrame = new ColoringFrame("Ślepy zaułek! Brakuje dopuszczalnych kolorów. Wycofuję węzeł [" + vId + "].");
+                ColoringFrame failFrame = new ColoringFrame("Dead end! No valid color available. Backtracking from node [" + vId + "].");
                 failFrame.setActiveVertexId(vId); // Utrzymujemy pogrubienie
 
                 // Zmieniamy kolor na bordowy/alarmowy, żeby pokazać konflikt!
@@ -380,7 +380,7 @@ public class TrackFactory {
             }
         }
 
-        ColoringFrame finalFrame = new ColoringFrame("Sukces! Znaleziono optymalne pokolorowanie metodą Backtrackingu.");
+        ColoringFrame finalFrame = new ColoringFrame("Done! Optimal vertex coloring found via backtracking.");
         finalFrame.getVertexColors().putAll(cumulativeColors);
         track.addFrame(finalFrame);
 
@@ -399,13 +399,13 @@ public class TrackFactory {
             // Opcjonalna klatka informacyjna przy zwiększeniu limitu
             if (step.maxColorsAllowed > currentK) {
                 currentK = step.maxColorsAllowed;
-                track.addFrame(new ColoringFrame(">>> ZWIĘKSZAM LIMIT KOLORÓW KRAWĘDZI DO: " + currentK + " <<<"));
+                track.addFrame(new ColoringFrame(">>> INCREASING EDGE COLOR LIMIT TO: " + currentK + " <<<"));
             }
 
             if (step.phase == pl.edu.uj.discretecalculator.algorithm.BacktrackingAlgorithmForEdgesResult.Phase.TRY_COLOR) {
                 // --- FAZA 1: PRÓBA KOLORU ---
                 String hexColor = COLOR_PALETTE[(step.color - 1) % COLOR_PALETTE.length];
-                ColoringFrame frame = new ColoringFrame("Próba koloru " + step.color + " dla krawędzi [" + numericEdgeId + "] (Limit k=" + step.maxColorsAllowed + ")");
+                ColoringFrame frame = new ColoringFrame("Trying color " + step.color + " for edge [" + numericEdgeId + "] (limit k=" + step.maxColorsAllowed + ")");
                 frame.setActiveEdgeId(numericEdgeId); // Pogrubiamy
 
                 cumulativeColors.put(numericEdgeId, hexColor);
@@ -414,7 +414,7 @@ public class TrackFactory {
 
             } else {
                 // --- FAZA 2: ŚLEPY ZAUŁEK I COFNIĘCIE ---
-                ColoringFrame failFrame = new ColoringFrame("Ślepy zaułek! Wycofuję kolor z krawędzi [" + numericEdgeId + "].");
+                ColoringFrame failFrame = new ColoringFrame("Dead end! Backtracking from edge [" + numericEdgeId + "].");
                 failFrame.setActiveEdgeId(numericEdgeId); // Utrzymujemy pogrubienie
 
                 // Zmieniamy kolor na bordowy/alarmowy
@@ -428,7 +428,7 @@ public class TrackFactory {
             }
         }
 
-        ColoringFrame finalFrame = new ColoringFrame("Sukces! Znaleziono optymalne pokolorowanie krawędzi metodą Backtrackingu.");
+        ColoringFrame finalFrame = new ColoringFrame("Done! Optimal edge coloring found via backtracking.");
         finalFrame.getEdgeColors().putAll(cumulativeColors);
         track.addFrame(finalFrame);
 

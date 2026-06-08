@@ -17,7 +17,7 @@ public class TopologicalSort<V> implements AlgorithmicInterface<V, TopoSortResul
                 graph.getClass().getSimpleName().contains("Directed");
 
         if (!isDirected) {
-            throw new TopologicalSortException("Sortowanie topologiczne wymaga grafu skierowanego.");
+            throw new TopologicalSortException("Topological sort requires a directed graph.");
         }
 
         TopoSortResult<V> result = new TopoSortResult<>();
@@ -66,7 +66,7 @@ public class TopologicalSort<V> implements AlgorithmicInterface<V, TopoSortResul
         // detekcja cyklu
         if (processedCount != graph.getVertices().size()) {
             result.addStep(new TopoSortResult.TopoStep<>(TopoSortResult.Phase.CYCLE_DETECTED, null, null, inDegrees, result.getSortedResult()));
-            throw new TopologicalSortException("Graf zawiera cykl");
+            throw new TopologicalSortException("Graph contains a cycle.");
         }
 
         return result;
