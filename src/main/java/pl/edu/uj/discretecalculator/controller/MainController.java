@@ -13,6 +13,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import pl.edu.uj.discretecalculator.AppConfig;
 import pl.edu.uj.discretecalculator.algorithm.*;
 import pl.edu.uj.discretecalculator.exception.TopologicalSortException;
 import pl.edu.uj.discretecalculator.io.*;
@@ -40,12 +41,13 @@ public class MainController {
     private ViewZoom viewZoom;
     private double lastMouseX, lastMouseY;
     private boolean panDragged = false;
-    private static final double panLimit = 5.0;
+    private final double panLimit = AppConfig.get().interaction.panLimit;
     private double lastPanX, lastPanY;
     private final DoubleProperty currentSpeedMs = new SimpleDoubleProperty();
-    private final double DEFAULT_SPEED_MS = 500.0;
+    private final double DEFAULT_SPEED_MS = AppConfig.get().animation.defaultSpeedMs;
     private int customRenumberCounter = 0;
     private final Map<VertexDrawn, String> originalIdsBackup = new HashMap<>();
+  
     // Silnik odtwarzacza animacji (Nowa Architektura)
     private AlgorithmPlayer player;
 

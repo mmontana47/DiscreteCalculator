@@ -10,6 +10,8 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.QuadCurve;
 
+import pl.edu.uj.discretecalculator.AppConfig;
+
 import java.util.function.Consumer;
 
 public class EdgeDrawn extends Group {
@@ -37,7 +39,8 @@ public class EdgeDrawn extends Group {
 
         this.line = new Line();
         this.weightLabel = new Label();
-        this.arrowHead = new Polygon(0.0, 0.0, -14.0, 6.0, -14.0, -6.0);
+        AppConfig.ArrowCfg arrow = AppConfig.get().style.arrow;
+        this.arrowHead = new Polygon(0.0, 0.0, -arrow.length, arrow.halfWidth, -arrow.length, -arrow.halfWidth);
 
         line.startXProperty().bind(source.layoutXProperty().add(StyleSettings.get().vertexRadiusProperty()));
         line.startYProperty().bind(source.layoutYProperty().add(StyleSettings.get().vertexRadiusProperty()));
@@ -49,7 +52,8 @@ public class EdgeDrawn extends Group {
         curve.setFill(Color.TRANSPARENT);
         curve.setStrokeWidth(StyleSettings.get().getEdgeWidth());
         StyleSettings.get().edgeWidthProperty().addListener((obs, old, w) -> {
-            curve.setStrokeWidth(isActive ? w.doubleValue() * 2.5 : w.doubleValue());
+            double mult = AppConfig.get().style.edge.activeWidthMultiplier;
+            curve.setStrokeWidth(isActive ? w.doubleValue() * mult : w.doubleValue());
         });
 
         this.weightLabel.getStyleClass().add("edge-label");
@@ -92,9 +96,10 @@ public class EdgeDrawn extends Group {
         double len = Math.sqrt(tx * tx + ty * ty);
         if (len == 0) return;
         double cos = tx / len, sin = ty / len;
+        AppConfig.ArrowCfg arrowCfg = AppConfig.get().style.arrow;
         double tipX  = ex - r * cos, tipY = ey - r * sin;
-        double aLen  = r * 0.6;
-        double aHalf = aLen * (2.0 / 5.0);
+        double aLen  = r * arrowCfg.lenFactor;
+        double aHalf = aLen * arrowCfg.halfFactor;
         arrowHead.getPoints().setAll(
                 tipX, tipY,
                 tipX - aLen*cos - aHalf*sin, tipY - aLen*sin + aHalf*cos,
@@ -144,7 +149,7 @@ public class EdgeDrawn extends Group {
         double perpY = ex - sx;
         double length = Math.sqrt(perpX * perpX + perpY * perpY);
         if (length == 0) return;
-        double effectiveLength = Math.max(length, 150.0);
+        double effectiveLength = Math.max(length, AppConfig.get().style.edge.minEffectiveLength);
         double ctrlX = midX + offset * perpX * effectiveLength / length;
         double ctrlY = midY + offset * perpY * effectiveLength / length;
         curve.setControlX(ctrlX);
@@ -185,21 +190,24 @@ public class EdgeDrawn extends Group {
     }
 
     public void highlightAsTreeEdge() {
+        AppConfig.ColorsCfg c = AppConfig.get().style.colors;
         curve.pseudoClassStateChanged(TREE_EDGE, true);
         curve.pseudoClassStateChanged(CYCLE_EDGE, false);
-        curve.setStyle("-fx-stroke: #1a56db; -fx-stroke-width: 3;");
+        curve.setStyle("-fx-stroke: " + c.treeEdge + "; -fx-stroke-width: " + c.treeEdgeWidth + ";");
     }
 
     public void highlightAsCycle() {
+        AppConfig.ColorsCfg c = AppConfig.get().style.colors;
         curve.pseudoClassStateChanged(CYCLE_EDGE, true);
         curve.pseudoClassStateChanged(TREE_EDGE, false);
-        curve.setStyle("-fx-stroke: #9ca3af; -fx-stroke-width: 2; -fx-stroke-dash-array: 10 10;");
+        curve.setStyle("-fx-stroke: " + c.cycleEdge + "; -fx-stroke-width: " + c.cycleEdgeWidth + "; -fx-stroke-dash-array: 10 10;");
     }
 
     public void setActive(boolean active) {
         this.isActive = active;
         double baseWidth = StyleSettings.get().getEdgeWidth();
-        curve.setStrokeWidth(active ? baseWidth * 4 : baseWidth);
+        double mult = AppConfig.get().style.edge.activeWidthMultiplier;
+        curve.setStrokeWidth(active ? baseWidth * mult : baseWidth);
     }
 
     // --- NOWA, POTĘŻNA METODA WIĄZANIA ---

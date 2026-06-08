@@ -5,6 +5,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;
 import javafx.util.Duration;
+import pl.edu.uj.discretecalculator.AppConfig;
 import pl.edu.uj.discretecalculator.controller.CanvasManager;
 
 public class AlgorithmPlayer {
@@ -12,7 +13,7 @@ public class AlgorithmPlayer {
     private AlgorithmTrack currentTrack;
     private int currentIndex = -1;
     private final Timeline metronome;
-    private final double defaultSpeedMs=500; // Domyślna prędkość: 500ms na krok
+    private final double defaultSpeedMs = AppConfig.get().animation.defaultSpeedMs;
 
     public AlgorithmPlayer(CanvasManager canvas, DoubleProperty currentSpeedMs) {
         this.canvas = canvas;

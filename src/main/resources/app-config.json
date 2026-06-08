@@ -1,0 +1,54 @@
+{
+  "style": {
+    "vertex": {
+      "radiusMin": 10.0,
+      "radiusMax": 30.0,
+      "radiusDefault": 20.0,
+      "distanceLabelOffset": 15.0
+    },
+    "edge": {
+      "widthMin": 0.5,
+      "widthMax": 4.0,
+      "widthDefault": 2.0,
+      "activeWidthMultiplier": 4.0,
+      "bidirectionalOffset": 0.2,
+      "minEffectiveLength": 150.0
+    },
+    "arrow": {
+      "length": 14.0,
+      "halfWidth": 6.0,
+      "lenFactor": 0.6,
+      "halfFactor": 0.4
+    },
+    "colors": {
+      "bfsVisited": "#2ECC71",
+      "dfsVisited": "#3498DB",
+      "treeEdge": "#1a56db",
+      "treeEdgeWidth": 3.0,
+      "cycleEdge": "#9ca3af",
+      "cycleEdgeWidth": 2.0
+    }
+  },
+  "animation": {
+    "defaultSpeedMs": 500.0
+  },
+  "interaction": {
+    "panLimit": 5.0
+  },
+  "forceDirected": {
+    "eps": 0.01,
+    "damping": 0.5,
+    "minTemperature": 0.9,
+    "kickTemperature": 10.0,
+    "coolFactor": 0.97,
+    "kScaleBase": 0.4,
+    "kScaleRange": 1.8,
+    "kScaleExponent": 0.9,
+    "gravityBase": -0.1,
+    "gravityRange": -0.8,
+    "maxIdealDivisor": 4.0,
+    "repulsionThreshold": 3.0,
+    "attractionFactor": 0.5,
+    "turbulenceRange": 20.0
+  }
+}

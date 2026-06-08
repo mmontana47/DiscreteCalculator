@@ -8,6 +8,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
+import pl.edu.uj.discretecalculator.AppConfig;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
@@ -38,7 +40,7 @@ public class VertexDrawn extends StackPane {
 
         this.distanceLabel = new Label();
 
-        this.distanceLabel.translateYProperty().bind(circleRadius.add(15));
+        this.distanceLabel.translateYProperty().bind(circleRadius.add(AppConfig.get().style.vertex.distanceLabelOffset));
 
         this.getStyleClass().add("vertex");
         this.circle.getStyleClass().add("vertex-circle");
@@ -126,8 +128,9 @@ public class VertexDrawn extends StackPane {
     public void markVisited(String algorithmType) {
         pseudoClassStateChanged(BFS_VISITED, "BFS".equals(algorithmType));
         pseudoClassStateChanged(DFS_VISITED, "DFS".equals(algorithmType));
-        if ("BFS".equals(algorithmType)) applyFill("#2ECC71");
-        else if ("DFS".equals(algorithmType)) applyFill("#3498DB");
+        AppConfig.ColorsCfg c = AppConfig.get().style.colors;
+        if ("BFS".equals(algorithmType)) applyFill(c.bfsVisited);
+        else if ("DFS".equals(algorithmType)) applyFill(c.dfsVisited);
     }
 
     public void addDisplacement(Point2D point) {this.displacement = this.displacement.add(point);}
