@@ -3,6 +3,8 @@ package pl.edu.uj.discretecalculator.controller;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -40,6 +42,8 @@ public class MainController {
     private boolean panDragged = false;
     private static final double panLimit = 5.0;
     private double lastPanX, lastPanY;
+    private final DoubleProperty currentSpeedMs = new SimpleDoubleProperty();
+    private final double DEFAULT_SPEED_MS = 500.0;
 
     // Silnik odtwarzacza animacji (Nowa Architektura)
     private AlgorithmPlayer player;
@@ -77,6 +81,8 @@ public class MainController {
     @FXML private TextArea edgeInput;
     @FXML private ColorPicker colorPicker;
     @FXML private CheckBox directedCheckbox;
+    @FXML public ComboBox<SpeedOption> speedComboBox;
+
 
     @FXML
     private void initialize() {
@@ -155,6 +161,23 @@ public class MainController {
                 });
             }
         });
+
+        speedComboBox.getItems().addAll(
+                new SpeedOption("0.5x", 0.5),
+                new SpeedOption("1.0x", 1.0),
+                new SpeedOption("2.0x", 2.0),
+                new SpeedOption("5.0x", 5.0),
+                new SpeedOption("10.0x", 10.0)
+        );
+
+        speedComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                double calculatedMs =  DEFAULT_SPEED_MS * newVal.multiplier;
+                currentSpeedMs.set(calculatedMs);
+            }
+        });
+
+        speedComboBox.getSelectionModel().select(1);
 
         vertexSizeSlider.setMin(StyleSettings.MIN_VERTEX_RADIUS);
         vertexSizeSlider.setMax(StyleSettings.MAX_VERTEX_RADIUS);
@@ -314,7 +337,7 @@ public class MainController {
         kickLiveLayout(3);
     }
 
-    //graph visual properties
+    //graph visfual properties
     @FXML
     public void OnZoomIn() {
         viewZoom.zoomIn(graphPane.getWidth()/2, graphPane.getHeight()/2);
@@ -519,7 +542,7 @@ public class MainController {
             }
             case RUN_BFS -> runAndAnimateAlgorithm(vertex, "BFS");
             case RUN_DFS -> runAndAnimateAlgorithm(vertex, "DFS");
-            case PAINT -> vertex.setUserFillColor(colorPicker.getValue());
+            case PAINT -> runCommand(new PaintVertexCommand(vertex, colorPicker));
             default -> {
                 if (currentMode.label().equals("Run Dijkstra")) runAndAnimateAlgorithm(vertex, "DIJKSTRA");
                 else if (currentMode.label().equals("Run Bellman-Ford")) runAndAnimateAlgorithm(vertex, "BELLMAN_FORD");
@@ -538,7 +561,7 @@ public class MainController {
                 runCommand(new RemoveEdgeCommand(canvas, edge));
                 kickLiveLayout(1);
             }
-            case PAINT -> edge.setUserStrokeColor(colorPicker.getValue());
+            case PAINT -> runCommand(new PaintEdgeCommand(edge, colorPicker));
             case EDIT_WEIGHT -> {
                 OptionalDouble newWeight = promptForDouble("Waga krawędzi", "Zmień wagę dla wybranej krawędzi", "Waga");
                 if (newWeight.isPresent()) {
@@ -746,7 +769,7 @@ public class MainController {
 
     @FXML
     private void onRunGreedyColoring() {
-        if (player == null) player = new AlgorithmPlayer(canvas);
+        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
@@ -762,7 +785,7 @@ public class MainController {
 
     @FXML
     private void onRunGreedyEdgeColoring() {
-        if (player == null) player = new AlgorithmPlayer(canvas);
+        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getEdges().isEmpty()) return;
@@ -777,7 +800,7 @@ public class MainController {
 
     @FXML
     private void onRunBacktrackingVertexColoring() {
-        if (player == null) player = new AlgorithmPlayer(canvas);
+        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
@@ -793,7 +816,7 @@ public class MainController {
 
     @FXML
     private void onRunBacktrackingEdgeColoring() {
-        if (player == null) player = new AlgorithmPlayer(canvas);
+        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getEdges().isEmpty()) return;
@@ -808,7 +831,7 @@ public class MainController {
 
     @FXML
     private void onRunSCC() {
-        if (player == null) player = new AlgorithmPlayer(canvas);
+        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
@@ -823,7 +846,7 @@ public class MainController {
 
     @FXML
     private void onRunTopoSort() {
-        if (player == null) player = new AlgorithmPlayer(canvas);
+        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
@@ -897,7 +920,7 @@ public class MainController {
      * zależnych od wierzchołka startowego.
      */
     private void runAndAnimateAlgorithm(VertexDrawn startVisualNode, String algorithmType) {
-        if (player == null) player = new AlgorithmPlayer(canvas);
+        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
 
         Graph<String> graph = buildMathematicalGraph();
 
@@ -935,6 +958,21 @@ public class MainController {
         if (generatedTrack != null) {
             player.loadTrack(generatedTrack);
             player.play();
+        }
+    }
+
+    private static class SpeedOption {
+        final String label;
+        final double multiplier;
+
+        SpeedOption(String label, double multiplier) {
+            this.label = label;
+            this.multiplier = multiplier;
+        }
+
+        @Override
+        public String toString() {
+            return label;
         }
     }
 }

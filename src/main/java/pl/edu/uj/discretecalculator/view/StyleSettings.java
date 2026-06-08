@@ -17,7 +17,7 @@ public final class StyleSettings {
     public static StyleSettings get() { return INSTANCE; }
 
     private final DoubleProperty vertexRadius = new SimpleDoubleProperty(DEFAULT_VERTEX_RADIUS);
-    private final DoubleProperty edgeWidth    = new SimpleDoubleProperty(DEFAULT_EDGE_WIDTH);
+    private final DoubleProperty edgeWidth = new SimpleDoubleProperty(DEFAULT_EDGE_WIDTH);
 
     private StyleSettings() {}
 
