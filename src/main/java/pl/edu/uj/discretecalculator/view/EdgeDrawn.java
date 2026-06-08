@@ -1,5 +1,6 @@
 package pl.edu.uj.discretecalculator.view;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.css.PseudoClass;
 import javafx.scene.Group;
@@ -78,6 +79,8 @@ public class EdgeDrawn extends Group {
                 onClick.accept(this);
             }
         });
+
+        // Zastępujemy starą linijkę nowym rozwiązaniem opisanym niżej w bindWeightVisibility
     }
 
     public void updateArrowHead() {
@@ -93,9 +96,9 @@ public class EdgeDrawn extends Group {
         double aLen  = r * 0.6;
         double aHalf = aLen * (2.0 / 5.0);
         arrowHead.getPoints().setAll(
-            tipX, tipY,
-            tipX - aLen*cos - aHalf*sin, tipY - aLen*sin + aHalf*cos,
-            tipX - aLen*cos + aHalf*sin, tipY - aLen*sin - aHalf*cos
+                tipX, tipY,
+                tipX - aLen*cos - aHalf*sin, tipY - aLen*sin + aHalf*cos,
+                tipX - aLen*cos + aHalf*sin, tipY - aLen*sin - aHalf*cos
         );
     }
 
@@ -177,12 +180,15 @@ public class EdgeDrawn extends Group {
         return weightLabel.getText();
     }
 
+    public Label getWeightLabel() {
+        return weightLabel;
+    }
+
     public void highlightAsTreeEdge() {
         curve.pseudoClassStateChanged(TREE_EDGE, true);
         curve.pseudoClassStateChanged(CYCLE_EDGE, false);
         curve.setStyle("-fx-stroke: #1a56db; -fx-stroke-width: 3;");
     }
-
 
     public void highlightAsCycle() {
         curve.pseudoClassStateChanged(CYCLE_EDGE, true);
@@ -190,22 +196,28 @@ public class EdgeDrawn extends Group {
         curve.setStyle("-fx-stroke: #9ca3af; -fx-stroke-width: 2; -fx-stroke-dash-array: 10 10;");
     }
 
-    // NOWA METODA
     public void setActive(boolean active) {
         this.isActive = active;
         double baseWidth = StyleSettings.get().getEdgeWidth();
         curve.setStrokeWidth(active ? baseWidth * 4 : baseWidth);
     }
 
-    public void bindWeightVisibility(javafx.beans.value.ObservableBooleanValue visibilityProperty) {
-        weightLabel.visibleProperty().bind(visibilityProperty);
-    } // do naprawienia kwestii zwiazanej z pustymi polami labelow wag
+    // --- NOWA, POTĘŻNA METODA WIĄZANIA ---
+    public void bindWeightVisibility(ObservableBooleanValue isWeightedGraphProperty) {
+        weightLabel.visibleProperty().bind(
+                Bindings.createBooleanBinding(
+                        () -> isWeightedGraphProperty.get() && !weightLabel.getText().isEmpty(),
+                        isWeightedGraphProperty, weightLabel.textProperty()
+                )
+        );
+    }
 
     public void resetStyle() {
         curve.pseudoClassStateChanged(TREE_EDGE, false);
         curve.pseudoClassStateChanged(CYCLE_EDGE, false);
         applyStroke(null);
-        setWeightText(null);
-        setActive(false); // Reset grubości przy czyszczeniu płótna
+        // WAŻNE: Zostawiliśmy to zakomentowane, by nie niszczyć wag!
+        //setWeightText(null);
+        setActive(false);
     }
 }

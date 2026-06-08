@@ -21,9 +21,9 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.CheckBox?>
-
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.ComboBox?>
+
 <BorderPane prefHeight="600.0" prefWidth="900.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pl.edu.uj.discretecalculator.controller.MainController">
@@ -37,135 +37,148 @@
 
             <StackPane>
                 <TabPane fx:id="ribbon" tabClosingPolicy="UNAVAILABLE" styleClass="ribbon">
-                <tabs>
-                    <Tab text="File">
-                        <ToolBar styleClass="ribbon-bar">
-                            <items>
-                                <Button text="New"  onAction="#newGraph" prefWidth="80.0"/>
-                                <Button text="Open" onAction="#onOpen" prefWidth="80.0"/>
-                                <Button text="Save" onAction="#onSave" prefWidth="80.0"/>
+                    <tabs>
+                        <Tab text="File">
+                            <ToolBar fx:id="fileToolBar" styleClass="ribbon-bar">
+                                <items>
+                                    <Button text="New"  onAction="#newGraph" prefWidth="80.0"/>
+                                    <Button text="Open" onAction="#onOpen" prefWidth="80.0"/>
+                                    <Button text="Save" onAction="#onSave" prefWidth="80.0"/>
+                                    <Separator orientation="VERTICAL"/>
+                                    <Button text="Exit" onAction="#onExit" prefWidth="80.0"/>
+                                </items>
+                                <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                            </ToolBar>
+                        </Tab>
 
-                                <Separator orientation="VERTICAL"/>
+                        <Tab fx:id="editGraphTab" text="Edit Graph">
+                            <ToolBar styleClass="ribbon-bar">
+                                <items>
+                                    <ToggleButton fx:id="addVertexMode" text="Add Vertex" toggleGroup="$modeGroup" prefWidth="95.0"/>
+                                    <ToggleButton fx:id="addEdgeMode" text="Add Edge" toggleGroup="$modeGroup" prefWidth="95.0"/>
+                                    <ToggleButton fx:id="deleteMode" text="Delete" toggleGroup="$modeGroup" prefWidth="95.0"/>
+                                    <ToggleButton text="Move" toggleGroup="$modeGroup" prefWidth="95.0"/>
+                                    <ToggleButton text="Paint" toggleGroup="$modeGroup" prefWidth="80.0"/>
+                                    <ToggleButton fx:id="editWeightMode" text="Edit Weight" toggleGroup="$modeGroup" />
+                                    <ToggleButton text="Custom Renumber" toggleGroup="$modeGroup" prefWidth="125.0"/>
 
-                                <Button text="Exit" onAction="#onExit" prefWidth="80.0"/>
-                            </items>
-                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
-                        </ToolBar>
-                    </Tab>
-                    <Tab fx:id="editGraphTab" text="Edit Graph">
-                        <ToolBar styleClass="ribbon-bar">
-                            <items>
-                                <ToggleButton text="Add Vertex" toggleGroup="$modeGroup" prefWidth="95.0"/>
-                                <ToggleButton text="Add Edge" toggleGroup="$modeGroup" prefWidth="95.0"/>
-                                <ToggleButton text="Delete" toggleGroup="$modeGroup" prefWidth="95.0"/>
-                                <ToggleButton text="Move" toggleGroup="$modeGroup" prefWidth="95.0"/>
-                                <ToggleButton text="Paint" toggleGroup="$modeGroup" prefWidth="80.0"/>
-                                <ToggleButton text="Edit Weight" toggleGroup="$modeGroup" />
-                                <Separator orientation="VERTICAL"/>
+                                    <Separator orientation="VERTICAL"/>
 
-                                <ToggleButton text="Modify" onAction="#onToggleInputPanel" prefWidth="100.0"/>
-                                <CheckBox fx:id="directedCheckbox" text="Directed" onAction="#onToggleDirected"/>
-                                <CheckBox fx:id="weightedCheckbox" text="Weighted" onAction="#onToggleWeighted" />
+                                    <MenuButton text="Renumber">
+                                        <items>
+                                            <MenuItem text="By BFS Order" onAction="#onRenumberBFS"/>
+                                            <MenuItem text="By DFS Order" onAction="#onRenumberDFS"/>
+                                            <MenuItem text="By Degree (Largest First)" onAction="#onRenumberDegreeDesc"/>
+                                            <MenuItem text="By Degree (Smallest First)" onAction="#onRenumberDegreeAsc"/>
+                                        </items>
+                                    </MenuButton>
 
-                            </items>
-                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
-                        </ToolBar>
-                    </Tab>
+                                    <Separator orientation="VERTICAL"/>
 
-                    <Tab text="Build">
-                        <ToolBar styleClass="ribbon-bar">
-                            <items>
-                                <Button text="Cycle Cn" onAction="#onBuildCycle" prefWidth="90.0"/>
-                                <Button text="Complete Kn" onAction="#onBuildComplete" prefWidth="110.0"/>
-                                <Button text="Bipartite Kn,m" onAction="#onBuildBipartite" prefWidth="120.0"/>
-                                <Button text="Random tree Tn" onAction="#onBuildTree" prefWidth="120.0"/>
-                            </items>
-                        </ToolBar>
-                    </Tab>
+                                    <ToggleButton text="Modify" onAction="#onToggleInputPanel" prefWidth="100.0"/>
+                                    <CheckBox fx:id="directedCheckbox" text="Directed" onAction="#onToggleDirected"/>
+                                    <CheckBox fx:id="weightedCheckbox" text="Weighted" onAction="#onToggleWeighted" />
+                                    <Button fx:id="resetWeightsBtn" text="Reset Weights" onAction="#onResetWeights" prefWidth="105.0"/>
+                                </items>
+                                <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                            </ToolBar>
+                        </Tab>
 
-                    <Tab text="Algorithms">
-                        <ToolBar styleClass="ribbon-bar">
-                            <items>
-                                <MenuButton text="Traversals">
-                                    <items>
-                                        <MenuItem text="Run BFS" onAction="#onSelectAlgorithmMode"/>
-                                        <MenuItem text="Run DFS" onAction="#onSelectAlgorithmMode"/>
-                                    </items>
-                                </MenuButton>
-                                <MenuButton text="Shortest Paths">
-                                    <items>
-                                        <MenuItem text="Run Dijkstra" onAction="#onSelectAlgorithmMode"/>
-                                        <MenuItem text="Run Bellman-Ford" onAction="#onSelectAlgorithmMode"/>
-                                    </items>
-                                </MenuButton>
-                                <MenuButton text="Vertex Coloring">
-                                    <items>
-                                        <MenuItem text="Greedy" onAction="#onRunGreedyColoring"/>
-                                        <MenuItem text="Backtracking" onAction="#onRunBacktrackingVertexColoring"/>
-                                    </items>
-                                </MenuButton>
-                                <MenuButton text="Edge Coloring">
-                                    <items>
-                                        <MenuItem text="Greedy" onAction="#onRunGreedyEdgeColoring"/>
-                                        <MenuItem text="Backtracking" onAction="#onRunBacktrackingEdgeColoring"/>
-                                    </items>
-                                </MenuButton>
-                                <MenuButton text="Directed">
-                                    <items>
-                                        <MenuItem text="Tarjan (SCC)" onAction="#onRunSCC"/>
-                                        <MenuItem text="Topological Sort" onAction="#onRunTopoSort"/>
-                                    </items>
-                                </MenuButton>
-                                <MenuButton text="Miscellaneous" disable="true">
-                                    <items>
-                                        <MenuItem text="No algorithms yet" disable="true"/>
-                                    </items>
-                                </MenuButton>
+                        <Tab fx:id="buildTab" text="Build">
+                            <ToolBar fx:id="buildToolBar" styleClass="ribbon-bar">
+                                <items>
+                                    <Button text="Cycle Cn" onAction="#onBuildCycle" prefWidth="90.0"/>
+                                    <Button text="Complete Kn" onAction="#onBuildComplete" prefWidth="110.0"/>
+                                    <Button text="Bipartite Kn,m" onAction="#onBuildBipartite" prefWidth="120.0"/>
+                                    <Button text="Random tree Tn" onAction="#onBuildTree" prefWidth="120.0"/>
+                                </items>
+                            </ToolBar>
+                        </Tab>
 
-                                <HBox visible="false" managed="false">
-                                    <ToggleButton text="Run BFS" toggleGroup="$modeGroup"/>
-                                    <ToggleButton text="Run DFS" toggleGroup="$modeGroup"/>
-                                    <ToggleButton text="Run Dijkstra" toggleGroup="$modeGroup"/>
-                                    <ToggleButton text="Run Bellman-Ford" toggleGroup="$modeGroup"/>
-                                </HBox>
-                            </items>
-                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
-                        </ToolBar>
-                    </Tab>
+                        <Tab fx:id="algorithmsTab" text="Algorithms">
+                            <ToolBar fx:id="algorithmsToolBar" styleClass="ribbon-bar">
+                                <items>
+                                    <MenuButton text="Traversals">
+                                        <items>
+                                            <MenuItem text="Run BFS" onAction="#onSelectAlgorithmMode"/>
+                                            <MenuItem text="Run DFS" onAction="#onSelectAlgorithmMode"/>
+                                        </items>
+                                    </MenuButton>
+                                    <MenuButton text="Shortest Paths">
+                                        <items>
+                                            <MenuItem text="Run Dijkstra" onAction="#onSelectAlgorithmMode"/>
+                                            <MenuItem text="Run Bellman-Ford" onAction="#onSelectAlgorithmMode"/>
+                                        </items>
+                                    </MenuButton>
+                                    <MenuButton text="Vertex Coloring">
+                                        <items>
+                                            <MenuItem text="Greedy" onAction="#onRunGreedyColoring"/>
+                                            <MenuItem text="Backtracking" onAction="#onRunBacktrackingVertexColoring"/>
+                                        </items>
+                                    </MenuButton>
+                                    <MenuButton text="Edge Coloring">
+                                        <items>
+                                            <MenuItem text="Greedy" onAction="#onRunGreedyEdgeColoring"/>
+                                            <MenuItem text="Backtracking" onAction="#onRunBacktrackingEdgeColoring"/>
+                                        </items>
+                                    </MenuButton>
+                                    <MenuButton text="Directed">
+                                        <items>
+                                            <MenuItem text="Run Kosaraju (SCC)" onAction="#onRunKosaraju"/>
+                                            <MenuItem text="Tarjan (SCC)" onAction="#onRunSCC"/>
+                                            <MenuItem text="Topological Sort" onAction="#onRunTopoSort"/>
+                                        </items>
+                                    </MenuButton>
+                                    <MenuButton text="Miscellaneous" disable="true">
+                                        <items>
+                                            <MenuItem text="No algorithms yet" disable="true"/>
+                                        </items>
+                                    </MenuButton>
 
-                    <Tab text="View">
-                        <ToolBar styleClass="ribbon-bar">
-                            <items>
-                                <ToggleButton fx:id="lightThemeItem" text="Light" toggleGroup="$themeGroup"
-                                              selected="true" onAction="#onSelectLightTheme" prefWidth="70.0"/>
-                                <ToggleButton fx:id="darkThemeItem"  text="Dark"  toggleGroup="$themeGroup"
-                                              onAction="#onSelectDarkTheme" prefWidth="70.0"/>
+                                    <HBox visible="false" managed="false">
+                                        <ToggleButton text="Run BFS" toggleGroup="$modeGroup"/>
+                                        <ToggleButton text="Run DFS" toggleGroup="$modeGroup"/>
+                                        <ToggleButton text="Run Dijkstra" toggleGroup="$modeGroup"/>
+                                        <ToggleButton text="Run Bellman-Ford" toggleGroup="$modeGroup"/>
+                                    </HBox>
+                                </items>
+                                <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                            </ToolBar>
+                        </Tab>
 
-                                <Separator orientation="VERTICAL"/>
+                        <Tab text="View">
+                            <ToolBar styleClass="ribbon-bar">
+                                <items>
+                                    <ToggleButton fx:id="lightThemeItem" text="Light" toggleGroup="$themeGroup"
+                                                  selected="true" onAction="#onSelectLightTheme" prefWidth="70.0"/>
+                                    <ToggleButton fx:id="darkThemeItem"  text="Dark"  toggleGroup="$themeGroup"
+                                                  onAction="#onSelectDarkTheme" prefWidth="70.0"/>
 
-                                <Button fx:id="resetViewItem" text="Reset View" onAction="#onResetView"
-                                        prefWidth="100.0"/>
+                                    <Separator orientation="VERTICAL"/>
 
-                                <Separator orientation="VERTICAL"/>
+                                    <Button fx:id="resetViewItem" text="Reset View" onAction="#onResetView"
+                                            prefWidth="100.0"/>
 
-                                <Label text="Zoom:"/>
-                                <Button fx:id="btnZoomIn" text="+" onAction="#OnZoomIn" prefWidth="40.0"
-                                        style="-fx-font-weight: bold;"/>
-                                <Button fx:id="btnZoomOut" text="-" onAction="#OnZoomOut" prefWidth="40.0"
-                                        style="-fx-font-weight: bold;"/>
-                                <Button fx:id="btnResetZoom" text="R" onAction="#OnResetZoom" prefWidth="40.0"/>
+                                    <Separator orientation="VERTICAL"/>
 
-                                <Separator orientation="VERTICAL"/>
+                                    <Label text="Zoom:"/>
+                                    <Button fx:id="btnZoomIn" text="+" onAction="#OnZoomIn" prefWidth="40.0"
+                                            style="-fx-font-weight: bold;"/>
+                                    <Button fx:id="btnZoomOut" text="-" onAction="#OnZoomOut" prefWidth="40.0"
+                                            style="-fx-font-weight: bold;"/>
+                                    <Button fx:id="btnResetZoom" text="R" onAction="#OnResetZoom" prefWidth="40.0"/>
 
-                                <Button fx:id="autoLayout" text="Auto Layout"
-                                        onAction="#onAutoLayout" prefWidth="110.0"/>
-                                <ToggleButton fx:id="liveLayout" text="Live Layout"
-                                              onAction="#onToggleLiveLayout" prefWidth="110.0"/>
-                            </items>
-                            <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
-                        </ToolBar>
-                    </Tab>
-                </tabs>
+                                    <Separator orientation="VERTICAL"/>
+
+                                    <Button fx:id="autoLayout" text="Auto Layout"
+                                            onAction="#onAutoLayout" prefWidth="110.0"/>
+                                    <ToggleButton fx:id="liveLayout" text="Live Layout"
+                                                  onAction="#onToggleLiveLayout" prefWidth="110.0"/>
+                                </items>
+                                <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
+                            </ToolBar>
+                        </Tab>
+                    </tabs>
                 </TabPane>
 
                 <HBox styleClass="ribbon-undo-redo" alignment="TOP_RIGHT" spacing="5"
@@ -212,7 +225,6 @@
                 <Slider fx:id="edgeWidthSlider" min="1.0" max="5.0" value="2.0"
                         showTickMarks="true"/>
 
-
                 <Separator>
                     <VBox.margin><Insets top="8" bottom="8"/></VBox.margin>
                 </Separator>
@@ -246,6 +258,7 @@
                     <Button prefHeight="22.0" prefWidth="32.0" text="⏸" onAction="#onTestPause" style="-fx-font-size: 12px;"/>
                     <Button prefHeight="22.0" prefWidth="32.0" text="▶" onAction="#onTestPlay" style="-fx-font-size: 12px;"/>
                     <Button prefHeight="22.0" prefWidth="32.0" text="⏭" onAction="#onTestStepForward" style="-fx-font-size: 12px;"/>
+                    <Button prefHeight="22.0" prefWidth="32.0" text="✖" onAction="#onStopAnimation" style="-fx-font-size: 12px; -fx-text-fill: red;"/>
                 </HBox>
 
                 <Separator orientation="VERTICAL"/>

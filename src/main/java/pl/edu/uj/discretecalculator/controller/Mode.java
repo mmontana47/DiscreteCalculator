@@ -10,7 +10,8 @@ public enum Mode {
     RUN_DFS("Run DFS", "Click a vertex to start Depth-First Search"),
     RUN_DIJKSTRA("Run Dijkstra", "Click a vertex to start Dijkstra"),
     RUN_BELLMAN_FORD("Run Bellman-Ford", "Click a vertex to start Bellman-Ford"),
-    EDIT_WEIGHT("Edit Weight", "Click an edge to change its weight");
+    EDIT_WEIGHT("Edit Weight", "Click an edge to change its weight"),
+    CUSTOM_RENUMBER("Custom Renumber", "Click vertices one by one to set their new order");
     private final String label;
     private final String hint;
 

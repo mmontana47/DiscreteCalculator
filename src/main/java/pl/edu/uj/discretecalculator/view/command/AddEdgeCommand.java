@@ -1,5 +1,6 @@
 package pl.edu.uj.discretecalculator.view.command;
 
+import javafx.beans.value.ObservableBooleanValue;
 import pl.edu.uj.discretecalculator.controller.CanvasManager;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
@@ -23,10 +24,10 @@ public class AddEdgeCommand implements Command {
 
     @Override
     public void execute() {
-        if(edge == null){
+        if (edge == null) {
+            // >>> Przekazujemy isWeightedProperty jako 5. argument do CanvasManagera <<<
             edge = canvas.createEdge(source.getVertexId() + "-" + target.getVertexId(), source, target, onClick);
-        }
-        else {
+        } else {
             canvas.attachEdge(edge);
         }
     }
