@@ -3,6 +3,7 @@ package pl.edu.uj.discretecalculator.view.animation;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.property.DoubleProperty;
 import javafx.util.Duration;
 import pl.edu.uj.discretecalculator.controller.CanvasManager;
 
@@ -11,32 +12,26 @@ public class AlgorithmPlayer {
     private AlgorithmTrack currentTrack;
     private int currentIndex = -1;
     private final Timeline metronome;
-    private double currentSpeedMs = 500; // Domyślna prędkość: 500ms na krok
+    private final double defaultSpeedMs=500; // Domyślna prędkość: 500ms na krok
 
-    public AlgorithmPlayer(CanvasManager canvas) {
+    public AlgorithmPlayer(CanvasManager canvas, DoubleProperty currentSpeedMs) {
         this.canvas = canvas;
-
         this.metronome = new Timeline();
         this.metronome.setCycleCount(Animation.INDEFINITE);
-        updateMetronomeSpeed(currentSpeedMs);
-    }
 
-    public void setSpeed(double millis) {
-        if (millis <= 0) return;
-        this.currentSpeedMs = millis;
-        updateMetronomeSpeed(millis);
-    }
-
-    private void updateMetronomeSpeed(double millis) {
-        boolean wasPlaying = metronome.getStatus() == Animation.Status.RUNNING;
-        metronome.stop();
-
-        metronome.getKeyFrames().setAll(
-                new KeyFrame(Duration.millis(millis), event -> stepForward())
+        this.metronome.getKeyFrames().setAll(
+                new KeyFrame(Duration.millis(defaultSpeedMs), e -> stepForward())
         );
 
-        if (wasPlaying) {
-            metronome.play();
+        currentSpeedMs.addListener((obs, oldVal, newVal) -> {
+            double newSpeed = newVal.doubleValue();
+            if (newSpeed > 0) {
+                metronome.setRate(currentSpeedMs.get()/defaultSpeedMs);
+            }
+        });
+
+        if(currentSpeedMs.get()>0) {
+            metronome.setRate(currentSpeedMs.get()/defaultSpeedMs);
         }
     }
 
