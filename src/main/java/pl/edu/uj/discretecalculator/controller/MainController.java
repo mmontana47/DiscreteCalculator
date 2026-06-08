@@ -176,7 +176,10 @@ public class MainController {
                         new KeyCodeCombination(KeyCode.ESCAPE),
                         () -> {
                             if(inputPanelOpen) onToggleInputPanel();
-                            else onResetView();
+                            else {
+                                onResetView();
+                                onStopAnimation();
+                            }
                         });
                 newValue.getAccelerators().put(
                         new KeyCodeCombination(KeyCode.I, KeyCombination.SHORTCUT_DOWN),
@@ -616,7 +619,7 @@ public class MainController {
             }
             case PAINT -> runCommand(new PaintEdgeCommand(edge, colorPicker));
             case EDIT_WEIGHT -> {
-                OptionalDouble newWeight = promptForDouble("Waga krawędzi", "Zmień wagę dla wybranej krawędzi", "Waga");
+                OptionalDouble newWeight = promptForDouble("Edge Weight", "Change weight for selected edge", "Weight");
                 if (newWeight.isPresent()) {
                     // Wymuszamy zaznaczenie checkboxa "Weighted Graph", jeśli użytkownik zaczął ręcznie edytować wagi
                     if (!weightedCheckbox.isSelected()) {
@@ -1087,7 +1090,7 @@ public class MainController {
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getEdges().isEmpty()) return;
 
-        if (!confirmBacktracking(graph.getVertices().size(), 15, "edges")) {
+        if (!confirmBacktracking(graph.getEdges().size(), 15, "edges")) {
             return;
         }
 
@@ -1133,7 +1136,7 @@ public class MainController {
         } catch (TopologicalSortException e) {
             // Obsługa alertu gdy użytkownik próbuje posortować graf z cyklem
             Alert alert = new Alert(Alert.AlertType.WARNING, e.getMessage(), ButtonType.OK);
-            alert.setHeaderText("Błąd TopoSort");
+            alert.setHeaderText("Topological Sort Error");
             alert.showAndWait();
         }
     }
@@ -1148,9 +1151,9 @@ public class MainController {
 
         if (!canvas.isDirected()) {
             Alert alert = new Alert(Alert.AlertType.WARNING,
-                    "Algorytm Kosaraju wymaga grafu skierowanego.\nWłącz opcję 'Directed' i spróbuj ponownie.",
+                    "Kosaraju's algorithm requires a directed graph.\nEnable the 'Directed' option and try again.",
                     ButtonType.OK);
-            alert.setHeaderText("Graf nieskierowany");
+            alert.setHeaderText("Undirected Graph");
             alert.showAndWait();
             return;
         }
@@ -1160,6 +1163,7 @@ public class MainController {
         AlgorithmTrack track = TrackFactory.buildKosarajuTrack(result, graph);
 
         player.loadTrack(track);
+        setAnimationModeUI(true);
         player.play();
     }
 
