@@ -6,7 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;
-
+import pl.edu.uj.discretecalculator.AppConfig;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -38,8 +38,9 @@ public class CanvasManager {
                 for(EdgeDrawn edge : edges) {
                     EdgeDrawn reverse = findEdge(edge.getTarget(), edge.getSource());
                     if(reverse != null && edge.getEdgeId().compareTo(reverse.getEdgeId())>0) {
-                        edge.setOffset(0.2);
-                        reverse.setOffset(0.2);
+                        double off = AppConfig.get().style.edge.bidirectionalOffset;
+                        edge.setOffset(off);
+                        reverse.setOffset(off);
                     }
                 }
             }
@@ -181,8 +182,9 @@ public class CanvasManager {
         }
         if (reverse == null) return;
         if (edges.contains(e)) {
-            e.setOffset(0.2);
-            reverse.setOffset(0.2);
+            double off = AppConfig.get().style.edge.bidirectionalOffset;
+            e.setOffset(off);
+            reverse.setOffset(off);
         } else {
             reverse.setOffset(0);
         }
