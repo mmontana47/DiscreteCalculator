@@ -24,9 +24,9 @@ public class AddEdgeCommand implements Command {
 
     @Override
     public void execute() {
-        if (edge == null) {
-            // >>> Przekazujemy isWeightedProperty jako 5. argument do CanvasManagera <<<
-            edge = canvas.createEdge(source.getVertexId() + "-" + target.getVertexId(), source, target, onClick);
+        if(edge == null){
+            // Wywołujemy metodę z 3 argumentami, CanvasManager sam przypisze numeryczne ID
+            edge = canvas.createEdge(source, target, onClick);
         } else {
             canvas.attachEdge(edge);
         }

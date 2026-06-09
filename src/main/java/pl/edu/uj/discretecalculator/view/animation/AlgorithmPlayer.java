@@ -16,24 +16,32 @@ public class AlgorithmPlayer {
     private final double defaultSpeedMs = AppConfig.get().animation.defaultSpeedMs;
     private Runnable onStepChanged;
 
+    // >>> NOWOŚĆ: Flaga kierunku odtwarzania <<<
+    private boolean isForward = true;
+
     public AlgorithmPlayer(CanvasManager canvas, DoubleProperty currentSpeedMs) {
         this.canvas = canvas;
         this.metronome = new Timeline();
         this.metronome.setCycleCount(Animation.INDEFINITE);
 
+        // Klatka decyduje w którą stronę idziemy na podstawie flagi
         this.metronome.getKeyFrames().setAll(
-                new KeyFrame(Duration.millis(defaultSpeedMs), e -> stepForward())
+                new KeyFrame(Duration.millis(defaultSpeedMs), e -> {
+                    if (isForward) stepForward();
+                    else stepBackward();
+                })
         );
 
+        // Ustawianie mnożnika prędkości (Rate = Oczekiwana / Bazowa)
         currentSpeedMs.addListener((obs, oldVal, newVal) -> {
-            double newSpeed = newVal.doubleValue();
-            if (newSpeed > 0) {
-                metronome.setRate(currentSpeedMs.get()/defaultSpeedMs);
+            double newSpeedDuration = newVal.doubleValue();
+            if (newSpeedDuration > 0) {
+                metronome.setRate(defaultSpeedMs / newSpeedDuration);
             }
         });
 
-        if(currentSpeedMs.get()>0) {
-            metronome.setRate(currentSpeedMs.get()/defaultSpeedMs);
+        if (currentSpeedMs.get() > 0) {
+            metronome.setRate(defaultSpeedMs / currentSpeedMs.get());
         }
     }
 
@@ -46,6 +54,13 @@ public class AlgorithmPlayer {
     }
 
     public void play() {
+        isForward = true;
+        if (currentTrack != null) metronome.play();
+    }
+
+    // >>> NOWOŚĆ: Odtwarzanie do tyłu <<<
+    public void playBackward() {
+        isForward = false;
         if (currentTrack != null) metronome.play();
     }
 
@@ -64,14 +79,18 @@ public class AlgorithmPlayer {
         }
         currentIndex++;
         applyFrame(currentTrack.getFrames().get(currentIndex));
-        if(onStepChanged!=null) onStepChanged.run();
+        if(onStepChanged != null) onStepChanged.run();
     }
 
     public void stepBackward() {
-        if (currentTrack == null || currentIndex <= 0) return;
+        // Jeśli jesteśmy na początku animacji, zatrzymujemy odtwarzanie do tyłu
+        if (currentTrack == null || currentIndex <= 0) {
+            pause();
+            return;
+        }
         currentIndex--;
         rebuildStateToCurrentIndex();
-        if(onStepChanged!=null) onStepChanged.run();
+        if(onStepChanged != null) onStepChanged.run();
     }
 
     private void rebuildStateToCurrentIndex() {
@@ -83,12 +102,9 @@ public class AlgorithmPlayer {
 
     private void applyFrame(AlgorithmFrame frame) {
         frame.apply(canvas);
-
     }
 
     public void setOnStepChanged(Runnable onStepChanged) { this.onStepChanged = onStepChanged; }
-    public int getCurrentStep() {return currentIndex+1;}
-    public int getNumberOfSteps() {return (currentTrack!=null ? currentTrack.size() : 0);}
-
-
+    public int getCurrentStep() { return currentIndex + 1; }
+    public int getNumberOfSteps() { return (currentTrack != null ? currentTrack.size() : 0); }
 }

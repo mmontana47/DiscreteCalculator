@@ -48,7 +48,7 @@ public class MainController {
     private final double DEFAULT_SPEED_MS = AppConfig.get().animation.defaultSpeedMs;
     private int customRenumberCounter = 0;
     private final Map<VertexDrawn, String> originalIdsBackup = new HashMap<>();
-  
+
     // Silnik odtwarzacza animacji (Nowa Architektura)
     private AlgorithmPlayer player;
 
@@ -85,7 +85,6 @@ public class MainController {
     @FXML private TextArea edgeInput;
     @FXML private ColorPicker colorPicker;
     @FXML private CheckBox directedCheckbox;
-    @FXML public ComboBox<SpeedOption> speedComboBox;
     @FXML private ToolBar fileToolBar;
     @FXML private ToolBar buildToolBar;
     @FXML private ToolBar algorithmsToolBar;
@@ -95,6 +94,8 @@ public class MainController {
     @FXML private ToggleButton editWeightMode;
     @FXML private Button resetWeightsBtn;
     @FXML private Label stepCounterLabel;
+    @FXML private Slider speedSlider;
+    @FXML private Label speedLabel;
 
 
 
@@ -199,22 +200,16 @@ public class MainController {
             }
         });
 
-        speedComboBox.getItems().addAll(
-                new SpeedOption("0.5x", 0.5),
-                new SpeedOption("1.0x", 1.0),
-                new SpeedOption("2.0x", 2.0),
-                new SpeedOption("5.0x", 5.0),
-                new SpeedOption("10.0x", 10.0)
-        );
-
-        speedComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                double calculatedMs =  DEFAULT_SPEED_MS * newVal.multiplier;
-                currentSpeedMs.set(calculatedMs);
-            }
+        // >>> PŁYNNA OBSŁUGA PRĘDKOŚCI WRAZ Z ETYKIETĄ Z OSTATNIEGO KROKU <<<
+        speedSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            double multiplier = newVal.doubleValue();
+            currentSpeedMs.set(DEFAULT_SPEED_MS / multiplier);
+            speedLabel.setText(String.format(java.util.Locale.US, "%.1fx", multiplier));
         });
 
-        speedComboBox.getSelectionModel().select(1);
+        // Inicjalizacja domyślnej wartości
+        currentSpeedMs.set(DEFAULT_SPEED_MS / speedSlider.getValue());
+        speedLabel.setText(String.format(java.util.Locale.US, "%.1fx", speedSlider.getValue()));
 
         vertexSizeSlider.setMin(StyleSettings.MIN_VERTEX_RADIUS);
         vertexSizeSlider.setMax(StyleSettings.MAX_VERTEX_RADIUS);
@@ -238,7 +233,6 @@ public class MainController {
                 }
             }
         });
-
     }
 
     @FXML private void onSelectLightTheme() { applyTheme(Theme.LIGHT); }
@@ -1015,6 +1009,11 @@ public class MainController {
     }
 
     @FXML
+    private void onTestPlayBackward() {
+        if (player != null) player.playBackward();
+    }
+
+    @FXML
     private void onTestPause() {
         if (player != null) player.pause();
     }
@@ -1036,6 +1035,65 @@ public class MainController {
     }
 
     // --- ALGORYTMY GLOBALNE (Nie wymagają wierzchołka startowego) ---
+    @FXML
+    private void onConvertToLineGraph() {
+        if (canvas.isDirected()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING,
+                    "Graf krawędziowy w tej implementacji obsługuje tylko grafy nieskierowane.\nOdznacz opcję 'Directed' i spróbuj ponownie.",
+                    ButtonType.OK);
+            alert.setHeaderText("Tryb nieskierowany wymagany");
+            alert.showAndWait();
+            return;
+        }
+
+        Graph<String> graph = buildMathematicalGraph();
+        if (graph.getEdges().isEmpty()) return;
+
+        Map<String, javafx.geometry.Point2D> midpoints = new HashMap<>();
+        for (EdgeDrawn ed : canvas.getEdges()) {
+            double mx = (ed.getSource().getLayoutX() + ed.getTarget().getLayoutX()) / 2.0;
+            double my = (ed.getSource().getLayoutY() + ed.getTarget().getLayoutY()) / 2.0;
+            midpoints.put(ed.getEdgeId(), new javafx.geometry.Point2D(mx, my));
+        }
+
+        Graph<Edge<String>> lineGraph = GraphToLineGraph.Convert(graph);
+
+        canvas.clear();
+        history.clear();
+        refreshUndoRedoState();
+        weightedCheckbox.setSelected(false);
+
+        Map<String, VertexDrawn> newVertices = new HashMap<>();
+        for (Vertex<Edge<String>> v : lineGraph.getVertices()) {
+            String oldEdgeId = String.valueOf(v.getValue().getId());
+
+            javafx.geometry.Point2D pos = midpoints.getOrDefault(oldEdgeId, new javafx.geometry.Point2D(400, 300));
+
+            VertexDrawn newV = canvas.createVertex(
+                    pos.getX(),
+                    pos.getY(),
+                    oldEdgeId, // Utrzymujemy numeryczne ID (0, 1, 2...)
+                    this::onVertexClick,
+                    () -> currentMode() == Mode.MOVE
+            );
+            newVertices.put(oldEdgeId, newV);
+        }
+
+        // 5. Budujemy nowe KRAWĘDZIE ze skrzyżowań dawnych wierzchołków
+        for (Edge<Edge<String>> e : lineGraph.getEdges()) {
+            String uId = String.valueOf(e.getSource().getValue().getId());
+            String vId = String.valueOf(e.getTarget().getValue().getId());
+
+            VertexDrawn source = newVertices.get(uId);
+            VertexDrawn target = newVertices.get(vId);
+
+            if (source != null && target != null) {
+                canvas.createEdge(source, target, this::onEdgeClick);
+            }
+        }
+
+        //onAutoLayout();
+    }
 
     @FXML
     private void onRunGreedyColoring() {
@@ -1217,8 +1275,8 @@ public class MainController {
             dictionary.put(vd.getVertexId(), v);
         }
 
-        // Wewnątrz buildMathematicalGraph()
-        int edgeId = 0; // Nasza konwencja liczbowa
+        // USUŃ LINIĘ: int edgeId = 0;
+
         for (EdgeDrawn ed : canvas.getEdges()) {
             Vertex<String> source = dictionary.get(ed.getSource().getVertexId());
             Vertex<String> target = dictionary.get(ed.getTarget().getVertexId());
@@ -1230,11 +1288,14 @@ public class MainController {
                 }
             } catch (NumberFormatException ignored) {}
 
+            // >>> POBIERAMY PRAWDZIWE, NUMERYCZNE ID Z PŁÓTNA <<<
+            int parsedEdgeId = Integer.parseInt(ed.getEdgeId());
+
             Edge<String> edge;
             if (canvas.isDirected()) {
-                edge = new WeightedDirectedEdge<>(source, target, edgeId++, weight);
+                edge = new WeightedDirectedEdge<>(source, target, parsedEdgeId, weight);
             } else {
-                edge = new WeightedEdge<>(source, target, edgeId++, weight);
+                edge = new WeightedEdge<>(source, target, parsedEdgeId, weight);
             }
             mathGraph.addEdge(edge);
         }

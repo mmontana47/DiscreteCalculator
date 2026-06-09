@@ -10,9 +10,12 @@ import java.util.Map;
 public class SearchAlgorithmFrame implements AlgorithmFrame {
     private final String description;
 
-    // Przechowujemy tylko dane potrzebne dla BFS/DFS
     private final Map<String, String> vertexColors = new HashMap<>();
     private final Map<String, String> edgeColors = new HashMap<>();
+
+    // NOWE: Przechowywanie typów krawędzi dla stylizacji (Tree vs Non-Tree)
+    private final Map<String, Boolean> isTreeEdge = new HashMap<>();
+    private final Map<String, Boolean> isNonTreeEdge = new HashMap<>();
 
     public SearchAlgorithmFrame(String description) {
         this.description = description;
@@ -26,9 +29,21 @@ public class SearchAlgorithmFrame implements AlgorithmFrame {
         edgeColors.put(edgeId, hexColor);
     }
 
-    // Gettery potrzebne do kopiowania stanu między klatkami
+    // NOWE: Metody ustawiające status krawędzi
+    public void markAsTreeEdge(String edgeId) {
+        isTreeEdge.put(edgeId, true);
+    }
+
+    public void markAsNonTreeEdge(String edgeId) {
+        isNonTreeEdge.put(edgeId, true);
+    }
+
     public Map<String, String> getVertexColors() { return vertexColors; }
     public Map<String, String> getEdgeColors() { return edgeColors; }
+
+    // NOWE Gettery
+    public Map<String, Boolean> getTreeEdges() { return isTreeEdge; }
+    public Map<String, Boolean> getNonTreeEdges() { return isNonTreeEdge; }
 
     @Override
     public String getStepDescription() {
@@ -37,16 +52,24 @@ public class SearchAlgorithmFrame implements AlgorithmFrame {
 
     @Override
     public void apply(CanvasManager canvas) {
-        // Aplikowanie kolorów wierzchołków
         for (Map.Entry<String, String> entry : vertexColors.entrySet()) {
             VertexDrawn vd = canvas.getVertexById(entry.getKey());
             if (vd != null) vd.setFillColor(entry.getValue());
         }
 
-        // Aplikowanie kolorów krawędzi
         for (Map.Entry<String, String> entry : edgeColors.entrySet()) {
             EdgeDrawn ed = canvas.getEdgeById(entry.getKey());
             if (ed != null) ed.setStrokeColor(entry.getValue());
+        }
+
+        for (String edgeKey : isTreeEdge.keySet()) {
+            EdgeDrawn ed = canvas.getEdgeById(edgeKey);
+            if (ed != null) ed.highlightAsTreeEdge();
+        }
+
+        for (String edgeKey : isNonTreeEdge.keySet()) {
+            EdgeDrawn ed = canvas.getEdgeById(edgeKey);
+            if (ed != null) ed.highlightAsNonTreeEdge();
         }
     }
 }

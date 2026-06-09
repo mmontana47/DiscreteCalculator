@@ -12,19 +12,23 @@ import java.util.*;
 
 public class TrackFactory {
 
-    // Predefiniowana, statyczna paleta kolorów do algorytmów kolorowania
-    private static final String[] COLOR_PALETTE = {
-            "#E74C3C", // 1. Czerwony
-            "#3498DB", // 2. Niebieski
-            "#2ECC71", // 3. Zielony
-            "#F1C40F", // 4. Żółty
-            "#9B59B6", // 5. Fioletowy
-            "#E67E22", // 6. Pomarańczowy
-            "#1ABC9C", // 7. Morski
-            "#E84393", // 8. Różowy
-            "#00CECB", // 9. Turkusowy
-            "#FF7675"  // 10. Łososiowy
-    };
+
+    private static String getColorHexForIndex(int colorIndex) {
+        if (colorIndex <= 0) return "#7F8C8D";
+
+        double goldenRatioConjugate = 0.618033988749895;
+        double hue = (0.9 + (colorIndex * goldenRatioConjugate)) % 1.0;
+
+        double saturation = 0.65 + ((colorIndex % 3) * 0.10);
+        double brightness = 0.85 + ((colorIndex % 2) * 0.10);
+
+        javafx.scene.paint.Color fxColor = javafx.scene.paint.Color.hsb(hue * 360, saturation, brightness);
+
+        return String.format("#%02X%02X%02X",
+                (int) (fxColor.getRed() * 255),
+                (int) (fxColor.getGreen() * 255),
+                (int) (fxColor.getBlue() * 255));
+    }
 
     // --- PUBLICZNE API DLA KONTROLERA ---
 
@@ -35,7 +39,6 @@ public class TrackFactory {
     public static AlgorithmTrack buildDfsTrack(DFSResult<String> result, Graph<String> graph) {
         return buildSearchTrackBase(result.getVisitOrder(), result.getParentMap(), result.getNonTreeEdges(), "DFS", graph);
     }
-
 
     // --- PRYWATNA LOGIKA WEWNĘTRZNA DLA BFS/DFS ---
 
@@ -51,9 +54,11 @@ public class TrackFactory {
 
         Map<String, String> cumulativeVertexColors = new HashMap<>();
         Map<String, String> cumulativeEdgeColors = new HashMap<>();
+        Map<String, Boolean> cumulativeTreeEdges = new HashMap<>();
+        Map<String, Boolean> cumulativeNonTreeEdges = new HashMap<>();
 
         String visitColor = algName.equals("BFS") ? "#2ecc71" : "#e67e22";
-        String treeEdgeColor = "#2c3e50";
+        String treeEdgeColor = "#333333"; // Łagodny, profesjonalny grafitowy
 
         for (Vertex<String> currentNode : visitOrder) {
             String nodeId = String.valueOf(currentNode.getId());
@@ -63,11 +68,15 @@ public class TrackFactory {
 
             Vertex<String> parentNode = parentMap.get(currentNode);
             if (parentNode != null) {
-                // Skoro mamy getEdges(), to wyszukiwanie jest teraz znacznie prostsze i bezpieczniejsze!
                 for (Edge<String> edge : graph.getEdges()) {
                     if ((edge.getSource().getId() == currentNode.getId() && edge.getTarget().getId() == parentNode.getId()) ||
                             (edge.getSource().getId() == parentNode.getId() && edge.getTarget().getId() == currentNode.getId())) {
-                        cumulativeEdgeColors.put(String.valueOf(edge.getId()), treeEdgeColor);
+
+                        // Czyste, numeryczne ID krawędzi
+                        String edgeId = String.valueOf(edge.getId());
+
+                        cumulativeEdgeColors.put(edgeId, treeEdgeColor);
+                        cumulativeTreeEdges.put(edgeId, true);
                         break;
                     }
                 }
@@ -75,6 +84,9 @@ public class TrackFactory {
 
             frame.getVertexColors().putAll(cumulativeVertexColors);
             frame.getEdgeColors().putAll(cumulativeEdgeColors);
+            frame.getTreeEdges().putAll(cumulativeTreeEdges);
+            frame.getNonTreeEdges().putAll(cumulativeNonTreeEdges);
+
             track.addFrame(frame);
         }
 
@@ -85,10 +97,32 @@ public class TrackFactory {
 
             for (Edge<String> badEdge : cycles) {
                 String edgeId = String.valueOf(badEdge.getId());
-                finalFrame.getEdgeColors().put(edgeId, "#e74c3c");
+                cumulativeNonTreeEdges.put(edgeId, true);
             }
+
+            finalFrame.getTreeEdges().putAll(cumulativeTreeEdges);
+            finalFrame.getNonTreeEdges().putAll(cumulativeNonTreeEdges);
+
             track.addFrame(finalFrame);
         }
+
+        // FINAŁOWA KLATKA: Podświetlanie struktury drzewa przeszukiwania
+        SearchAlgorithmFrame summaryFrame = new SearchAlgorithmFrame(algName + " finished. Highlighting search tree.");
+        summaryFrame.getVertexColors().putAll(cumulativeVertexColors);
+        summaryFrame.getEdgeColors().putAll(cumulativeEdgeColors);
+
+        for (String treeEdgeId : cumulativeTreeEdges.keySet()) {
+            summaryFrame.markAsTreeEdge(treeEdgeId);
+        }
+
+        for (Edge<String> e : graph.getEdges()) {
+            String edgeId = String.valueOf(e.getId());
+            if (!cumulativeTreeEdges.containsKey(edgeId)) {
+                summaryFrame.markAsNonTreeEdge(edgeId);
+            }
+        }
+
+        track.addFrame(summaryFrame);
 
         return track;
     }
@@ -96,7 +130,6 @@ public class TrackFactory {
     public static AlgorithmTrack buildDijkstraTrack(pl.edu.uj.discretecalculator.algorithm.DijkstraAlgorithmResult<String> result, Graph<String> graph) {
         AlgorithmTrack track = new AlgorithmTrack();
 
-        // 1. Znajdujemy maksymalny osiągalny dystans dla gradientu
         double maxDist = 0.0;
         for (Double d : result.getFinalDistances().values()) {
             if (d != Double.POSITIVE_INFINITY && d > maxDist) {
@@ -104,7 +137,6 @@ public class TrackFactory {
             }
         }
 
-        // 2. Budujemy klatki, podając im wyliczone maksimum
         for (var step : result.getHistory()) {
             String desc = "";
             String vId = step.activeNode != null ? step.activeNode.getValue() : null;
@@ -129,7 +161,6 @@ public class TrackFactory {
     public static AlgorithmTrack buildBellmanFordTrack(pl.edu.uj.discretecalculator.algorithm.BellmanFordResult<String> result, Graph<String> graph) {
         AlgorithmTrack track = new AlgorithmTrack();
 
-        // 1. Znajdujemy maksymalny osiągalny dystans dla gradientu
         double maxDist = 0.0;
         for (Double d : result.getFinalDistances().values()) {
             if (d != Double.POSITIVE_INFINITY && d > maxDist) {
@@ -137,8 +168,27 @@ public class TrackFactory {
             }
         }
 
-        // 2. Budujemy klatki
-        for (var step : result.getHistory()) {
+        // Pobieramy całą listę, żeby móc przewidywać kolejne kroki
+        var history = result.getHistory();
+
+        for (int i = 0; i < history.size(); i++) {
+            var step = history.get(i);
+
+            // >>> NOWOŚĆ: Inteligentne filtrowanie pustych klatek <<<
+            if (step.phase == pl.edu.uj.discretecalculator.algorithm.BellmanFordResult.Phase.CHECK_EDGE) {
+                boolean willUpdate = false;
+                // Sprawdzamy, czy następny krok to udana relaksacja tej samej krawędzi
+                if (i + 1 < history.size() && history.get(i + 1).phase == pl.edu.uj.discretecalculator.algorithm.BellmanFordResult.Phase.UPDATE_DISTANCE) {
+                    willUpdate = true;
+                }
+
+                // Jeśli sprawdzenie krawędzi nie wnosi nic do grafu (nie skraca dystansu),
+                // całkowicie POMIJAMY TĘ KLATKĘ, żeby nie zanudzić użytkownika.
+                if (!willUpdate) {
+                    continue;
+                }
+            }
+
             String desc = "";
             String vId = step.activeNode != null ? step.activeNode.getValue() : null;
             String eId = step.activeEdge != null ? String.valueOf(step.activeEdge.getId()) : null;
@@ -150,7 +200,7 @@ public class TrackFactory {
 
             switch (step.phase) {
                 case START_ITERATION -> desc = "Starting iteration #" + step.iteration + " over all edges.";
-                case CHECK_EDGE -> desc = "Checking edge toward node [" + vId + "] (iteration " + step.iteration + ").";
+                case CHECK_EDGE -> desc = "Found shorter path via edge toward node [" + vId + "]. Relaxing...";
                 case UPDATE_DISTANCE -> desc = "Iteration " + step.iteration + ": distance to [" + vId + "] relaxed.";
                 case NEGATIVE_CYCLE_FOUND -> desc = "WARNING: Negative-weight cycle detected! Algorithm aborted.";
             }
@@ -168,7 +218,6 @@ public class TrackFactory {
             String vId = step.activeNode != null ? step.activeNode.getValue() : null;
             String eId = step.activeEdge != null ? String.valueOf(step.activeEdge.getId()) : null;
 
-            // Przepakowanie danych dla GUI (Stringi zamiast obiektów Vertex)
             Map<String, Integer> guiIndices = new HashMap<>();
             for (var entry : step.indicesSnapshot.entrySet()) guiIndices.put(entry.getKey().getValue(), entry.getValue());
 
@@ -185,7 +234,6 @@ public class TrackFactory {
                 guiScc.put(entry.getKey(), compList);
             }
 
-            // Generowanie czytelnych opisów klatek
             switch (step.phase) {
                 case VISIT_NODE -> desc = "Visiting node [" + vId + "]. Index assigned and pushed onto stack.";
                 case CHECK_EDGE -> desc = "Examining neighbor from node [" + vId + "].";
@@ -269,11 +317,12 @@ public class TrackFactory {
                 case CYCLE_DETECTED -> desc = "ERROR: No node with in-degree 0 remaining. Cycle detected!";
             }
 
-            // Używamy nowej klatki TopoFrame!
             track.addFrame(new TopoFrame(desc, step.phase.name(), vId, eId, guiInDegrees, guiSorted));
         }
         return track;
     }
+
+    // --- ALGORYTMY KOLOROWANIA (Z UŻYCIEM DYNAMICZNEGO GENERATORA) ---
 
     public static AlgorithmTrack buildGreedyColoringTrack(pl.edu.uj.discretecalculator.algorithm.GreedyVertexColoringResult<String> result, Graph<String> graph) {
         AlgorithmTrack track = new AlgorithmTrack();
@@ -285,13 +334,13 @@ public class TrackFactory {
             frame.setActiveVertexId(String.valueOf(step.activeNode.getId()));
 
             for (var entry : step.colorsSnapshot.entrySet()) {
-                String hex = COLOR_PALETTE[(entry.getValue() - 1) % COLOR_PALETTE.length];
-                frame.getVertexColors().put(String.valueOf(entry.getKey().getId()), hex);
+                String hexColor = getColorHexForIndex(entry.getValue());
+                frame.getVertexColors().put(String.valueOf(entry.getKey().getId()), hexColor);
             }
             track.addFrame(frame);
         }
 
-        ColoringFrame finalFrame = new ColoringFrame("Done! Chromatic number upper bound: " + result.getChromaticUpperBound());
+        ColoringFrame finalFrame = new ColoringFrame("Chromatic number upper bound: " + result.getChromaticUpperBound());
         if (!track.getFrames().isEmpty()) {
             finalFrame.getVertexColors().putAll(((ColoringFrame) track.getFrames().get(track.getFrames().size() - 1)).getVertexColors());
         }
@@ -299,32 +348,23 @@ public class TrackFactory {
         return track;
     }
 
-    // W TrackFactory.java
-
     public static AlgorithmTrack buildGreedyEdgeColoringTrack(pl.edu.uj.discretecalculator.algorithm.GreedyEdgeColoringResult<String> result, Graph<String> graph) {
         AlgorithmTrack track = new AlgorithmTrack();
         track.addFrame(new ColoringFrame("Greedy Edge Coloring started"));
 
-        // Trzymamy "bieżący" stan kolorów poza snapshotami algorytmu
         Map<String, String> cumulativeColors = new HashMap<>();
 
         for (var step : result.getHistory()) {
             String numericEdgeId = String.valueOf(step.activeEdge.getId());
-            String hexColor = COLOR_PALETTE[(step.assignedColor - 1) % COLOR_PALETTE.length];
+            String hexColor = getColorHexForIndex(step.assignedColor);
 
             String desc = "Edge [" + numericEdgeId + "] assigned color: " + step.assignedColor;
             ColoringFrame frame = new ColoringFrame(desc);
 
-            // 1. Zaznaczamy krawędź jako aktywną (będzie pogrubiona)
             frame.setActiveEdgeId(numericEdgeId);
-
-            // 2. Wgrywamy WSZYSTKIE poprzednie kolory do klatki
             frame.getEdgeColors().putAll(cumulativeColors);
-
-            // 3. JAWNIE dodajemy NOWY kolor do TEJ klatki (nawet jeśli snapshot tego nie zrobił synchronicznie)
             frame.getEdgeColors().put(numericEdgeId, hexColor);
 
-            // Aktualizujemy nasz skumulowany stan dla następnych klatek
             cumulativeColors.put(numericEdgeId, hexColor);
 
             track.addFrame(frame);
@@ -342,40 +382,34 @@ public class TrackFactory {
         AlgorithmTrack track = new AlgorithmTrack();
 
         Map<String, String> cumulativeColors = new HashMap<>();
-        int currentK = 0; // Do śledzenia, czy zwiększyliśmy limit kolorów
+        int currentK = 0;
 
         for (var step : result.getHistory()) {
             String vId = String.valueOf(step.activeNode.getId());
 
-            // Opcjonalna klatka informacyjna, gdy algorytm zwiększa 'k'
             if (step.maxColorsAllowed > currentK) {
                 currentK = step.maxColorsAllowed;
                 track.addFrame(new ColoringFrame(">>> INCREASING COLOR LIMIT TO: " + currentK + " <<<"));
             }
 
             if (step.phase == pl.edu.uj.discretecalculator.algorithm.BacktrackingAlgorithmForVerticesResult.Phase.TRY_COLOR) {
-                // --- FAZA 1: PRÓBA KOLORU ---
-                String hexColor = COLOR_PALETTE[(step.color - 1) % COLOR_PALETTE.length];
+                String hexColor = getColorHexForIndex(step.color);
                 ColoringFrame frame = new ColoringFrame("Trying color " + step.color + " for node [" + vId + "] (limit k=" + step.maxColorsAllowed + ")");
-                frame.setActiveVertexId(vId); // Pogrubiamy
+                frame.setActiveVertexId(vId);
 
                 cumulativeColors.put(vId, hexColor);
                 frame.getVertexColors().putAll(cumulativeColors);
                 track.addFrame(frame);
 
             } else {
-                // --- FAZA 2: ŚLEPY ZAUŁEK I COFNIĘCIE ---
-                // Tworzymy klatkę "ALARMOWĄ", żeby uwydatnić porażkę
                 ColoringFrame failFrame = new ColoringFrame("Dead end! No valid color available. Backtracking from node [" + vId + "].");
-                failFrame.setActiveVertexId(vId); // Utrzymujemy pogrubienie
+                failFrame.setActiveVertexId(vId);
 
-                // Zmieniamy kolor na bordowy/alarmowy, żeby pokazać konflikt!
                 Map<String, String> alertColors = new HashMap<>(cumulativeColors);
-                alertColors.put(vId, "#8B0000"); // Ciemna czerwień oznaczająca błąd
+                alertColors.put(vId, "#8B0000");
                 failFrame.getVertexColors().putAll(alertColors);
                 track.addFrame(failFrame);
 
-                // Fizycznie usuwamy kolor z naszej trwałej pamięci
                 cumulativeColors.remove(vId);
             }
         }
@@ -396,34 +430,29 @@ public class TrackFactory {
         for (var step : result.getHistory()) {
             String numericEdgeId = String.valueOf(step.activeEdge.getId());
 
-            // Opcjonalna klatka informacyjna przy zwiększeniu limitu
             if (step.maxColorsAllowed > currentK) {
                 currentK = step.maxColorsAllowed;
                 track.addFrame(new ColoringFrame(">>> INCREASING EDGE COLOR LIMIT TO: " + currentK + " <<<"));
             }
 
             if (step.phase == pl.edu.uj.discretecalculator.algorithm.BacktrackingAlgorithmForEdgesResult.Phase.TRY_COLOR) {
-                // --- FAZA 1: PRÓBA KOLORU ---
-                String hexColor = COLOR_PALETTE[(step.color - 1) % COLOR_PALETTE.length];
+                String hexColor = getColorHexForIndex(step.color);
                 ColoringFrame frame = new ColoringFrame("Trying color " + step.color + " for edge [" + numericEdgeId + "] (limit k=" + step.maxColorsAllowed + ")");
-                frame.setActiveEdgeId(numericEdgeId); // Pogrubiamy
+                frame.setActiveEdgeId(numericEdgeId);
 
                 cumulativeColors.put(numericEdgeId, hexColor);
                 frame.getEdgeColors().putAll(cumulativeColors);
                 track.addFrame(frame);
 
             } else {
-                // --- FAZA 2: ŚLEPY ZAUŁEK I COFNIĘCIE ---
                 ColoringFrame failFrame = new ColoringFrame("Dead end! Backtracking from edge [" + numericEdgeId + "].");
-                failFrame.setActiveEdgeId(numericEdgeId); // Utrzymujemy pogrubienie
+                failFrame.setActiveEdgeId(numericEdgeId);
 
-                // Zmieniamy kolor na bordowy/alarmowy
                 Map<String, String> alertColors = new HashMap<>(cumulativeColors);
                 alertColors.put(numericEdgeId, "#8B0000");
                 failFrame.getEdgeColors().putAll(alertColors);
                 track.addFrame(failFrame);
 
-                // Usuwamy kolor z naszej trwałej pamięci
                 cumulativeColors.remove(numericEdgeId);
             }
         }

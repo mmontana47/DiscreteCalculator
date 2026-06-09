@@ -112,6 +112,7 @@
                                     <Button text="Complete Kn" onAction="#onBuildComplete" prefWidth="110.0"/>
                                     <Button text="Bipartite Kn,m" onAction="#onBuildBipartite" prefWidth="120.0"/>
                                     <Button text="Random tree Tn" onAction="#onBuildTree" prefWidth="125.0"/>
+                                    <Button text="Line Graph" onAction="#onConvertToLineGraph"/>
                                 </items>
                                 <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
                             </ToolBar>
@@ -286,17 +287,30 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <ComboBox fx:id="speedComboBox" promptText="Speed" prefHeight="22.0" prefWidth="60.0" style="-fx-font-size: 11px;"/>
-                <Label fx:id ="stepCounterLabel" text=""/>
+                <HBox alignment="CENTER" spacing="5">
+                    <Label text="Speed:" style="-fx-font-size: 11px; -fx-text-fill: gray;"/>
+                    <Slider fx:id="speedSlider" min="1.0" max="50.0" value="1.0" prefWidth="80.0">
+                        <tooltip><Tooltip text="Adjust animation speed"/></tooltip>
+                    </Slider>
+                    <Label fx:id="speedLabel" text="1.0x" prefWidth="40.0" style="-fx-font-size: 11px; -fx-font-weight: bold;"/>
+                </HBox>
+
+                <Separator orientation="VERTICAL"/>
+
+                <Label fx:id="stepCounterLabel" text="" prefWidth="80.0" alignment="CENTER"/>
+
                 <HBox styleClass="animation-bar" spacing="2" alignment="CENTER">
                     <Button prefHeight="22.0" prefWidth="32.0" text="⏪" onAction="#onTestStepBackward" style="-fx-font-size: 12px;">
                         <tooltip><Tooltip text="Step Backward"/></tooltip>
+                    </Button>
+                    <Button prefHeight="22.0" prefWidth="32.0" text="⏴" onAction="#onTestPlayBackward" style="-fx-font-size: 12px;">
+                        <tooltip><Tooltip text="Play Backward"/></tooltip>
                     </Button>
                     <Button prefHeight="22.0" prefWidth="32.0" text="⏸" onAction="#onTestPause" style="-fx-font-size: 12px;">
                         <tooltip><Tooltip text="Pause"/></tooltip>
                     </Button>
                     <Button prefHeight="22.0" prefWidth="32.0" text="▶" onAction="#onTestPlay" style="-fx-font-size: 12px;">
-                        <tooltip><Tooltip text="Play"/></tooltip>
+                        <tooltip><Tooltip text="Play Forward"/></tooltip>
                     </Button>
                     <Button prefHeight="22.0" prefWidth="32.0" text="⏭" onAction="#onTestStepForward" style="-fx-font-size: 12px;">
                         <tooltip><Tooltip text="Step Forward"/></tooltip>
