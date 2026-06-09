@@ -421,7 +421,11 @@ public class MainController {
 
             if(((!canvas.isDirected() && !canvas.edgeExists(s,t))||
                     (canvas.isDirected() && !canvas.edgeExistsDirected(s,t)))) {
-                history.execute(new AddEdgeCommand(canvas, s, t, this::onEdgeClick));
+                AddEdgeCommand cmd = new AddEdgeCommand(canvas, s, t, this::onEdgeClick);
+                history.execute(cmd);
+                if (weightedCheckbox.isSelected()) {
+                    cmd.getEdge().setWeightText("1.0");
+                }
                 kickLiveLayout(1);
             }
         } else if (tokens.length == 3) {
@@ -592,7 +596,11 @@ public class MainController {
                         (!canvas.isDirected() && canvas.edgeExists(source, vertex))) {
                     clearSelection();
                 } else {
-                    runCommand(new AddEdgeCommand(canvas, source, vertex, this::onEdgeClick));
+                    AddEdgeCommand cmd = new AddEdgeCommand(canvas, source, vertex, this::onEdgeClick);
+                    runCommand(cmd);
+                    if (weightedCheckbox.isSelected()) {
+                        cmd.getEdge().setWeightText("1.0");
+                    }
                     clearSelection();
                     kickLiveLayout(1);
                 }
@@ -1350,21 +1358,6 @@ public class MainController {
             player.loadTrack(generatedTrack);
             setAnimationModeUI(true);
             player.play();
-        }
-    }
-
-    private static class SpeedOption {
-        final String label;
-        final double multiplier;
-
-        SpeedOption(String label, double multiplier) {
-            this.label = label;
-            this.multiplier = multiplier;
-        }
-
-        @Override
-        public String toString() {
-            return label;
         }
     }
 

@@ -288,7 +288,7 @@
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <HBox alignment="CENTER" spacing="5">
-                    <Label text="Speed:" style="-fx-font-size: 11px; -fx-text-fill: gray;"/>
+                    <Label text="Speed:" style="-fx-font-size: 11px; -fx-text-fill: ALICEBLUE;"/>
                     <Slider fx:id="speedSlider" min="1.0" max="50.0" value="1.0" prefWidth="80.0">
                         <tooltip><Tooltip text="Adjust animation speed"/></tooltip>
                     </Slider>
