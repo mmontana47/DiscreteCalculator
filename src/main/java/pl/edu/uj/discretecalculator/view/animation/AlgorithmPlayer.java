@@ -14,6 +14,7 @@ public class AlgorithmPlayer {
     private int currentIndex = -1;
     private final Timeline metronome;
     private final double defaultSpeedMs = AppConfig.get().animation.defaultSpeedMs;
+    private Runnable onStepChanged;
 
     public AlgorithmPlayer(CanvasManager canvas, DoubleProperty currentSpeedMs) {
         this.canvas = canvas;
@@ -41,6 +42,7 @@ public class AlgorithmPlayer {
         this.currentIndex = -1;
         this.metronome.stop();
         canvas.resetAllStyles();
+        if(onStepChanged != null) {onStepChanged.run();}
     }
 
     public void play() {
@@ -62,12 +64,14 @@ public class AlgorithmPlayer {
         }
         currentIndex++;
         applyFrame(currentTrack.getFrames().get(currentIndex));
+        if(onStepChanged!=null) onStepChanged.run();
     }
 
     public void stepBackward() {
         if (currentTrack == null || currentIndex <= 0) return;
         currentIndex--;
         rebuildStateToCurrentIndex();
+        if(onStepChanged!=null) onStepChanged.run();
     }
 
     private void rebuildStateToCurrentIndex() {
@@ -81,4 +85,10 @@ public class AlgorithmPlayer {
         frame.apply(canvas);
 
     }
+
+    public void setOnStepChanged(Runnable onStepChanged) { this.onStepChanged = onStepChanged; }
+    public int getCurrentStep() {return currentIndex+1;}
+    public int getNumberOfSteps() {return (currentTrack!=null ? currentTrack.size() : 0);}
+
+
 }

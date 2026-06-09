@@ -93,6 +93,8 @@ public class MainController {
     @FXML private ToggleButton deleteMode;
     @FXML private ToggleButton editWeightMode;
     @FXML private Button resetWeightsBtn;
+    @FXML private Label stepCounterLabel;
+
 
 
     @FXML
@@ -179,6 +181,7 @@ public class MainController {
                             else {
                                 onResetView();
                                 onStopAnimation();
+                                updateStepLabel();
                             }
                         });
                 newValue.getAccelerators().put(
@@ -234,6 +237,7 @@ public class MainController {
                 }
             }
         });
+
     }
 
     @FXML private void onSelectLightTheme() { applyTheme(Theme.LIGHT); }
@@ -249,7 +253,7 @@ public class MainController {
 
     @FXML
     private void onResetView() {
-        if (player != null) player.pause();
+        if (player != null) {player.pause(); updateStepLabel();}
         clearSelection();
         resetCanvasStyles();
     }
@@ -835,12 +839,14 @@ public class MainController {
     @FXML
     private void onStopAnimation() {
         if (player != null) {
-            player.pause();
+            //player.pause();
+            player.loadTrack(null);
             // Możemy ewentualnie zresetować track: player.loadTrack(null);
         }
         resetCanvasStyles();
         clearSelection();
         setAnimationModeUI(false); // Rozmrażamy interfejs!
+        updateStepLabel();
     }
     // ──────────────────────────────────────────────────────────────────────────
 
@@ -1011,7 +1017,7 @@ public class MainController {
 
     @FXML
     private void onRunGreedyColoring() {
-        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
+        ensurePlayer();
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
@@ -1028,7 +1034,7 @@ public class MainController {
 
     @FXML
     private void onRunGreedyEdgeColoring() {
-        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
+        ensurePlayer();
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getEdges().isEmpty()) return;
@@ -1065,7 +1071,7 @@ public class MainController {
 
     @FXML
     private void onRunBacktrackingVertexColoring() {
-        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
+        ensurePlayer();
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
@@ -1085,7 +1091,7 @@ public class MainController {
 
     @FXML
     private void onRunBacktrackingEdgeColoring() {
-        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
+        ensurePlayer();
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getEdges().isEmpty()) return;
@@ -1105,7 +1111,7 @@ public class MainController {
 
     @FXML
     private void onRunSCC() {
-        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
+        ensurePlayer();
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
@@ -1121,7 +1127,7 @@ public class MainController {
 
     @FXML
     private void onRunTopoSort() {
-        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
+        ensurePlayer();
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
@@ -1143,7 +1149,7 @@ public class MainController {
 
     @FXML
     private void onRunKosaraju() {
-        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
+        ensurePlayer();
         clearSelection();
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
@@ -1222,7 +1228,7 @@ public class MainController {
      * zależnych od wierzchołka startowego.
      */
     private void runAndAnimateAlgorithm(VertexDrawn startVisualNode, String algorithmType) {
-        if (player == null) player = new AlgorithmPlayer(canvas, currentSpeedMs);
+        ensurePlayer();
 
         Graph<String> graph = buildMathematicalGraph();
 
@@ -1276,6 +1282,27 @@ public class MainController {
         @Override
         public String toString() {
             return label;
+        }
+    }
+
+    private void ensurePlayer() {
+        if (player == null) {
+            player = new AlgorithmPlayer(canvas, currentSpeedMs);
+            player.setOnStepChanged(this::updateStepLabel);
+        }
+    }
+
+    private void updateStepLabel(){
+        int num = player.getCurrentStep();
+        int total = player.getNumberOfSteps();
+        if(total==0){
+            stepCounterLabel.setVisible(false);
+            stepCounterLabel.setManaged(false);
+        }
+        else{
+            stepCounterLabel.setVisible(true);
+            stepCounterLabel.setManaged(true);
+            stepCounterLabel.setText("Step: " + num + " / " + total);
         }
     }
 }

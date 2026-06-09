@@ -21,7 +21,6 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.ComboBox?>
 
 <BorderPane prefHeight="600.0" prefWidth="900.0"
@@ -190,6 +189,13 @@
         <StackPane>
             <Pane fx:id="graphPane" BorderPane.alignment="CENTER"/>
 
+            <HBox visible="false" managed="false">
+                <ToggleButton text="Run BFS" toggleGroup="$modeGroup"/>
+                <ToggleButton text="Run DFS" toggleGroup="$modeGroup"/>
+                <ToggleButton text="Run Dijkstra" toggleGroup="$modeGroup"/>
+                <ToggleButton text="Run Bellman-Ford" toggleGroup="$modeGroup"/>
+            </HBox>
+
             <VBox fx:id="inputPanel"
                   styleClass="input-panel"
                   prefWidth="150" maxWidth="150"
@@ -245,7 +251,7 @@
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <ComboBox fx:id="speedComboBox" promptText="Speed" prefHeight="22.0" prefWidth="60.0" style="-fx-font-size: 11px;"/>
-
+                <Label fx:id ="stepCounterLabel" text=""/>
                 <HBox styleClass="animation-bar" spacing="2" alignment="CENTER">
                     <Button prefHeight="22.0" prefWidth="32.0" text="⏪" onAction="#onTestStepBackward" style="-fx-font-size: 12px;"/>
                     <Button prefHeight="22.0" prefWidth="32.0" text="⏸" onAction="#onTestPause" style="-fx-font-size: 12px;"/>
