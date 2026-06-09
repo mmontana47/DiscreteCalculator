@@ -442,8 +442,8 @@ public class MainController {
                 AddEdgeCommand cmd = new AddEdgeCommand(canvas, s, t, this::onEdgeClick);
                 history.execute(cmd);
 
-                cmd.getEdge().setWeightText(String.valueOf(tokens[2]));
-                if(!weightedCheckbox.isSelected()) weightedCheckbox.setSelected(true);
+                cmd.getEdge().setWeightText(tokens[2]);
+                if(!weightedCheckbox.isSelected()) {weightedCheckbox.setSelected(true); setDefaultWeights();}
                 kickLiveLayout(1);
             }
         }
@@ -765,31 +765,27 @@ public class MainController {
     private void onToggleWeighted() {
         boolean isWeighted = weightedCheckbox.isSelected();
         if (isWeighted) {
-            // Jeśli zaznaczono, dla każdej krawędzi bez wagi ustaw "1.0"
-            for (EdgeDrawn ed : canvas.getEdges()) {
-                if (ed.getWeightText() == null || ed.getWeightText().isEmpty()) {
-                    ed.setWeightText("1.0");
-                }
-            }
+            setDefaultWeights();
         }
     }
 
     @FXML
     private void onResetWeights() {
-        // Twardy, świadomy reset wszystkich wag do domyślnych wartości
         for (EdgeDrawn ed : canvas.getEdges()) {
             if (weightedCheckbox.isSelected()) {
-                // Jeśli wagi są włączone, resetujemy je do domyślnego "1.0"
-                // (Dzięki bindWeightVisibility w EdgeDrawn od razu się pojawią)
-                ed.setWeightText("1.0");
+                ed.setWeightText("1");
             } else {
-                // Jeśli wagi są wyłączone, po prostu czyścimy ich "pamięć" z powrotem do pustego pola
                 ed.setWeightText("");
             }
         }
+    }
 
-        // Zabezpieczenie: jeśli jesteś w trybie podglądu algorytmu, warto zaktualizować layout
-        kickLiveLayout(1);
+    private void setDefaultWeights() {
+        for (EdgeDrawn ed : canvas.getEdges()) {
+            if (ed.getWeightText() == null || ed.getWeightText().isEmpty()) {
+                ed.setWeightText("1");
+            }
+        }
     }
 
     private OptionalDouble promptForDouble(String title, String header, String var) {
@@ -1227,7 +1223,7 @@ public class MainController {
             Vertex<String> source = dictionary.get(ed.getSource().getVertexId());
             Vertex<String> target = dictionary.get(ed.getTarget().getVertexId());
 
-            double weight = 1.0;
+            double weight = 1;
             try {
                 if (ed.getWeightText() != null && !ed.getWeightText().isEmpty()) {
                     weight = Double.parseDouble(ed.getWeightText());
