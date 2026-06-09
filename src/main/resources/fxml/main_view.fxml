@@ -14,6 +14,7 @@
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
@@ -21,7 +22,6 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.ComboBox?>
 
 <BorderPane prefHeight="600.0" prefWidth="900.0"
@@ -41,9 +41,15 @@
                         <Tab text="File">
                             <ToolBar fx:id="fileToolBar" styleClass="ribbon-bar">
                                 <items>
-                                    <Button text="New"  onAction="#newGraph" prefWidth="80.0"/>
-                                    <Button text="Open" onAction="#onOpen" prefWidth="80.0"/>
-                                    <Button text="Save" onAction="#onSave" prefWidth="80.0"/>
+                                    <Button text="New" onAction="#newGraph" prefWidth="80.0">
+                                        <tooltip><Tooltip text="New Graph"/></tooltip>
+                                    </Button>
+                                    <Button text="Open" onAction="#onOpen" prefWidth="80.0">
+                                        <tooltip><Tooltip text="Open Graph"/></tooltip>
+                                    </Button>
+                                    <Button text="Save" onAction="#onSave" prefWidth="80.0">
+                                        <tooltip><Tooltip text="Save Graph"/></tooltip>
+                                    </Button>
                                     <Separator orientation="VERTICAL"/>
                                     <Button text="Exit" onAction="#onExit" prefWidth="80.0"/>
                                 </items>
@@ -54,16 +60,29 @@
                         <Tab fx:id="editGraphTab" text="Edit Graph">
                             <ToolBar styleClass="ribbon-bar">
                                 <items>
-                                    <ToggleButton fx:id="addVertexMode" text="Add Vertex" toggleGroup="$modeGroup" prefWidth="95.0"/>
-                                    <ToggleButton fx:id="addEdgeMode" text="Add Edge" toggleGroup="$modeGroup" prefWidth="95.0"/>
-                                    <ToggleButton fx:id="deleteMode" text="Delete" toggleGroup="$modeGroup" prefWidth="95.0"/>
-                                    <ToggleButton text="Move" toggleGroup="$modeGroup" prefWidth="95.0"/>
-                                    <ToggleButton text="Paint" toggleGroup="$modeGroup" prefWidth="80.0"/>
-                                    <ToggleButton fx:id="editWeightMode" text="Edit Weight" toggleGroup="$modeGroup" />
-                                    <ToggleButton text="Custom Renumber" toggleGroup="$modeGroup" prefWidth="140.0"/>
-
+                                    <ToggleButton fx:id="addVertexMode" text="Add Vertex" toggleGroup="$modeGroup" prefWidth="95.0">
+                                        <tooltip><Tooltip text="Add Vertex  [V]"/></tooltip>
+                                    </ToggleButton>
+                                    <ToggleButton fx:id="addEdgeMode" text="Add Edge" toggleGroup="$modeGroup" prefWidth="95.0">
+                                        <tooltip><Tooltip text="Add Edge  [E]"/></tooltip>
+                                    </ToggleButton>
+                                    <ToggleButton fx:id="deleteMode" text="Delete" toggleGroup="$modeGroup" prefWidth="95.0">
+                                        <tooltip><Tooltip text="Delete  [D]"/></tooltip>
+                                    </ToggleButton>
+                                    <ToggleButton text="Move" toggleGroup="$modeGroup" prefWidth="95.0">
+                                        <tooltip><Tooltip text="Move  [M]"/></tooltip>
+                                    </ToggleButton>
+                                    <ToggleButton text="Paint" toggleGroup="$modeGroup" prefWidth="80.0">
+                                        <tooltip><Tooltip text="Paint  [P]"/></tooltip>
+                                    </ToggleButton>
+                                    <ToggleButton fx:id="editWeightMode" text="Edit Weight" toggleGroup="$modeGroup">
+                                        <tooltip><Tooltip text="Click an edge to change its weight"/></tooltip>
+                                    </ToggleButton>
                                     <Separator orientation="VERTICAL"/>
 
+                                    <ToggleButton text="Custom Renumber" toggleGroup="$modeGroup" prefWidth="140.0">
+                                        <tooltip><Tooltip text="Click vertices in desired order to renumber them"/></tooltip>
+                                    </ToggleButton>
                                     <MenuButton text="Renumber">
                                         <items>
                                             <MenuItem text="By BFS Order" onAction="#onRenumberBFS"/>
@@ -75,9 +94,11 @@
 
                                     <Separator orientation="VERTICAL"/>
 
-                                    <ToggleButton text="Modify" onAction="#onToggleInputPanel" prefWidth="100.0"/>
+                                    <ToggleButton text="Modify" onAction="#onToggleInputPanel" prefWidth="100.0">
+                                        <tooltip><Tooltip text="Toggle Sidebar  [Ctrl+I]"/></tooltip>
+                                    </ToggleButton>
                                     <CheckBox fx:id="directedCheckbox" text="Directed" onAction="#onToggleDirected"/>
-                                    <CheckBox fx:id="weightedCheckbox" text="Weighted" onAction="#onToggleWeighted" />
+                                    <CheckBox fx:id="weightedCheckbox" text="Weighted" onAction="#onToggleWeighted"/>
                                     <Button fx:id="resetWeightsBtn" text="Reset Weights" onAction="#onResetWeights" prefWidth="110.0"/>
                                 </items>
                                 <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
@@ -92,6 +113,7 @@
                                     <Button text="Bipartite Kn,m" onAction="#onBuildBipartite" prefWidth="120.0"/>
                                     <Button text="Random tree Tn" onAction="#onBuildTree" prefWidth="125.0"/>
                                 </items>
+                                <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
                             </ToolBar>
                         </Tab>
 
@@ -129,11 +151,6 @@
                                             <MenuItem text="Topological Sort" onAction="#onRunTopoSort"/>
                                         </items>
                                     </MenuButton>
-                                    <MenuButton text="Miscellaneous" disable="true">
-                                        <items>
-                                            <MenuItem text="No algorithms yet" disable="true"/>
-                                        </items>
-                                    </MenuButton>
                                 </items>
                                 <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
                             </ToolBar>
@@ -150,23 +167,35 @@
                                     <Separator orientation="VERTICAL"/>
 
                                     <Button fx:id="resetViewItem" text="Reset View" onAction="#onResetView"
-                                            prefWidth="100.0"/>
+                                            prefWidth="100.0">
+                                        <tooltip><Tooltip text="Reset View  [Esc]"/></tooltip>
+                                    </Button>
 
                                     <Separator orientation="VERTICAL"/>
 
                                     <Label text="Zoom:"/>
                                     <Button fx:id="btnZoomIn" text="+" onAction="#OnZoomIn" prefWidth="40.0"
-                                            style="-fx-font-weight: bold;"/>
+                                            style="-fx-font-weight: bold;">
+                                        <tooltip><Tooltip text="Zoom In  [Ctrl+=]"/></tooltip>
+                                    </Button>
                                     <Button fx:id="btnZoomOut" text="-" onAction="#OnZoomOut" prefWidth="40.0"
-                                            style="-fx-font-weight: bold;"/>
-                                    <Button fx:id="btnResetZoom" text="R" onAction="#OnResetZoom" prefWidth="40.0"/>
+                                            style="-fx-font-weight: bold;">
+                                        <tooltip><Tooltip text="Zoom Out  [Ctrl+−]"/></tooltip>
+                                    </Button>
+                                    <Button fx:id="btnResetZoom" text="R" onAction="#OnResetZoom" prefWidth="40.0">
+                                        <tooltip><Tooltip text="Reset Zoom"/></tooltip>
+                                    </Button>
 
                                     <Separator orientation="VERTICAL"/>
 
                                     <Button fx:id="autoLayout" text="Auto Layout"
-                                            onAction="#onAutoLayout" prefWidth="110.0"/>
+                                            onAction="#onAutoLayout" prefWidth="110.0">
+                                        <tooltip><Tooltip text="Run spring layout (one shot)"/></tooltip>
+                                    </Button>
                                     <ToggleButton fx:id="liveLayout" text="Live Layout"
-                                                  onAction="#onToggleLiveLayout" prefWidth="110.0"/>
+                                                  onAction="#onToggleLiveLayout" prefWidth="110.0">
+                                        <tooltip><Tooltip text="Continuously rearrange graph with spring forces"/></tooltip>
+                                    </ToggleButton>
                                 </items>
                                 <padding><Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/></padding>
                             </ToolBar>
@@ -179,8 +208,12 @@
                     <padding>
                         <Insets top="2.0" right="10.0" />
                     </padding>
-                    <Button fx:id="undoItem" text="Undo" onAction="#onUndo" prefWidth="58.0"/>
-                    <Button fx:id="redoItem" text="Redo" onAction="#onRedo" prefWidth="58.0"/>
+                    <Button fx:id="undoItem" text="Undo" onAction="#onUndo" prefWidth="58.0">
+                        <tooltip><Tooltip text="Undo  [Ctrl+Z]"/></tooltip>
+                    </Button>
+                    <Button fx:id="redoItem" text="Redo" onAction="#onRedo" prefWidth="58.0">
+                        <tooltip><Tooltip text="Redo  [Ctrl+Y]"/></tooltip>
+                    </Button>
                 </HBox>
             </StackPane>
         </VBox>
@@ -189,6 +222,13 @@
     <center>
         <StackPane>
             <Pane fx:id="graphPane" BorderPane.alignment="CENTER"/>
+
+            <HBox visible="false" managed="false">
+                <ToggleButton text="Run BFS" toggleGroup="$modeGroup"/>
+                <ToggleButton text="Run DFS" toggleGroup="$modeGroup"/>
+                <ToggleButton text="Run Dijkstra" toggleGroup="$modeGroup"/>
+                <ToggleButton text="Run Bellman-Ford" toggleGroup="$modeGroup"/>
+            </HBox>
 
             <VBox fx:id="inputPanel"
                   styleClass="input-panel"
@@ -226,7 +266,9 @@
                 <HBox spacing="6" alignment="CENTER_LEFT">
                     <ColorPicker fx:id="colorPicker"
                                  maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                    <Button text="✕" onAction="#onResetAllColors" prefWidth="28"/>
+                    <Button text="✕" onAction="#onResetAllColors" prefWidth="28">
+                        <tooltip><Tooltip text="Reset all colors"/></tooltip>
+                    </Button>
                 </HBox>
             </VBox>
         </StackPane>
@@ -247,11 +289,21 @@
                 <ComboBox fx:id="speedComboBox" promptText="Speed" prefHeight="22.0" prefWidth="60.0" style="-fx-font-size: 11px;"/>
 
                 <HBox styleClass="animation-bar" spacing="2" alignment="CENTER">
-                    <Button prefHeight="22.0" prefWidth="32.0" text="⏪" onAction="#onTestStepBackward" style="-fx-font-size: 12px;"/>
-                    <Button prefHeight="22.0" prefWidth="32.0" text="⏸" onAction="#onTestPause" style="-fx-font-size: 12px;"/>
-                    <Button prefHeight="22.0" prefWidth="32.0" text="▶" onAction="#onTestPlay" style="-fx-font-size: 12px;"/>
-                    <Button prefHeight="22.0" prefWidth="32.0" text="⏭" onAction="#onTestStepForward" style="-fx-font-size: 12px;"/>
-                    <Button prefHeight="22.0" prefWidth="32.0" text="✖" onAction="#onStopAnimation" style="-fx-font-size: 12px; -fx-text-fill: red;"/>
+                    <Button prefHeight="22.0" prefWidth="32.0" text="⏪" onAction="#onTestStepBackward" style="-fx-font-size: 12px;">
+                        <tooltip><Tooltip text="Step Backward"/></tooltip>
+                    </Button>
+                    <Button prefHeight="22.0" prefWidth="32.0" text="⏸" onAction="#onTestPause" style="-fx-font-size: 12px;">
+                        <tooltip><Tooltip text="Pause"/></tooltip>
+                    </Button>
+                    <Button prefHeight="22.0" prefWidth="32.0" text="▶" onAction="#onTestPlay" style="-fx-font-size: 12px;">
+                        <tooltip><Tooltip text="Play"/></tooltip>
+                    </Button>
+                    <Button prefHeight="22.0" prefWidth="32.0" text="⏭" onAction="#onTestStepForward" style="-fx-font-size: 12px;">
+                        <tooltip><Tooltip text="Step Forward"/></tooltip>
+                    </Button>
+                    <Button prefHeight="22.0" prefWidth="32.0" text="✖" onAction="#onStopAnimation" style="-fx-font-size: 12px; -fx-text-fill: red;">
+                        <tooltip><Tooltip text="Stop Animation"/></tooltip>
+                    </Button>
                 </HBox>
 
                 <Separator orientation="VERTICAL"/>
