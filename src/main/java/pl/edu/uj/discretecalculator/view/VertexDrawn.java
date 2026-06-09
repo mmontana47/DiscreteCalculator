@@ -45,8 +45,8 @@ public class VertexDrawn extends StackPane {
         this.getStyleClass().add("vertex");
         this.circle.getStyleClass().add("vertex-circle");
         this.label.getStyleClass().add("vertex-label");
-        //this.distanceLabel.getStyleClass().add("distance-label"); //DODAC!
-
+        this.distanceLabel.getStyleClass().add("distance-label");
+        this.distanceLabel.setVisible(false);
 
         this.getChildren().addAll(circle, label, distanceLabel);
         this.setLayoutX(x - StyleSettings.get().getVertexRadius());
@@ -114,7 +114,9 @@ public class VertexDrawn extends StackPane {
     }
 
     public void setBottomLabelText(String text) {
-        distanceLabel.setText(text == null ? "" : text);
+        boolean hasText = text != null && !text.isEmpty();
+        distanceLabel.setText(hasText ? text : "");
+        distanceLabel.setVisible(hasText);
     }
 
     public void setX(double x) {
