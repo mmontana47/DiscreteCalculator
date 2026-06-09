@@ -13,7 +13,6 @@ public class ColoringFrame implements AlgorithmFrame {
     private final Map<String, String> vertexColors = new HashMap<>();
     private final Map<String, String> edgeColors = new HashMap<>();
 
-    // wskazniki dla klatki, co robi algorytm
     private String activeVertexId = null;
     private String activeEdgeId = null;
 
@@ -39,26 +38,23 @@ public class ColoringFrame implements AlgorithmFrame {
             if (vertexColors.containsKey(vId)) {
                 vd.setFillColor(vertexColors.get(vId));
             } else {
-                vd.setFillColor("#BDC3C7");
+                vd.setFillColor("#BDC3C7"); // Szary dla nieodwiedzonych
             }
             if (vId.equals(activeVertexId)) vd.select();
         }
 
-        java.util.List<EdgeDrawn> drawnEdges = canvas.getEdges();
-        for (int i = 0; i < drawnEdges.size(); i++) {
-            EdgeDrawn ed = drawnEdges.get(i);
-            String numericId = String.valueOf(i);
+        for (EdgeDrawn ed : canvas.getEdges()) {
+            String realEdgeId = ed.getEdgeId();
 
-            // wlasciwy kolor
-            if (edgeColors.containsKey(numericId)) {
-                ed.setStrokeColor(edgeColors.get(numericId));
+            if (edgeColors.containsKey(realEdgeId)) {
+                ed.setStrokeColor(edgeColors.get(realEdgeId));
             } else {
-                ed.setStrokeColor("#BDC3C7"); //szare - oczekujace
+                ed.setStrokeColor("#BDC3C7"); // Szary dla oczekujących
             }
 
-            //TODO: cos mi nie działa to pogrubianie - nie jest konieczne, ale może się tym zajmiemy
-            //ed.setActive(numericId.equals(activeEdgeId));
+
+            boolean isActiveEdge = (activeEdgeId != null && activeEdgeId.equals(realEdgeId));
+            ed.setActive(isActiveEdge);
         }
     }
-
 }

@@ -5,7 +5,6 @@ import pl.edu.uj.discretecalculator.exception.BellmanFordAlgorithmException;
 import pl.edu.uj.discretecalculator.model.graph.*;
 
 public class BellmanFordAlgorithm<V> implements AlgorithmicInterface<V, BellmanFordResult<V>> {
-    //usunalem result jako pole klasy - lepiej to zwracać startem jak we wszystkim innym
     private final Vertex<V> startNode;
 
     public BellmanFordAlgorithm(Vertex<V> startNode) {
@@ -54,11 +53,15 @@ public class BellmanFordAlgorithm<V> implements AlgorithmicInterface<V, BellmanF
             WeightedEdge<V> edge = (WeightedEdge<V>) e;
 
             if (hasNegativeCycle(edge, edge.getSource(), edge.getTarget(), distances, parents, result)) {
-                throw new BellmanFordAlgorithmException("Wykryto ujemny cykl osiągalny ze źródła!");
+                result.getFinalDistances().putAll(distances);
+                result.getFinalParents().putAll(parents);
+                return result;
             }
             if (!(edge instanceof WeightedDirectedEdge<?>)) {
                 if (hasNegativeCycle(edge, edge.getTarget(), edge.getSource(), distances, parents, result)) {
-                    throw new BellmanFordAlgorithmException("Wykryto ujemny cykl osiągalny ze źródła!");
+                    result.getFinalDistances().putAll(distances);
+                    result.getFinalParents().putAll(parents);
+                    return result;
                 }
             }
         }
@@ -93,7 +96,6 @@ public class BellmanFordAlgorithm<V> implements AlgorithmicInterface<V, BellmanF
     private boolean hasNegativeCycle(WeightedEdge<V> edge, Vertex<V> source, Vertex<V> target,
                                      Map<Vertex<V>, Double> distances, Map<Vertex<V>, Vertex<V>> parents, BellmanFordResult<V> result) {
         if (distances.get(source) != Double.POSITIVE_INFINITY && distances.get(source) + edge.getWeight() < distances.get(target)) {
-            // zapisujemy przed rzuceniem wyjatku, żeby to było widać w animacji
             result.addStep(new BellmanFordResult.BellmanFordStep<>(
                     BellmanFordResult.Phase.NEGATIVE_CYCLE_FOUND, -1, edge, target, distances, parents));
             return true;

@@ -200,7 +200,6 @@ public class EdgeDrawn extends Group {
     public void highlightAsNonTreeEdge() {
         curve.pseudoClassStateChanged(CYCLE_EDGE, true);
         curve.pseudoClassStateChanged(TREE_EDGE, false);
-        // Jasnoszare, cienkie krawędzie (pozostałe)
         curve.setStyle("-fx-stroke: #D3D3D3; -fx-stroke-width: 1.5;");
         arrowHead.setStyle("-fx-fill: #D3D3D3; -fx-stroke: #D3D3D3;");
     }
@@ -225,7 +224,6 @@ public class EdgeDrawn extends Group {
         curve.pseudoClassStateChanged(TREE_EDGE, false);
         curve.pseudoClassStateChanged(CYCLE_EDGE, false);
         applyStroke(null);
-        // WAŻNE: Zostawiliśmy to zakomentowane, by nie niszczyć wag!
         //setWeightText(null);
         setActive(false);
     }

@@ -22,16 +22,15 @@ public class GreedyEdgeColoring<V> implements AlgorithmicInterface<V, GreedyEdge
             // dodałem lokalne palety użytych kolorów
             Set<Integer> neighborColors = new HashSet<>();
 
-            //logika sie zmieni dla grafow skierowanych (!).
-            for (Edge<V> e1 : graph.getIncidentEdges(edge.getSource())) {
+            // logika sie zmieni dla grafow skierowanych (!).
+            for (Edge<V> e1 : graph.getEdges()) {
                 if (!e1.equals(edge) && edgeColors.containsKey(e1)) {
-                    neighborColors.add(edgeColors.get(e1));
-                }
-            }
-
-            for (Edge<V> e1 : graph.getIncidentEdges(edge.getTarget())) {
-                if (!e1.equals(edge) && edgeColors.containsKey(e1)) {
-                    neighborColors.add(edgeColors.get(e1));
+                    if (e1.getSource().equals(edge.getSource()) ||
+                            e1.getSource().equals(edge.getTarget()) ||
+                            e1.getTarget().equals(edge.getSource()) ||
+                            e1.getTarget().equals(edge.getTarget())) {
+                        neighborColors.add(edgeColors.get(e1));
+                    }
                 }
             }
 
@@ -40,7 +39,7 @@ public class GreedyEdgeColoring<V> implements AlgorithmicInterface<V, GreedyEdge
                 colorToAssign++;
             }
 
-            //apliikowanie i update
+            // apliikowanie i update
             edgeColors.put(edge, colorToAssign);
             maxColorUsed = Math.max(maxColorUsed, colorToAssign);
 

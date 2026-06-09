@@ -49,10 +49,15 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlg
 
             for (Edge<V> e : graph.getIncidentEdges(current)) {
                 WeightedEdge<V> edge = (WeightedEdge<V>) e;
-                Vertex<V> neighbor = edge.getTarget().equals(current) ? edge.getSource() : edge.getTarget();
 
-                // jesli jest skierowany i idziemy w złą stronę - continue
-                if (edge instanceof WeightedDirectedEdge<?> && edge.getTarget().equals(current)) continue;
+                // Logika dla grafów skierowanych/nieskierowanych
+                // Jeśli graf jest skierowany i krawędź nie wychodzi z obecnego wierzchołka, pomijamy
+                if (edge instanceof WeightedDirectedEdge<?> && !edge.getSource().equals(current)) {
+                    continue;
+                }
+
+                // Dla nieskierowanego lub poprawnego skierowanego wyznaczamy sąsiada
+                Vertex<V> neighbor = edge.getSource().equals(current) ? edge.getTarget() : edge.getSource();
 
                 if (visited.contains(neighbor)) continue;
 

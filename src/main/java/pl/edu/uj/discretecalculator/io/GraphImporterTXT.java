@@ -52,8 +52,8 @@ public class GraphImporterTXT {
                 if (line == null || line.trim().isEmpty()) continue;
 
                 String[] edgeData = line.trim().split("\\s+");
-                int u = Integer.parseInt(edgeData[0]);
-                int v = Integer.parseInt(edgeData[1]);
+                int u = Integer.parseInt(edgeData[0])-1;
+                int v = Integer.parseInt(edgeData[1])-1;
 
                 if (u >= 0 && u < n && v >= 0 && v < n) {
                     canvas.createEdge(String.valueOf(i), createdVertices[u], createdVertices[v], ctx.onEdgeClick());

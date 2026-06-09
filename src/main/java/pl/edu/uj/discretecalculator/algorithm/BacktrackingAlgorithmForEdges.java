@@ -14,6 +14,8 @@ public class BacktrackingAlgorithmForEdges<V> implements AlgorithmicInterface<V,
         List<Edge<V>> edgeList = new ArrayList<>(graph.getEdges());
         int maxEdges = edgeList.size();
 
+        if (maxEdges == 0) return result;
+
         for (int k = 1; k <= maxEdges; k++) {
             //result.clearHistory(); //do czyszczenia
 
@@ -47,7 +49,7 @@ public class BacktrackingAlgorithmForEdges<V> implements AlgorithmicInterface<V,
         Edge<V> current = edges.pollFirst();
 
         for (int c = 1; c <= maxColorsAllowed; c++) {
-            if (isSafe(current, c, colors, graph)) {
+            if (isSafe(current, c, colors)) {
 
                 colors.put(current, c);
                 result.addStep(new BacktrackingAlgorithmForEdgesResult.BacktrackStep<>(
@@ -69,12 +71,16 @@ public class BacktrackingAlgorithmForEdges<V> implements AlgorithmicInterface<V,
         return false;
     }
 
-    private boolean isSafe(Edge<V> edge, int color, Map<Edge<V>, Integer> colors, Graph<V> graph) {
-        for (Edge<V> incident : graph.getIncidentEdges(edge.getSource())) {
-            if (!incident.equals(edge) && colors.getOrDefault(incident, 0) == color) return false;
-        }
-        for (Edge<V> incident : graph.getIncidentEdges(edge.getTarget())) {
-            if (!incident.equals(edge) && colors.getOrDefault(incident, 0) == color) return false;
+    private boolean isSafe(Edge<V> edge, int color, Map<Edge<V>, Integer> colors) {
+        for (Edge<V> coloredEdge : colors.keySet()) {
+            if (colors.get(coloredEdge) == color) {
+                if (coloredEdge.getSource().equals(edge.getSource()) ||
+                        coloredEdge.getSource().equals(edge.getTarget()) ||
+                        coloredEdge.getTarget().equals(edge.getSource()) ||
+                        coloredEdge.getTarget().equals(edge.getTarget())) {
+                    return false;
+                }
+            }
         }
         return true;
     }
