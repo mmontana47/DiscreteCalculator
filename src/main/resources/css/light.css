@@ -97,6 +97,13 @@
     -fx-background-color: -app-surface;
 }
 
+.ribbon > .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
 .ribbon > .tab-header-area > .headers-region > .tab {
     -fx-background-color: transparent;
     -fx-background-radius: 0;
@@ -130,6 +137,7 @@
     -fx-border-width: 0 0 1 0;
     -fx-padding: 4 8 4 8;
     -fx-spacing: 2;
+    -fx-max-height: infinity;
 }
 
 .ribbon-hint {
@@ -138,9 +146,9 @@
 }
 
 /* ── Toolbar buttons ──────────────────────────────────────── */
-.tool-bar .toggle-button,
-.tool-bar .button,
-.tool-bar .menu-button {
+.ribbon-bar .toggle-button,
+.ribbon-bar .button,
+.ribbon-bar .menu-button {
     -fx-background-color: transparent;
     -fx-background-radius: 4;
     -fx-border-color: transparent;
@@ -151,29 +159,29 @@
     -fx-cursor: hand;
 }
 
-.tool-bar .toggle-button:hover,
-.tool-bar .button:hover,
-.tool-bar .menu-button:hover {
+.ribbon-bar .toggle-button:hover,
+.ribbon-bar .button:hover,
+.ribbon-bar .menu-button:hover {
     -fx-background-color: -app-accent-soft;
     -fx-border-color: -app-border;
 }
 
-.tool-bar .button:pressed {
+.ribbon-bar .button:pressed {
     -fx-background-color: #c7e0f4;
 }
 
-.tool-bar .toggle-button:selected {
+.ribbon-bar .toggle-button:selected {
     -fx-background-color: -app-accent;
     -fx-text-fill: white;
     -fx-border-color: transparent;
 }
 
-.tool-bar .toggle-button:selected:hover {
+.ribbon-bar .toggle-button:selected:hover {
     -fx-background-color: -app-accent-dark;
 }
 
 /* CheckBox in toolbar */
-.tool-bar .check-box {
+.ribbon-bar .check-box {
     -fx-text-fill: -app-text;
     -fx-font-size: 12.5px;
     -fx-padding: 5 8 5 8;
@@ -339,3 +347,13 @@
 }
 
 .combo-box-popup .list-view { -fx-pref-width: 60; }
+
+/* ── Vertex distance label ─────── */
+.distance-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -app-accent;
+    -fx-background-color: rgba(255, 255, 255, 0.88);
+    -fx-padding: 0 4 0 4;
+    -fx-background-radius: 3;
+}

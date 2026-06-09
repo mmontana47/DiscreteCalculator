@@ -13,6 +13,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import pl.edu.uj.discretecalculator.AppConfig;
 import pl.edu.uj.discretecalculator.algorithm.*;
 import pl.edu.uj.discretecalculator.exception.TopologicalSortException;
@@ -284,7 +285,7 @@ public class MainController {
         if(liveLayout.isSelected()) {liveLayout.setSelected(false);}
 
         ForceDirectedLayout layout = new ForceDirectedLayout(canvas);
-        double t0 = canvas.getGraphPane().getWidth()/50;
+        double t0 = canvas.getGraphPane().getWidth();
         int iterations = 120;
         AtomicInteger i= new AtomicInteger();
         temperature = t0;
@@ -312,6 +313,7 @@ public class MainController {
         refreshUndoRedoState();
         directedCheckbox.setSelected(false);
         canvas.setDirected(false);
+        setWindowTitle(null);
     }
     @FXML
     private void onExit() {
@@ -691,6 +693,7 @@ public class MainController {
             history.clear();
             refreshUndoRedoState();
             kickLiveLayout(1);
+            setWindowTitle(file.getName());
         } catch (Exception ex) {
             Alert a = new Alert(Alert.AlertType.ERROR, "Open failed: " + ex.getMessage(), ButtonType.OK);
             a.setHeaderText("Import exception");
@@ -723,6 +726,7 @@ public class MainController {
             if (ext.equals(".txt")) GraphExporterTXT.exportToTxt(canvas, file);
             if (ext.equals(".json")) GraphExporterJSON.export(canvas, file);
             if (ext.equals(".tex")) GraphExporterTikZ.export(canvas, canvas.isDirected(), file);
+            setWindowTitle(file.getName());
         } catch (IOException ex) {
             Alert a = new Alert(Alert.AlertType.ERROR, "Save failed: " + ex.getMessage(), ButtonType.OK);
             a.setHeaderText("Export exception");
@@ -843,6 +847,12 @@ public class MainController {
         setAnimationModeUI(false); // Rozmrażamy interfejs!
     }
     // ──────────────────────────────────────────────────────────────────────────
+
+    private void setWindowTitle(String filename) {
+        Stage stage = (Stage) graphPane.getScene().getWindow();
+        if (stage == null) return;
+        stage.setTitle(filename != null ? "DiscreteCalculator – " + filename : "DiscreteCalculator");
+    }
 
     private static String decideExt(File file, FileChooser.ExtensionFilter selected) {
         String name = file.getName().toLowerCase();

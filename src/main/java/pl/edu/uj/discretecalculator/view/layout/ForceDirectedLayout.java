@@ -46,7 +46,7 @@ public class ForceDirectedLayout {
 
     public void kick(double scale) {
         recomputeParams();
-        liveTemperature = Math.max(liveTemperature, KICK_TEMP*scale);
+        liveTemperature = Math.max(liveTemperature, KICK_TEMP*IDEAL_LENGTH*scale);
     }
     private double force_Edges(double d){ return cfg.attractionFactor * d * d / IDEAL_LENGTH; }
     private double force_Vertices(double d){
