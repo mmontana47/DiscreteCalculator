@@ -88,9 +88,18 @@ public class BacktrackingAlgorithmForVertices<V> implements AlgorithmicInterface
     }
 
     private boolean isSafe(Vertex<V> vertex, int color, Map<Vertex<V>, Integer> colors, Graph<V> graph) {
-        for (Vertex<V> neighbor : graph.getNeighbors(vertex)) {
+        for (Vertex<V> neighbor : getAllNeighbors(vertex, graph)) {
             if (colors.getOrDefault(neighbor, 0) == color) return false;
         }
         return true;
+    }
+
+    private Set<Vertex<V>> getAllNeighbors(Vertex<V> v, Graph<V> graph) {
+        Set<Vertex<V>> all = new HashSet<>();
+        for (Edge<V> edge : graph.getIncidentEdges(v)) {
+            Vertex<V> other = edge.getSource().equals(v) ? edge.getTarget() : edge.getSource();
+            all.add(other);
+        }
+        return all;
     }
 }

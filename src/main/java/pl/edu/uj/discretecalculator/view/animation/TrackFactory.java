@@ -2,7 +2,6 @@ package pl.edu.uj.discretecalculator.view.animation;
 
 import pl.edu.uj.discretecalculator.algorithm.BFSResult;
 import pl.edu.uj.discretecalculator.algorithm.DFSResult;
-import pl.edu.uj.discretecalculator.algorithm.GreedyVCResult;
 import pl.edu.uj.discretecalculator.model.graph.Edge;
 import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.algorithm.KosarajuAlgorithmResult;
@@ -30,8 +29,6 @@ public class TrackFactory {
                 (int) (fxColor.getBlue() * 255));
     }
 
-    // --- PUBLICZNE API DLA KONTROLERA ---
-
     public static AlgorithmTrack buildBfsTrack(BFSResult<String> result, Graph<String> graph) {
         return buildSearchTrackBase(result.getVisitOrder(), result.getParentMap(), result.getNonTreeEdges(), "BFS", graph);
     }
@@ -39,8 +36,6 @@ public class TrackFactory {
     public static AlgorithmTrack buildDfsTrack(DFSResult<String> result, Graph<String> graph) {
         return buildSearchTrackBase(result.getVisitOrder(), result.getParentMap(), result.getNonTreeEdges(), "DFS", graph);
     }
-
-    // --- PRYWATNA LOGIKA WEWNĘTRZNA DLA BFS/DFS ---
 
     private static AlgorithmTrack buildSearchTrackBase(List<Vertex<String>> visitOrder,
                                                        Map<Vertex<String>, Vertex<String>> parentMap,
@@ -58,7 +53,7 @@ public class TrackFactory {
         Map<String, Boolean> cumulativeNonTreeEdges = new HashMap<>();
 
         String visitColor = algName.equals("BFS") ? "#2ecc71" : "#e67e22";
-        String treeEdgeColor = "#333333"; // Łagodny, profesjonalny grafitowy
+        String treeEdgeColor = "#333333";
 
         for (Vertex<String> currentNode : visitOrder) {
             String nodeId = String.valueOf(currentNode.getId());
@@ -72,7 +67,6 @@ public class TrackFactory {
                     if ((edge.getSource().getId() == currentNode.getId() && edge.getTarget().getId() == parentNode.getId()) ||
                             (edge.getSource().getId() == parentNode.getId() && edge.getTarget().getId() == currentNode.getId())) {
 
-                        // Czyste, numeryczne ID krawędzi
                         String edgeId = String.valueOf(edge.getId());
 
                         cumulativeEdgeColors.put(edgeId, treeEdgeColor);
@@ -106,7 +100,6 @@ public class TrackFactory {
             track.addFrame(finalFrame);
         }
 
-        // FINAŁOWA KLATKA: Podświetlanie struktury drzewa przeszukiwania
         SearchAlgorithmFrame summaryFrame = new SearchAlgorithmFrame(algName + " finished. Highlighting search tree.");
         summaryFrame.getVertexColors().putAll(cumulativeVertexColors);
         summaryFrame.getEdgeColors().putAll(cumulativeEdgeColors);
@@ -168,22 +161,17 @@ public class TrackFactory {
             }
         }
 
-        // Pobieramy całą listę, żeby móc przewidywać kolejne kroki
         var history = result.getHistory();
 
         for (int i = 0; i < history.size(); i++) {
             var step = history.get(i);
 
-            // >>> NOWOŚĆ: Inteligentne filtrowanie pustych klatek <<<
             if (step.phase == pl.edu.uj.discretecalculator.algorithm.BellmanFordResult.Phase.CHECK_EDGE) {
                 boolean willUpdate = false;
-                // Sprawdzamy, czy następny krok to udana relaksacja tej samej krawędzi
                 if (i + 1 < history.size() && history.get(i + 1).phase == pl.edu.uj.discretecalculator.algorithm.BellmanFordResult.Phase.UPDATE_DISTANCE) {
                     willUpdate = true;
                 }
 
-                // Jeśli sprawdzenie krawędzi nie wnosi nic do grafu (nie skraca dystansu),
-                // całkowicie POMIJAMY TĘ KLATKĘ, żeby nie zanudzić użytkownika.
                 if (!willUpdate) {
                     continue;
                 }
@@ -321,8 +309,6 @@ public class TrackFactory {
         }
         return track;
     }
-
-    // --- ALGORYTMY KOLOROWANIA (Z UŻYCIEM DYNAMICZNEGO GENERATORA) ---
 
     public static AlgorithmTrack buildGreedyColoringTrack(pl.edu.uj.discretecalculator.algorithm.GreedyVertexColoringResult<String> result, Graph<String> graph) {
         AlgorithmTrack track = new AlgorithmTrack();
