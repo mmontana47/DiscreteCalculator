@@ -289,7 +289,7 @@ public class MainController {
         if(liveLayout.isSelected()) {liveLayout.setSelected(false);}
 
         ForceDirectedLayout layout = new ForceDirectedLayout(canvas);
-        double t0 = canvas.getGraphPane().getWidth();
+        double t0 = canvas.getGraphPane().getWidth() / 50;
         int iterations = 120;
         AtomicInteger i= new AtomicInteger();
         temperature = t0;
@@ -428,6 +428,22 @@ public class MainController {
             if(((!canvas.isDirected() && !canvas.edgeExists(s,t))||
                     (canvas.isDirected() && !canvas.edgeExistsDirected(s,t)))) {
                 history.execute(new AddEdgeCommand(canvas, s, t, this::onEdgeClick));
+                kickLiveLayout(1);
+            }
+        } else if (tokens.length == 3) {
+            try{
+                Double.parseDouble(tokens[2]);
+            }catch (NumberFormatException e) {return;}
+            VertexDrawn s = getOrCreateVertex(tokens[0]);
+            VertexDrawn t = getOrCreateVertex(tokens[1]);
+
+            if ((!canvas.isDirected() && !canvas.edgeExists(s, t)) ||
+                    (canvas.isDirected() && !canvas.edgeExistsDirected(s, t))) {
+                AddEdgeCommand cmd = new AddEdgeCommand(canvas, s, t, this::onEdgeClick);
+                history.execute(cmd);
+
+                cmd.getEdge().setWeightText(String.valueOf(tokens[2]));
+                if(!weightedCheckbox.isSelected()) weightedCheckbox.setSelected(true);
                 kickLiveLayout(1);
             }
         }

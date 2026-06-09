@@ -32,6 +32,8 @@ public class AddEdgeCommand implements Command {
         }
     }
 
+    public EdgeDrawn getEdge() { return edge; }
+
     @Override
     public void undo() {
         canvas.detachEdge(edge);
