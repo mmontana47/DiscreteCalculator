@@ -39,7 +39,7 @@
     "eps": 0.01,
     "damping": 0.5,
     "minTemperature": 0.9,
-    "kickTemperature": 0.09,
+    "kickTemperature": 0.008,
     "coolFactor": 0.97,
     "kScaleBase": 0.4,
     "kScaleRange": 1.8,

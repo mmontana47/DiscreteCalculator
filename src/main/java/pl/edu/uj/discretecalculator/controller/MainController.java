@@ -363,28 +363,28 @@ public class MainController {
         OptionalInt n = promptForInt("Cycle", "Build cycle C_n", "n" );
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.cycle(buildContext(),  n.getAsInt()));
-        kickLiveLayout(5    );
+        kickLiveLayout(3);
     }
     @FXML private void onBuildComplete() {
         clearSelection();
         OptionalInt n = promptForInt("Clique", "Build clique K_n", "n");
         if(n.isEmpty()) return;
         runCommand(GraphBuilders.clique(buildContext(),  n.getAsInt()));
-        kickLiveLayout(3);
+        kickLiveLayout(5);
     }
     @FXML private void onBuildBipartite() {
         clearSelection();
         Optional<int[]> n_m = promptForBipartite();
         if(n_m.isEmpty()) return;
         runCommand(GraphBuilders.bipartite(buildContext(),  n_m.get()[0], n_m.get()[1]));
-        kickLiveLayout(3);
+        kickLiveLayout(5);
     }
     @FXML private void onBuildTree() {
         clearSelection();
         OptionalInt n = promptForInt("Tree", "Build random tree on n vertices", "n");
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.randomTree(buildContext(),  n.getAsInt()));
-        kickLiveLayout(5);
+        kickLiveLayout(3);
     }
 
     //graph visfual properties
