@@ -190,17 +190,19 @@ public class EdgeDrawn extends Group {
     }
 
     public void highlightAsTreeEdge() {
-        AppConfig.ColorsCfg c = AppConfig.get().style.colors;
         curve.pseudoClassStateChanged(TREE_EDGE, true);
         curve.pseudoClassStateChanged(CYCLE_EDGE, false);
-        curve.setStyle("-fx-stroke: " + c.treeEdge + "; -fx-stroke-width: " + c.treeEdgeWidth + ";");
+        // Zastosowanie miękkiego, grafitowego odcienia:
+        curve.setStyle("-fx-stroke: #333333;");
+        arrowHead.setStyle("-fx-fill: #333333; -fx-stroke: #333333;");
     }
 
-    public void highlightAsCycle() {
-        AppConfig.ColorsCfg c = AppConfig.get().style.colors;
+    public void highlightAsNonTreeEdge() {
         curve.pseudoClassStateChanged(CYCLE_EDGE, true);
         curve.pseudoClassStateChanged(TREE_EDGE, false);
-        curve.setStyle("-fx-stroke: " + c.cycleEdge + "; -fx-stroke-width: " + c.cycleEdgeWidth + "; -fx-stroke-dash-array: 10 10;");
+        // Jasnoszare, cienkie krawędzie (pozostałe)
+        curve.setStyle("-fx-stroke: #D3D3D3; -fx-stroke-width: 1.5;");
+        arrowHead.setStyle("-fx-fill: #D3D3D3; -fx-stroke: #D3D3D3;");
     }
 
     public void setActive(boolean active) {
@@ -210,7 +212,6 @@ public class EdgeDrawn extends Group {
         curve.setStrokeWidth(active ? baseWidth * mult : baseWidth);
     }
 
-    // --- NOWA, POTĘŻNA METODA WIĄZANIA ---
     public void bindWeightVisibility(ObservableBooleanValue isWeightedGraphProperty) {
         weightLabel.visibleProperty().bind(
                 Bindings.createBooleanBinding(
