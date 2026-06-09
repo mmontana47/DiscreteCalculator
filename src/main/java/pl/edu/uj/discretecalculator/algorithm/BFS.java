@@ -4,7 +4,7 @@ import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.model.graph.Vertex;
 
 import java.util.*;
-//BFS implementation
+
 public class BFS<V> implements AlgorithmicInterface<V, BFSResult<V>> {
 
     private final Vertex<V> first;
@@ -26,11 +26,6 @@ public class BFS<V> implements AlgorithmicInterface<V, BFSResult<V>> {
         Set<Edge<V>> treeEdges = new HashSet<>();
         Set<Edge<V>> nonTreeEdges = new HashSet<>();
 
-        /*
-        Pair<V> start=new Pair<>(first,first);
-        */
-        //zastąpione mapą - będzie lepsze z perspektywy
-        //implementacji najkrótszych ścieżek w grafie nieważonym
         Map<Vertex<V>, Vertex<V>> parentMap = new HashMap<>();
 
         visited.add(first);
@@ -41,7 +36,7 @@ public class BFS<V> implements AlgorithmicInterface<V, BFSResult<V>> {
 
         for (Vertex<V> vertex : graph.getVertices()) {
             if (!visited.contains(vertex)) {
-                parentMap.put(vertex, null); // nowy korzeń dla kolejnej spojnej skladowej
+                parentMap.put(vertex, null);
                 bfs(graph, vertex, visited, queue, parentMap, visitOrder, treeEdges, nonTreeEdges);
             }
         }

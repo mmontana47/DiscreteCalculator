@@ -4,13 +4,6 @@ import pl.edu.uj.discretecalculator.model.graph.*;
 import java.util.*;
 
 public class KosarajuAlgorithm<V> implements AlgorithmicInterface<V, KosarajuAlgorithmResult<V>> {
-    private DirectedGraph<V> graph;
-
-    public KosarajuAlgorithm() {}
-
-    public KosarajuAlgorithm(DirectedGraph<V> graph) {
-        this.graph = graph;
-    }
 
     @Override
     public String algorithmName() {

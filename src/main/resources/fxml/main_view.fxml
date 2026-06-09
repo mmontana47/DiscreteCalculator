@@ -167,7 +167,7 @@
 
                                     <Separator orientation="VERTICAL"/>
 
-                                    <Button fx:id="resetViewItem" text="Reset View" onAction="#onResetView"
+                                    <Button text="Reset View" onAction="#onResetView"
                                             prefWidth="100.0">
                                         <tooltip><Tooltip text="Reset View  [Esc]"/></tooltip>
                                     </Button>
@@ -175,15 +175,15 @@
                                     <Separator orientation="VERTICAL"/>
 
                                     <Label text="Zoom:"/>
-                                    <Button fx:id="btnZoomIn" text="+" onAction="#OnZoomIn" prefWidth="40.0"
+                                    <Button text="+" onAction="#OnZoomIn" prefWidth="40.0"
                                             style="-fx-font-weight: bold;">
                                         <tooltip><Tooltip text="Zoom In  [Ctrl+=]"/></tooltip>
                                     </Button>
-                                    <Button fx:id="btnZoomOut" text="-" onAction="#OnZoomOut" prefWidth="40.0"
+                                    <Button text="-" onAction="#OnZoomOut" prefWidth="40.0"
                                             style="-fx-font-weight: bold;">
                                         <tooltip><Tooltip text="Zoom Out  [Ctrl+−]"/></tooltip>
                                     </Button>
-                                    <Button fx:id="btnResetZoom" text="R" onAction="#OnResetZoom" prefWidth="40.0">
+                                    <Button text="R" onAction="#OnResetZoom" prefWidth="40.0">
                                         <tooltip><Tooltip text="Reset Zoom"/></tooltip>
                                     </Button>
 

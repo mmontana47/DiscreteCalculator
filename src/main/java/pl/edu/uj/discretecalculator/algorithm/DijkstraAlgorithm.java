@@ -6,7 +6,6 @@ import pl.edu.uj.discretecalculator.model.graph.*;
 public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlgorithmResult<V>> {
     private final Vertex<V> startNode;
 
-    //brak path_end - lepiej wygląda gdy liczy dla całego grafu
     public DijkstraAlgorithm(Vertex<V> startNode) {
         this.startNode = startNode;
     }
@@ -24,13 +23,11 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlg
         WeightedGraph<V> graph = (WeightedGraph<V>) g;
         DijkstraAlgorithmResult<V> result = new DijkstraAlgorithmResult<>();
 
-        //nowe pola dla rozbudowy result
         Map<Vertex<V>, Double> distances = new HashMap<>();
         Map<Vertex<V>, Vertex<V>> parents = new HashMap<>();
         Set<Vertex<V>> visited = new HashSet<>();
         PriorityQueue<VertexDistance<V>> queue = new PriorityQueue<>(Comparator.comparingDouble(vd -> vd.distance));
 
-        // drobna pomyłka w inicjalizacji (wczesniej bylo na odwrot)
         for (Vertex<V> vertex : graph.getVertices()) {
             distances.put(vertex, vertex.equals(startNode) ? 0.0 : Double.POSITIVE_INFINITY);
         }
@@ -43,7 +40,6 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlg
             if (visited.contains(current)) continue;
             visited.add(current);
 
-            // rejestrujemy krok odwiedzin wierzchołka
             result.addStep(new DijkstraAlgorithmResult.DijkstraStep<>(
                     DijkstraAlgorithmResult.Phase.VISIT_NODE, current, null, distances, parents));
 
@@ -51,12 +47,11 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlg
                 WeightedEdge<V> edge = (WeightedEdge<V>) e;
                 Vertex<V> neighbor = edge.getTarget().equals(current) ? edge.getSource() : edge.getTarget();
 
-                // jesli jest skierowany i idziemy w złą stronę - continue
+                // skip reversed direction for directed edges
                 if (edge instanceof WeightedDirectedEdge<?> && edge.getTarget().equals(current)) continue;
 
                 if (visited.contains(neighbor)) continue;
 
-                // rejestrujemy krok badania krawędzi
                 result.addStep(new DijkstraAlgorithmResult.DijkstraStep<>(
                         DijkstraAlgorithmResult.Phase.CHECK_EDGE, neighbor, edge, distances, parents));
 
@@ -67,21 +62,18 @@ public class DijkstraAlgorithm<V> implements AlgorithmicInterface<V, DijkstraAlg
                     parents.put(neighbor, current);
                     queue.add(new VertexDistance<>(neighbor, newDist));
 
-                    // rejestrujemy relaksację
                     result.addStep(new DijkstraAlgorithmResult.DijkstraStep<>(
                             DijkstraAlgorithmResult.Phase.UPDATE_DISTANCE, neighbor, edge, distances, parents));
                 }
             }
         }
 
-        //ostateczny stan
         result.getFinalDistances().putAll(distances);
         result.getFinalParents().putAll(parents);
 
         return result;
     }
 
-    //TODO: wyciagnac stąd tablicę odległości (może gdzieś na bok ekranu?)
     private static class VertexDistance<V> {
         final Vertex<V> vertex;
         final double distance;

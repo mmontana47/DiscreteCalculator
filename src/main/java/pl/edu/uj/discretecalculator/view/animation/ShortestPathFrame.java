@@ -50,7 +50,6 @@ public class ShortestPathFrame implements AlgorithmFrame {
         } else if ("CHECK_EDGE".equals(phaseName) || "UPDATE_DISTANCE".equals(phaseName) || "NEGATIVE_CYCLE_FOUND".equals(phaseName)) {
             EdgeDrawn ed = canvas.getEdgeById(activeEdgeId);
             if (ed != null) {
-                // >>> NOWOŚĆ: Pogrubiamy krawędź, żeby była wyraźnie widoczna w trakcie animacji <<<
                 ed.setActive(true);
 
                 if ("UPDATE_DISTANCE".equals(phaseName)) {
@@ -58,13 +57,12 @@ public class ShortestPathFrame implements AlgorithmFrame {
                 } else if ("NEGATIVE_CYCLE_FOUND".equals(phaseName)) {
                     ed.setStrokeColor("#8B0000");
 
-                    // >>> NOWOŚĆ: Wyświetlamy nieblokujący komunikat o cyklu <<<
                     javafx.application.Platform.runLater(() -> {
                         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
                         alert.setTitle("Bellman-Ford Algorithm");
                         alert.setHeaderText("Negative Cycle Detected!");
                         alert.setContentText("The algorithm found a negative-weight cycle. Shortest paths cannot be calculated.");
-                        alert.show(); // Ważne: show() a nie showAndWait()!
+                        alert.show(); // non-blocking: show() not showAndWait()
                     });
                 } else {
                     ed.setStrokeColor("#E74C3C");
@@ -73,7 +71,6 @@ public class ShortestPathFrame implements AlgorithmFrame {
         }
     }
 
-    //TODO: dać użytkownikowi wybór gradientu
     private String calculateGradientColor(double distance) {
         if (distance == 0.0) return "#2ECC71";
 

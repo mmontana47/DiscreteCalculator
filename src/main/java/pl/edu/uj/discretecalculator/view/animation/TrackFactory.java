@@ -2,7 +2,6 @@ package pl.edu.uj.discretecalculator.view.animation;
 
 import pl.edu.uj.discretecalculator.algorithm.BFSResult;
 import pl.edu.uj.discretecalculator.algorithm.DFSResult;
-import pl.edu.uj.discretecalculator.algorithm.GreedyVCResult;
 import pl.edu.uj.discretecalculator.model.graph.Edge;
 import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.algorithm.KosarajuAlgorithmResult;
@@ -342,7 +341,7 @@ public class TrackFactory {
 
         ColoringFrame finalFrame = new ColoringFrame("Chromatic number upper bound: " + result.getChromaticUpperBound());
         if (!track.getFrames().isEmpty()) {
-            finalFrame.getVertexColors().putAll(((ColoringFrame) track.getFrames().get(track.getFrames().size() - 1)).getVertexColors());
+            finalFrame.getVertexColors().putAll(((ColoringFrame) track.getFrames().getLast()).getVertexColors());
         }
         track.addFrame(finalFrame);
         return track;
@@ -372,7 +371,7 @@ public class TrackFactory {
 
         ColoringFrame finalFrame = new ColoringFrame("Done! Chromatic index upper bound: " + result.getChromaticIndexUpperBound());
         if (!track.getFrames().isEmpty()) {
-            finalFrame.getEdgeColors().putAll(((ColoringFrame) track.getFrames().get(track.getFrames().size() - 1)).getEdgeColors());
+            finalFrame.getEdgeColors().putAll(((ColoringFrame) track.getFrames().getLast()).getEdgeColors());
         }
         track.addFrame(finalFrame);
         return track;

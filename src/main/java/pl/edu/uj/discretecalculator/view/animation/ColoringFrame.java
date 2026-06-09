@@ -56,8 +56,6 @@ public class ColoringFrame implements AlgorithmFrame {
                 ed.setStrokeColor("#BDC3C7"); //szare - oczekujace
             }
 
-            //TODO: cos mi nie działa to pogrubianie - nie jest konieczne, ale może się tym zajmiemy
-            //ed.setActive(numericId.equals(activeEdgeId));
         }
     }
 

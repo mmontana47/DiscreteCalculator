@@ -5,7 +5,6 @@ import pl.edu.uj.discretecalculator.exception.BellmanFordAlgorithmException;
 import pl.edu.uj.discretecalculator.model.graph.*;
 
 public class BellmanFordAlgorithm<V> implements AlgorithmicInterface<V, BellmanFordResult<V>> {
-    //usunalem result jako pole klasy - lepiej to zwracać startem jak we wszystkim innym
     private final Vertex<V> startNode;
 
     public BellmanFordAlgorithm(Vertex<V> startNode) {

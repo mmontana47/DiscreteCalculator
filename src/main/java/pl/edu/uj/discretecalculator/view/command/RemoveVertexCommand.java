@@ -25,7 +25,6 @@ public class RemoveVertexCommand implements Command {
             canvas.detachEdge(incident);
         }
         canvas.detachVertex(vertex);
-        //canvas.renumber();
     }
 
     @Override
@@ -34,6 +33,5 @@ public class RemoveVertexCommand implements Command {
         for (EdgeDrawn incident : incidentEdges) {
             canvas.attachEdge(incident);
         }
-        //canvas.renumber();
     }
 }
