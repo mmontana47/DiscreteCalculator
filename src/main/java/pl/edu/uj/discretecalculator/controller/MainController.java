@@ -363,7 +363,7 @@ public class MainController {
         OptionalInt n = promptForInt("Cycle", "Build cycle C_n", "n" );
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.cycle(buildContext(),  n.getAsInt()));
-        kickLiveLayout(3);
+        kickLiveLayout(5    );
     }
     @FXML private void onBuildComplete() {
         clearSelection();
@@ -384,7 +384,7 @@ public class MainController {
         OptionalInt n = promptForInt("Tree", "Build random tree on n vertices", "n");
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.randomTree(buildContext(),  n.getAsInt()));
-        kickLiveLayout(3);
+        kickLiveLayout(5);
     }
 
     //graph visfual properties
@@ -773,7 +773,7 @@ public class MainController {
     private void onResetWeights() {
         for (EdgeDrawn ed : canvas.getEdges()) {
             if (weightedCheckbox.isSelected()) {
-                ed.setWeightText("1");
+                ed.setWeightText("1.0");
             } else {
                 ed.setWeightText("");
             }
@@ -783,7 +783,7 @@ public class MainController {
     private void setDefaultWeights() {
         for (EdgeDrawn ed : canvas.getEdges()) {
             if (ed.getWeightText() == null || ed.getWeightText().isEmpty()) {
-                ed.setWeightText("1");
+                ed.setWeightText("1.0");
             }
         }
     }
@@ -1223,7 +1223,7 @@ public class MainController {
             Vertex<String> source = dictionary.get(ed.getSource().getVertexId());
             Vertex<String> target = dictionary.get(ed.getTarget().getVertexId());
 
-            double weight = 1;
+            double weight = 1.0;
             try {
                 if (ed.getWeightText() != null && !ed.getWeightText().isEmpty()) {
                     weight = Double.parseDouble(ed.getWeightText());

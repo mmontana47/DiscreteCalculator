@@ -90,7 +90,7 @@ public class CanvasManager {
     public EdgeDrawn createEdge(VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
         EdgeDrawn edge = new EdgeDrawn(String.valueOf(edges.size()), source, target, onClick, directed);
         edge.bindWeightVisibility(this.weighted);
-        if (weighted.get()) edge.setWeightText("1");
+        if (weighted.get()) edge.setWeightText("1.0");
         attachEdge(edge);
         return edge;
     }
@@ -98,7 +98,7 @@ public class CanvasManager {
     public EdgeDrawn createEdge(String id, VertexDrawn source, VertexDrawn target, Consumer<EdgeDrawn> onClick) {
         EdgeDrawn edge = new EdgeDrawn(id, source, target, onClick, directed);
         edge.bindWeightVisibility(this.weighted);
-        if (weighted.get()) edge.setWeightText("1");
+        if (weighted.get()) edge.setWeightText("1.0");
         attachEdge(edge);
         return edge;
     }
