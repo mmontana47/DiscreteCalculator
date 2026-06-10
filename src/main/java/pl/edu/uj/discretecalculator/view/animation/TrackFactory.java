@@ -12,7 +12,7 @@ import java.util.*;
 public class TrackFactory {
 
 
-    private static String getColorHexForIndex(int colorIndex) {
+    public static String getColorHexForIndex(int colorIndex) {
         if (colorIndex <= 0) return "#7F8C8D";
 
         double goldenRatioConjugate = 0.618033988749895;
@@ -30,16 +30,17 @@ public class TrackFactory {
     }
 
     public static AlgorithmTrack buildBfsTrack(BFSResult<String> result, Graph<String> graph) {
-        return buildSearchTrackBase(result.getVisitOrder(), result.getParentMap(), result.getNonTreeEdges(), "BFS", graph);
+        return buildSearchTrackBase(result.getVisitOrder(), result.getParentMap(), result.getNonTreeEdges(), result.getComponentMap(), "BFS", graph);
     }
 
     public static AlgorithmTrack buildDfsTrack(DFSResult<String> result, Graph<String> graph) {
-        return buildSearchTrackBase(result.getVisitOrder(), result.getParentMap(), result.getNonTreeEdges(), "DFS", graph);
+        return buildSearchTrackBase(result.getVisitOrder(), result.getParentMap(), result.getNonTreeEdges(), result.getComponentMap(), "DFS", graph);
     }
 
     private static AlgorithmTrack buildSearchTrackBase(List<Vertex<String>> visitOrder,
                                                        Map<Vertex<String>, Vertex<String>> parentMap,
                                                        Set<Edge<String>> cycles,
+                                                       Map<Vertex<String>, Integer> componentMap, // <--- DODANO
                                                        String algName,
                                                        Graph<String> graph) {
 
@@ -52,13 +53,17 @@ public class TrackFactory {
         Map<String, Boolean> cumulativeTreeEdges = new HashMap<>();
         Map<String, Boolean> cumulativeNonTreeEdges = new HashMap<>();
 
-        String visitColor = algName.equals("BFS") ? "#2ecc71" : "#e67e22";
+
         String treeEdgeColor = "#333333";
 
         for (Vertex<String> currentNode : visitOrder) {
             String nodeId = String.valueOf(currentNode.getId());
             SearchAlgorithmFrame frame = new SearchAlgorithmFrame("Visiting vertex " + nodeId);
 
+            int componentIndex = componentMap.get(currentNode);
+
+            int colorOffset = algName.equals("BFS") ? 0 : 5;
+            String visitColor = getColorHexForIndex(componentIndex + colorOffset);
             cumulativeVertexColors.put(nodeId, visitColor);
 
             Vertex<String> parentNode = parentMap.get(currentNode);

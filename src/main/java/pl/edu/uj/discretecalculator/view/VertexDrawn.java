@@ -1,5 +1,6 @@
 package pl.edu.uj.discretecalculator.view;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
@@ -37,9 +38,13 @@ public class VertexDrawn extends StackPane {
 
         this.label = new Label(id);
 
+        // Dynamiczne bindowanie wielkości czcionki proporcjonalnie do promienia (np. 60% promienia)
+        this.label.styleProperty().bind(Bindings.createStringBinding(
+                () -> "-fx-font-size: " + (circleRadius.get() * 0.6) + "px;",
+                circleRadius
+        ));
 
         this.distanceLabel = new Label();
-
         this.distanceLabel.translateYProperty().bind(circleRadius.add(AppConfig.get().style.vertex.distanceLabelOffset));
 
         this.getStyleClass().add("vertex");
@@ -96,8 +101,6 @@ public class VertexDrawn extends StackPane {
     public Color getUserFillColor() {
         return userFillHex != null ? Color.web(userFillHex) : null;
     }
-
-    //################# ALGORITHM PLAYER ####################
 
     private void applyFill(String hexColor) {
         if (hexColor != null && !hexColor.isEmpty()) {

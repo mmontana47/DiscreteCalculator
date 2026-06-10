@@ -1,8 +1,8 @@
 {
   "style": {
     "vertex": {
-      "radiusMin": 10.0,
-      "radiusMax": 30.0,
+      "radiusMin": 4.0,
+      "radiusMax": 40.0,
       "radiusDefault": 20.0,
       "distanceLabelOffset": 15.0
     },

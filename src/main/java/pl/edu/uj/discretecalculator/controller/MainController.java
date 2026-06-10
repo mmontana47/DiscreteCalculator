@@ -218,15 +218,6 @@ public class MainController {
         Bindings.bindBidirectional(edgeWidthSlider.valueProperty(), StyleSettings.get().edgeWidthProperty());
 
         setupInputPanel();
-        weightedCheckbox.selectedProperty().addListener((observable, oldValue, isVisible) -> {
-            for (EdgeDrawn ed : canvas.getEdges()) {
-                if (!isVisible) {
-                    ed.getWeightLabel().setVisible(false);
-                } else {
-                    ed.getWeightLabel().setVisible(ed.getWeightText() != null && !ed.getWeightText().isEmpty());
-                }
-            }
-        });
     }
 
     // =================================================================================================

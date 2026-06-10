@@ -4,7 +4,7 @@ import pl.edu.uj.discretecalculator.model.graph.Graph;
 import pl.edu.uj.discretecalculator.model.graph.Vertex;
 
 import java.util.*;
-//BFS implementation
+
 public class BFS<V> implements AlgorithmicInterface<V, BFSResult<V>> {
 
     private final Vertex<V> first;
@@ -12,11 +12,13 @@ public class BFS<V> implements AlgorithmicInterface<V, BFSResult<V>> {
     public BFS(Vertex<V> first) {
         this.first = first;
     }
+
     @Override
     public  String algorithmName()
     {
         return "Breadth-First Search (BFS)";
     }
+
     @Override
     public BFSResult<V> start(Graph<V> graph)
     {
@@ -25,41 +27,42 @@ public class BFS<V> implements AlgorithmicInterface<V, BFSResult<V>> {
         Queue<Vertex<V>>queue=new LinkedList<>();
         Set<Edge<V>> treeEdges = new HashSet<>();
         Set<Edge<V>> nonTreeEdges = new HashSet<>();
-
-        /*
-        Pair<V> start=new Pair<>(first,first);
-        */
-        //zastąpione mapą - będzie lepsze z perspektywy
-        //implementacji najkrótszych ścieżek w grafie nieważonym
         Map<Vertex<V>, Vertex<V>> parentMap = new HashMap<>();
+        Map<Vertex<V>, Integer> componentMap = new HashMap<>();
+
+        int currentComponent = 1;
 
         visited.add(first);
         queue.add(first);
         parentMap.put(first, null);
 
-        bfs(graph, first, visited, queue, parentMap, visitOrder, treeEdges, nonTreeEdges);
+        bfs(graph, first, visited, queue, parentMap, visitOrder, treeEdges, nonTreeEdges, componentMap, currentComponent);
 
         for (Vertex<V> vertex : graph.getVertices()) {
             if (!visited.contains(vertex)) {
-                parentMap.put(vertex, null); // nowy korzeń dla kolejnej spojnej skladowej
-                bfs(graph, vertex, visited, queue, parentMap, visitOrder, treeEdges, nonTreeEdges);
+                currentComponent++;
+                parentMap.put(vertex, null);
+                bfs(graph, vertex, visited, queue, parentMap, visitOrder, treeEdges, nonTreeEdges, componentMap, currentComponent);
             }
         }
 
-        return new BFSResult<>(first, parentMap, visitOrder, treeEdges, nonTreeEdges);
+        return new BFSResult<>(first, parentMap, visitOrder, treeEdges, nonTreeEdges, componentMap);
     }
 
     private void bfs(Graph<V> graph,
-                          Vertex<V> startNode,
-                          Set<Vertex<V>> visited,
-                          Queue<Vertex<V>> queue,
-                          Map<Vertex<V>, Vertex<V>> parentMap,
-                          List<Vertex<V>> visitOrder,
-                          Set<Edge<V>> treeEdges,
-                          Set<Edge<V>> nonTreeEdges) {
+                     Vertex<V> startNode,
+                     Set<Vertex<V>> visited,
+                     Queue<Vertex<V>> queue,
+                     Map<Vertex<V>, Vertex<V>> parentMap,
+                     List<Vertex<V>> visitOrder,
+                     Set<Edge<V>> treeEdges,
+                     Set<Edge<V>> nonTreeEdges,
+                     Map<Vertex<V>, Integer> componentMap,
+                     int currentComponent) {
 
         visited.add(startNode);
         queue.add(startNode);
+        componentMap.put(startNode, currentComponent);
 
         while (!queue.isEmpty()) {
             Vertex<V> current = queue.poll();
@@ -73,6 +76,7 @@ public class BFS<V> implements AlgorithmicInterface<V, BFSResult<V>> {
                     visited.add(neighbor);
                     parentMap.put(neighbor, current);
                     treeEdges.add(edge);
+                    componentMap.put(neighbor, currentComponent);
                     queue.add(neighbor);
                 }
                 else if (!treeEdges.contains(edge))

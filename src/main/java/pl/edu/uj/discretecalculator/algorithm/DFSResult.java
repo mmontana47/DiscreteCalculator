@@ -10,13 +10,15 @@ public class DFSResult<V> {
     private final List<Vertex<V>> visitOrder;
     private final Set<Edge<V>> treeEdges;
     private final Set<Edge<V>> nonTreeEdges;
+    private final Map<Vertex<V>, Integer> componentMap;
 
-    public DFSResult(Vertex<V> first, Map<Vertex<V>, Vertex<V>> parentMap, List<Vertex<V>> visitOrder, Set<Edge<V>> treeEdges, Set<Edge<V>> nonTreeEdges) {
+    public DFSResult(Vertex<V> first, Map<Vertex<V>, Vertex<V>> parentMap, List<Vertex<V>> visitOrder, Set<Edge<V>> treeEdges, Set<Edge<V>> nonTreeEdges, Map<Vertex<V>, Integer> componentMap) {
         this.first = first;
         this.parentMap = parentMap;
         this.visitOrder = visitOrder;
         this.treeEdges = treeEdges;
         this.nonTreeEdges = nonTreeEdges;
+        this.componentMap = componentMap;
     }
 
     public List<Vertex<V>> getPathTo(Vertex<V> target) {
@@ -50,5 +52,9 @@ public class DFSResult<V> {
 
     public Set<Edge<V>> getNonTreeEdges() {
         return nonTreeEdges;
+    }
+
+    public Map<Vertex<V>, Integer> getComponentMap() {
+        return componentMap;
     }
 }

@@ -17,16 +17,6 @@ public class KosarajuFrame implements AlgorithmFrame {
     private final List<String> currentStack;
     private final Map<Integer, List<String>> sccMap;
 
-    private static final String[] SCC_PALETTE = {
-            "#2ECC71", // Szmaragdowy
-            "#9B59B6", // Ametystowy
-            "#E67E22", // Marchewkowy
-            "#E84393", // Różowy
-            "#F1C40F", // Słoneczny
-            "#1ABC9C", // Turkusowy
-            "#FF7675"  // Łososiowy
-    };
-
     public KosarajuFrame(String description, String phaseName, String activeVertexId, String activeEdgeId,
                          Set<String> visitedVertices, List<String> currentStack, Map<Integer, List<String>> sccMap) {
         this.description = description;
@@ -53,7 +43,8 @@ public class KosarajuFrame implements AlgorithmFrame {
 
             for (Map.Entry<Integer, List<String>> entry : sccMap.entrySet()) {
                 if (entry.getValue().contains(vId)) {
-                    String color = SCC_PALETTE[entry.getKey() % SCC_PALETTE.length];
+                    // Wykorzystanie dynamicznego generatora z TrackFactory
+                    String color = TrackFactory.getColorHexForIndex(entry.getKey() + 1);
                     vd.setFillColor(color);
                     isFinalScc = true;
                     break;
@@ -71,14 +62,12 @@ public class KosarajuFrame implements AlgorithmFrame {
             }
         }
 
-
         if (activeVertexId != null &&
                 ("DFS1_VISIT".equals(phaseName) || "DFS1_PUSH".equals(phaseName) ||
                         "DFS2_POP".equals(phaseName) || "DFS2_VISIT".equals(phaseName))) {
             VertexDrawn vd = canvas.getVertexById(activeVertexId);
             if (vd != null) vd.select();
         }
-
 
         if (activeEdgeId != null && ("DFS1_CHECK_EDGE".equals(phaseName) || "DFS2_CHECK_EDGE".equals(phaseName))) {
             EdgeDrawn ed = canvas.getEdgeById(activeEdgeId);

@@ -46,11 +46,15 @@ public final class GraphImporterJSON {
             idToVertex.put(vertex.id, canvas.createVertex(p.x, p.y, vertex.id, ctx.onVertexClick(), ctx.canDrag()));
         }
 
+        // Dodajemy licznik dla krawędzi, aby zawsze były liczbami
+        int edgeCounter = 0;
         for(GraphDocument.EdgeDto edge : doc.graph.edges){
             VertexDrawn s = idToVertex.get(edge.source);
             VertexDrawn t = idToVertex.get(edge.target);
             if(s == null || t == null) continue;
-            canvas.createEdge(edge.source + "-" + edge.target, s, t, ctx.onEdgeClick());
+
+            // Używamy edgeCounter zamiast "s-t"
+            canvas.createEdge(String.valueOf(edgeCounter++), s, t, ctx.onEdgeClick());
         }
     }
 }

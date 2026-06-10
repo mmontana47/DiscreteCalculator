@@ -7,8 +7,8 @@ import javafx.scene.shape.Rectangle;
 import pl.edu.uj.discretecalculator.controller.CanvasManager;
 
 public class ViewZoom {
-    public static final double MIN_ZOOM  = 0.2;
-    public static final double MAX_ZOOM  = 5.0;
+    public static final double MIN_ZOOM  = 0.05;
+    public static final double MAX_ZOOM  = 100.0;
     public static final double ZOOM_STEP = 1.1;
 
     private final Pane pane;
@@ -41,7 +41,7 @@ public class ViewZoom {
             double newCY = pivotY + (CY - pivotY) * actualFactor;
             v.setLayoutX(newCX-r);
             v.setLayoutY(newCY-r);
-            }
+        }
 
         zoom.set(newZoom);
     }

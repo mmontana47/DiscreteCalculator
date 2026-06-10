@@ -17,17 +17,6 @@ public class TarjanFrame implements AlgorithmFrame {
     private final List<String> currentStack;
     private final Map<Integer, List<String>> sccMap;
 
-    //TODO: zmienić paletę na wybraną przez usera
-    private static final String[] SCC_PALETTE = {
-            "#2ECC71", // Szmaragdowy
-            "#9B59B6", // Ametystowy
-            "#E67E22", // Marchewkowy
-            "#E84393", // Różowy
-            "#F1C40F", // Słoneczny
-            "#1ABC9C", // Turkusowy
-            "#FF7675"  // Łososiowy
-    };
-
     public TarjanFrame(String description, String phaseName, String activeVertexId, String activeEdgeId,
                        Map<String, Integer> indices, Map<String, Integer> lowLinks,
                        List<String> currentStack, Map<Integer, List<String>> sccMap) {
@@ -54,7 +43,8 @@ public class TarjanFrame implements AlgorithmFrame {
             boolean isFinalScc = false;
             for (Map.Entry<Integer, List<String>> entry : sccMap.entrySet()) {
                 if (entry.getValue().contains(vId)) {
-                    String color = SCC_PALETTE[entry.getKey() % SCC_PALETTE.length];
+                    // Wykorzystanie dynamicznego generatora z TrackFactory
+                    String color = TrackFactory.getColorHexForIndex(entry.getKey() + 1);
                     vd.setFillColor(color);
                     isFinalScc = true;
                     break;

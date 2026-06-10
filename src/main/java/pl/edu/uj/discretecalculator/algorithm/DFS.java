@@ -25,21 +25,22 @@ public class DFS<V> implements AlgorithmicInterface<V, DFSResult<V>>{
         Set<Edge<V>> treeEdges = new HashSet<>();
         Set<Edge<V>> nonTreeEdges = new HashSet<>();
         Set<Vertex<V>> visited = new HashSet<>();
+        Map<Vertex<V>, Integer> componentMap = new HashMap<>();
+
+        int currentComponent = 1;
 
         parentMap.put(first, null);
-        dfs(graph, first, visited, parentMap, visitOrder, treeEdges, nonTreeEdges);
+        dfs(graph, first, visited, parentMap, visitOrder, treeEdges, nonTreeEdges, componentMap, currentComponent);
 
         for (Vertex<V> vertex : graph.getVertices()) {
             if (!visited.contains(vertex)) {
-                //nowa składowa
+                currentComponent++;
                 parentMap.put(vertex, null);
-
-                // Odpalamy na niej zwykłą logikę
-                dfs(graph, vertex, visited, parentMap, visitOrder, treeEdges, nonTreeEdges);
+                dfs(graph, vertex, visited, parentMap, visitOrder, treeEdges, nonTreeEdges, componentMap, currentComponent);
             }
         }
 
-        return new DFSResult<>(first, parentMap, visitOrder, treeEdges, nonTreeEdges);
+        return new DFSResult<>(first, parentMap, visitOrder, treeEdges, nonTreeEdges, componentMap);
     }
 
     private void dfs(Graph<V> graph,Vertex<V> node,
@@ -47,10 +48,14 @@ public class DFS<V> implements AlgorithmicInterface<V, DFSResult<V>>{
                     Vertex<V>> parentMap,
                      List<Vertex<V>> visitOrder,
                      Set<Edge<V>> treeEdges,
-                     Set<Edge<V>> nonTreeEdges)
+                     Set<Edge<V>> nonTreeEdges,
+                     Map<Vertex<V>, Integer> componentMap,
+                     int currentComponent)
     {
         visited.add(node);
         visitOrder.addLast(node);
+        componentMap.put(node, currentComponent);
+
         for(Edge<V> edge:graph.getIncidentEdges(node))
         {
             Vertex<V> neighbor = edge.getSource().equals(node) ? edge.getTarget() : edge.getSource();
@@ -58,7 +63,7 @@ public class DFS<V> implements AlgorithmicInterface<V, DFSResult<V>>{
             {
                 parentMap.put(neighbor, node);
                 treeEdges.add(edge);
-                dfs(graph,neighbor,visited, parentMap, visitOrder, treeEdges, nonTreeEdges);
+                dfs(graph,neighbor,visited, parentMap, visitOrder, treeEdges, nonTreeEdges, componentMap, currentComponent);
             }
             else if (!treeEdges.contains(edge))
             {
