@@ -333,7 +333,7 @@ public class TrackFactory {
 
         ColoringFrame finalFrame = new ColoringFrame("Chromatic number upper bound: " + result.getChromaticUpperBound());
         if (!track.getFrames().isEmpty()) {
-            finalFrame.getVertexColors().putAll(((ColoringFrame) track.getFrames().get(track.getFrames().size() - 1)).getVertexColors());
+            finalFrame.getVertexColors().putAll(((ColoringFrame) track.getFrames().getLast()).getVertexColors());
         }
         track.addFrame(finalFrame);
         return track;
@@ -363,7 +363,7 @@ public class TrackFactory {
 
         ColoringFrame finalFrame = new ColoringFrame("Done! Chromatic index upper bound: " + result.getChromaticIndexUpperBound());
         if (!track.getFrames().isEmpty()) {
-            finalFrame.getEdgeColors().putAll(((ColoringFrame) track.getFrames().get(track.getFrames().size() - 1)).getEdgeColors());
+            finalFrame.getEdgeColors().putAll(((ColoringFrame) track.getFrames().getLast()).getEdgeColors());
         }
         track.addFrame(finalFrame);
         return track;

@@ -1,6 +1,5 @@
 package pl.edu.uj.discretecalculator.view.command;
 
-import javafx.beans.value.ObservableBooleanValue;
 import pl.edu.uj.discretecalculator.controller.CanvasManager;
 import pl.edu.uj.discretecalculator.view.EdgeDrawn;
 import pl.edu.uj.discretecalculator.view.VertexDrawn;

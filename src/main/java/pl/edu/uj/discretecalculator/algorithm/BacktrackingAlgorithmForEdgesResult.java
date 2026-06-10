@@ -31,6 +31,5 @@ public class BacktrackingAlgorithmForEdgesResult<V> {
 
     public void addStep(BacktrackStep<V> step) { history.add(step); }
     public List<BacktrackStep<V>> getHistory() { return history; }
-    public void clearHistory() { history.clear(); } // być może gdybyśmy chceli jednak pomijać nieudane próby, to czysci historie
     public Map<Edge<V>, Integer> getFinalColors() { return finalColors; }
 }

@@ -16,7 +16,6 @@ public class AlgorithmPlayer {
     private final double defaultSpeedMs = AppConfig.get().animation.defaultSpeedMs;
     private Runnable onStepChanged;
 
-    // >>> NOWOŚĆ: Flaga kierunku odtwarzania <<<
     private boolean isForward = true;
 
     public AlgorithmPlayer(CanvasManager canvas, DoubleProperty currentSpeedMs) {
@@ -58,7 +57,6 @@ public class AlgorithmPlayer {
         if (currentTrack != null) metronome.play();
     }
 
-    // >>> NOWOŚĆ: Odtwarzanie do tyłu <<<
     public void playBackward() {
         isForward = false;
         if (currentTrack != null) metronome.play();

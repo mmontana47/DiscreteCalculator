@@ -74,7 +74,7 @@ public class EdgeDrawn extends Group {
         line.endYProperty().addListener(arrowUpdater);
         StyleSettings.get().vertexRadiusProperty().addListener((obs, old, val) -> updateArrowHead());
 
-        this.getChildren().addAll(curve, arrowHead, weightLabel);;
+        this.getChildren().addAll(curve, arrowHead, weightLabel);
         updateArrowHead();
 
         this.setOnMouseClicked(event -> {
@@ -83,8 +83,6 @@ public class EdgeDrawn extends Group {
                 onClick.accept(this);
             }
         });
-
-        // Zastępujemy starą linijkę nowym rozwiązaniem opisanym niżej w bindWeightVisibility
     }
 
     public void updateArrowHead() {
@@ -192,7 +190,6 @@ public class EdgeDrawn extends Group {
     public void highlightAsTreeEdge() {
         curve.pseudoClassStateChanged(TREE_EDGE, true);
         curve.pseudoClassStateChanged(CYCLE_EDGE, false);
-        // Zastosowanie miękkiego, grafitowego odcienia:
         curve.setStyle("-fx-stroke: #333333;");
         arrowHead.setStyle("-fx-fill: #333333; -fx-stroke: #333333;");
     }
@@ -224,7 +221,6 @@ public class EdgeDrawn extends Group {
         curve.pseudoClassStateChanged(TREE_EDGE, false);
         curve.pseudoClassStateChanged(CYCLE_EDGE, false);
         applyStroke(null);
-        //setWeightText(null);
         setActive(false);
     }
 }

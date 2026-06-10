@@ -17,12 +17,10 @@ public class BacktrackingAlgorithmForEdges<V> implements AlgorithmicInterface<V,
         if (maxEdges == 0) return result;
 
         for (int k = 1; k <= maxEdges; k++) {
-            //result.clearHistory(); //do czyszczenia
-
             Map<Edge<V>, Integer> colors = new HashMap<>();
             Deque<Edge<V>> deque = new ArrayDeque<>(edgeList);
 
-            //łamanie symetrii
+            // symmetry breaking: fix first edge to color 1
             Edge<V> firstEdge = deque.pollFirst();
             colors.put(firstEdge, 1);
 

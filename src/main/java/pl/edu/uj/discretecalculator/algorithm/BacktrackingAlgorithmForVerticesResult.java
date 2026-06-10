@@ -31,6 +31,5 @@ public class BacktrackingAlgorithmForVerticesResult<V> {
 
     public void addStep(BacktrackVertexStep<V> step) { history.add(step); }
     public List<BacktrackVertexStep<V>> getHistory() { return history; }
-    public void clearHistory() { history.clear(); }
     public Map<Vertex<V>, Integer> getFinalColors() { return finalColors; }
 }

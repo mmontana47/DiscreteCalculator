@@ -33,6 +33,6 @@ public class GreedyVertexColoringResult<V> {
     public List<ColoringStep<V>> getHistory() { return history; }
     public Map<Vertex<V>, Integer> getFinalColors() { return finalColors; }
 
-    public int getChromaticUpperBound() { return chromaticUpperBound; } //może tego użyjemy aby zwrócić userowi
+    public int getChromaticUpperBound() { return chromaticUpperBound; }
     public void setChromaticUpperBound(int bound) { this.chromaticUpperBound = bound; }
 }

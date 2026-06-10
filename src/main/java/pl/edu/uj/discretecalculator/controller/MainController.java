@@ -442,12 +442,10 @@ public class MainController {
     }
 
     void selectMode(Mode mode) {
-        for(Toggle tog: modeGroup.getToggles()) {
-            if (tog instanceof Labeled labeled) {
-                if (labeled.getText().equals(mode.label())) {
-                    modeGroup.selectToggle(tog);
-                    return;
-                }
+        for (Toggle tog : modeGroup.getToggles()) {
+            if (tog instanceof Labeled labeled && labeled.getText().equals(mode.label())) {
+                modeGroup.selectToggle(tog);
+                return;
             }
         }
     }
@@ -543,13 +541,10 @@ public class MainController {
             }
             case PAINT -> runCommand(new PaintEdgeCommand(edge, colorPicker));
             case EDIT_WEIGHT -> {
-                OptionalDouble newWeight = promptForDouble("Edge Weight", "Change weight for selected edge", "Weight");
+                OptionalDouble newWeight = promptForEdgeWeight();
                 if (newWeight.isPresent()) {
-                    if (!weightedCheckbox.isSelected()) {
-                        weightedCheckbox.setSelected(true);
-                    }
-                    String weightStr = String.valueOf(newWeight.getAsDouble());
-                    runCommand(new ChangeWeightCommand(edge, weightStr));
+                    if (!weightedCheckbox.isSelected()) weightedCheckbox.setSelected(true);
+                    runCommand(new ChangeWeightCommand(edge, String.valueOf(newWeight.getAsDouble())));
                 }
             }
             case CUSTOM_RENUMBER -> {}
@@ -595,7 +590,7 @@ public class MainController {
 
     @FXML private void onBuildCycle() {
         clearSelection();
-        OptionalInt n = promptForInt("Cycle", "Build cycle C_n", "n" );
+        OptionalInt n = promptForInt("Cycle", "Build cycle C_n");
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.cycle(buildContext(),  n.getAsInt()));
         kickLiveLayout(3);
@@ -603,7 +598,7 @@ public class MainController {
 
     @FXML private void onBuildComplete() {
         clearSelection();
-        OptionalInt n = promptForInt("Clique", "Build clique K_n", "n");
+        OptionalInt n = promptForInt("Clique", "Build clique K_n");
         if(n.isEmpty()) return;
         runCommand(GraphBuilders.clique(buildContext(),  n.getAsInt()));
         kickLiveLayout(5);
@@ -619,7 +614,7 @@ public class MainController {
 
     @FXML private void onBuildTree() {
         clearSelection();
-        OptionalInt n = promptForInt("Tree", "Build random tree on n vertices", "n");
+        OptionalInt n = promptForInt("Tree", "Build random tree on n vertices");
         if (n.isEmpty()) return;
         runCommand(GraphBuilders.randomTree(buildContext(),  n.getAsInt()));
         kickLiveLayout(3);
@@ -687,19 +682,11 @@ public class MainController {
         if (tokens.length == 1) {
             if(canvas.getVertexById(tokens[0])==null) kickLiveLayout(1);
             getOrCreateVertex(tokens[0]);
-        } else if (tokens.length == 2) {
-            VertexDrawn s = getOrCreateVertex(tokens[0]);
-            VertexDrawn t = getOrCreateVertex(tokens[1]);
-
-            if(((!canvas.isDirected() && !canvas.edgeExists(s,t))||
-                    (canvas.isDirected() && !canvas.edgeExistsDirected(s,t)))) {
-                history.execute(new AddEdgeCommand(canvas, s, t, this::onEdgeClick));
-                kickLiveLayout(1);
+        } else if (tokens.length >= 2) {
+            String weightStr = (tokens.length == 3) ? tokens[2] : null;
+            if (weightStr != null) {
+                try { Double.parseDouble(weightStr); } catch (NumberFormatException e) { return; }
             }
-        } else if (tokens.length == 3) {
-            try{
-                Double.parseDouble(tokens[2]);
-            }catch (NumberFormatException e) {return;}
             VertexDrawn s = getOrCreateVertex(tokens[0]);
             VertexDrawn t = getOrCreateVertex(tokens[1]);
 
@@ -707,9 +694,12 @@ public class MainController {
                     (canvas.isDirected() && !canvas.edgeExistsDirected(s, t))) {
                 AddEdgeCommand cmd = new AddEdgeCommand(canvas, s, t, this::onEdgeClick);
                 history.execute(cmd);
-
-                cmd.getEdge().setWeightText(tokens[2]);
-                if(!weightedCheckbox.isSelected()) {weightedCheckbox.setSelected(true); setDefaultWeights();}
+                if (weightStr != null) {
+                    cmd.getEdge().setWeightText(weightStr);
+                    if (!weightedCheckbox.isSelected()) { weightedCheckbox.setSelected(true); setDefaultWeights(); }
+                } else if (weightedCheckbox.isSelected()) {
+                    cmd.getEdge().setWeightText("1.0");
+                }
                 kickLiveLayout(1);
             }
         }
@@ -755,7 +745,7 @@ public class MainController {
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
 
-        Vertex<String> startNode = graph.getVertices().iterator().next();
+        Vertex<String> startNode = graph.getVertices().getFirst();
         BFSResult<String> result = new BFS<>(startNode).start(graph);
 
         List<String> newOrder = result.getVisitOrder().stream()
@@ -770,7 +760,7 @@ public class MainController {
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
 
-        Vertex<String> startNode = graph.getVertices().iterator().next();
+        Vertex<String> startNode = graph.getVertices().getFirst();
         DFSResult<String> result = new DFS<>(startNode).start(graph);
 
         List<String> newOrder = result.getVisitOrder().stream()
@@ -781,34 +771,19 @@ public class MainController {
     }
 
     @FXML
-    private void onRenumberDegreeDesc() {
-        Graph<String> graph = buildMathematicalGraph();
-        if (graph.getVertices().isEmpty()) return;
-
-        List<String> newOrder = graph.getVertices().stream()
-                .sorted((v1, v2) -> Integer.compare(
-                        graph.getIncidentEdges(v2).size(),
-                        graph.getIncidentEdges(v1).size()
-                ))
-                .map(Vertex::getValue)
-                .toList();
-
-        applyRenumbering(newOrder);
-    }
+    private void onRenumberDegreeDesc() { renumberByDegree(true); }
 
     @FXML
-    private void onRenumberDegreeAsc() {
+    private void onRenumberDegreeAsc() { renumberByDegree(false); }
+
+    private void renumberByDegree(boolean descending) {
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
-
+        var comparator = Comparator.comparingInt((Vertex<String> v) -> graph.getIncidentEdges(v).size());
         List<String> newOrder = graph.getVertices().stream()
-                .sorted((v1, v2) -> Integer.compare(
-                        graph.getIncidentEdges(v1).size(),
-                        graph.getIncidentEdges(v2).size()
-                ))
+                .sorted(descending ? comparator.reversed() : comparator)
                 .map(Vertex::getValue)
                 .toList();
-
         applyRenumbering(newOrder);
     }
 
@@ -1068,21 +1043,17 @@ public class MainController {
         player.play();
     }
 
-    private boolean confirmBacktracking(int currentSize, int safeLimit, String elementType) {
-        if (currentSize <= safeLimit) {
-            return true;
-        }
-
+    private boolean backtrackingTooLarge(int currentSize, String elementType) {
+        if (currentSize <= 15) return false;
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Warning");
         alert.setHeaderText("Your graph has " + currentSize + " " + elementType);
         alert.setContentText("""
-        Animating backtracking may result in the app crashing.\n
-        It is recommended to make sure that the chromatic number/index is reasonably bounded.\n
-        Do you want to continue?""");
-
+                Animating backtracking may result in the app crashing.
+                It is recommended to make sure that the chromatic number/index is reasonably bounded.
+                Do you want to continue?""");
         Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == ButtonType.OK;
+        return result.isEmpty() || result.get() != ButtonType.OK;
     }
 
     @FXML
@@ -1092,9 +1063,7 @@ public class MainController {
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getVertices().isEmpty()) return;
 
-        if (!confirmBacktracking(graph.getVertices().size(), 15, "vertices")) {
-            return;
-        }
+        if (backtrackingTooLarge(graph.getVertices().size(), "vertices")) return;
         BacktrackingAlgorithmForVertices<String> algorithm = new BacktrackingAlgorithmForVertices<>(null);
         var result = algorithm.start(graph);
         AlgorithmTrack track = TrackFactory.buildBacktrackingVertexTrack(result, graph);
@@ -1111,9 +1080,7 @@ public class MainController {
         Graph<String> graph = buildMathematicalGraph();
         if (graph.getEdges().isEmpty()) return;
 
-        if (!confirmBacktracking(graph.getEdges().size(), 15, "edges")) {
-            return;
-        }
+        if (backtrackingTooLarge(graph.getEdges().size(), "edges")) return;
 
         BacktrackingAlgorithmForEdges<String> algorithm = new BacktrackingAlgorithmForEdges<>();
         var result = algorithm.start(graph);
@@ -1282,12 +1249,12 @@ public class MainController {
     // =================================== FUNKCJE POMOCNICZE (UTILITY) ================================
     // =================================================================================================
 
-    private OptionalInt promptForInt(String title, String header, String var) {
+    private OptionalInt promptForInt(String title, String header) {
         TextInputDialog dlg = new TextInputDialog();
         dlg.setTitle(title);
         dlg.setHeaderText(header);
         dlg.setGraphic(null);
-        dlg.setContentText(var +" =");
+        dlg.setContentText("n =");
         Platform.runLater(() -> dlg.getEditor().requestFocus());
         Optional<String> r = dlg.showAndWait();
         if (r.isEmpty()) return OptionalInt.empty();
@@ -1323,7 +1290,7 @@ public class MainController {
 
         Button okBtn = (Button) dlg.getDialogPane().lookupButton(okType);
         okBtn.disableProperty().bind(Bindings.createBooleanBinding(
-                () -> !isPositiveInt(nField.getText() ) || !isPositiveInt(mField.getText()),
+                () -> isNotPositiveInt(nField.getText()) || isNotPositiveInt(mField.getText()),
                 nField.textProperty(), mField.textProperty()
         ));
 
@@ -1340,12 +1307,12 @@ public class MainController {
         return dlg.showAndWait();
     }
 
-    private OptionalDouble promptForDouble(String title, String header, String var) {
+    private OptionalDouble promptForEdgeWeight() {
         TextInputDialog dlg = new TextInputDialog();
-        dlg.setTitle(title);
-        dlg.setHeaderText(header);
+        dlg.setTitle("Edge Weight");
+        dlg.setHeaderText("Change weight for selected edge");
         dlg.setGraphic(null);
-        dlg.setContentText(var + " =");
+        dlg.setContentText("Weight =");
         Platform.runLater(() -> dlg.getEditor().requestFocus());
         Optional<String> r = dlg.showAndWait();
         if (r.isEmpty()) return OptionalDouble.empty();
@@ -1357,11 +1324,10 @@ public class MainController {
         }
     }
 
-    private static boolean isPositiveInt(String s){
+    private static boolean isNotPositiveInt(String s) {
         try {
-            return Integer.parseInt(s.trim())>0;
-        }
-        catch (NumberFormatException ex) {return false;}
+            return Integer.parseInt(s.trim()) <= 0;
+        } catch (NumberFormatException ex) { return true; }
     }
 
 

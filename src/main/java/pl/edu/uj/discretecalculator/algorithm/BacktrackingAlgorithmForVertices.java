@@ -23,8 +23,6 @@ public class BacktrackingAlgorithmForVertices<V> implements AlgorithmicInterface
 
         // slabe ograniczenie, ale i tak kolorowanie sie znajdzie
         for (int k = 1; k <= graphSize; k++) {
-
-            //result.clearHistory(); // do czyszczenia nieudanych prob
             Map<Vertex<V>, Integer> colors = new HashMap<>();
             Deque<Vertex<V>> verticesDeque = new ArrayDeque<>();
 
